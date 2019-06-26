@@ -110,7 +110,7 @@ module.exports = {
       redirect: Joi.string(),
       code: Joi.string(),
       state: Joi.string(),
-      access_token: Joi.string(),
+      access_token: validators.accessToken,
       token_type: Joi.string().valid('bearer'),
       scope: Joi.string().allow(''),
       auth_at: Joi.number(),

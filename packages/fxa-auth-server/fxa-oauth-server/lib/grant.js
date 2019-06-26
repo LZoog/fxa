@@ -122,9 +122,9 @@ module.exports.generateTokens = async function generateTokens(grant) {
   const access = await generateAccessToken(db, grant);
 
   const result = {
-    access_token: hex(access.token),
+    access_token: Buffer.isBuffer(access.token) ? access.token.toString('hex') : access.token,
     token_type: access.type,
-    scope: grant.scope.toString()
+    scope: access.scope.toString()
   };
   result.expires_in = grant.ttl || Math.floor((access.expiresAt - Date.now()) / 1000);
   if (grant.authAt) {
@@ -154,12 +154,14 @@ module.exports.generateTokens = async function generateTokens(grant) {
 function generateIdToken(grant, access) {
   var now = Math.floor(Date.now() / 1000);
   var claims = {
-    at_hash: util.generateTokenHash(access),
-    aud: hex(grant.clientId),
-    exp: now + ID_TOKEN_EXPIRATION,
-    iat: now,
-    iss: ID_TOKEN_ISSUER,
     sub: hex(grant.userId),
+    aud: hex(grant.clientId),
+    iss: ID_TOKEN_ISSUER,
+    iat: now,
+    exp: now + ID_TOKEN_EXPIRATION,
+    // TODO: For JWT access tokens, should the at_hash be of the
+    // jti or of the whole token?
+    at_hash: util.generateTokenHash(access),
   };
   if (grant.amr) {
     claims.amr = grant.amr;
