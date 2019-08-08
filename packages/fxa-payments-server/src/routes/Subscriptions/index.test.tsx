@@ -7,6 +7,7 @@ import {
   AppContextType,
   defaultAppContext,
 } from '../../lib/AppContext';
+import config from '../../../server/config'
 import { Customer, Profile, Subscription } from '../../store/types';
 
 beforeEach(() => {});
@@ -79,7 +80,7 @@ const mockedSubscriptionsProps = {
 const Subject = (props: SubscriptionsProps) => {
   const appContextValue = {
     ...defaultAppContext,
-    config: { servers: { content: { url: 'http://127.0.0.1:3030' } } },
+    ...config,
     queryParams: { successfulSupportTicketSubmission: 'quux' },
   };
 
