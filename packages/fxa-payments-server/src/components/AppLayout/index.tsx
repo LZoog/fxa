@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useContext } from 'react';
 import { AppContext } from '../../lib/AppContext';
 
-import './index.scss';
+import styles from './index.module.scss';
 
 export type AppLayoutProps = {
   children: ReactNode;
@@ -23,7 +23,7 @@ export const SignInLayout = ({ children }: SignInLayout) => (
   <>
     <AppLayout>
       <div className="sign-in">
-        <div id="main-content" className="card payments-card">
+        <div className={`${styles['main-content']} card payments-card`}>
           {children}
         </div>
       </div>

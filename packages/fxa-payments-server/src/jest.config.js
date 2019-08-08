@@ -1,5 +1,8 @@
 module.exports = {
   preset: 'ts-jest',
+  moduleNameMapper: {
+    '\\.(css|scss)$': '<rootDir>/../node_modules/jest-css-modules',
+  },
   collectCoverageFrom: [
     '**/*.{js,jsx,ts,tsx}',
     '!**/*.stories.*',
