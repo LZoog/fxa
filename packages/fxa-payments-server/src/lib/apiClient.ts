@@ -80,15 +80,79 @@ export default class APIClient {
     return response.json();
   }
 
-  get(...args: [string, object?]) {
-    return this.fetch('GET', ...args);
+  getProfile() {
+    return this.fetch('GET', `${this.config.servers.profile.url}/v1/profile`);
   }
 
-  delete(...args: [string, object?]) {
-    return this.fetch('DELETE', ...args);
+  getPlans() {
+    return this.fetch(
+      'GET',
+      `${this.config.servers.auth.url}/v1/oauth/subscriptions/plans`
+    );
   }
 
-  post(path: string, body: object) {
-    return this.fetch('POST', path, { body: JSON.stringify(body) });
+  getSubscriptions() {
+    return this.fetch(
+      'GET',
+      `${this.config.servers.auth.url}/v1/oauth/subscriptions/active`
+    );
+  }
+
+  getToken() {
+    return this.fetch(
+      'POST',
+      `${this.config.servers.oauth.url}/v1/introspect`,
+      {
+        body: JSON.stringify({
+          token: this.accessToken,
+        }),
+      }
+    );
+  }
+
+  getCustomer() {
+    return this.fetch(
+      'GET',
+      `${this.config.servers.auth.url}/v1/oauth/subscriptions/customer`
+    );
+  }
+
+  createSubscription(params: {
+    paymentToken: string;
+    planId: string;
+    displayName: string;
+  }) {
+    return this.fetch(
+      'POST',
+      `${this.config.servers.auth.url}/v1/oauth/subscriptions/active`,
+      {
+        body: JSON.stringify({
+          ...params,
+        }),
+      }
+    );
+  }
+
+  cancelSubscription(subscriptionId: string) {
+    return this.fetch(
+      'DELETE',
+      `${this.config.servers.auth.url}/v1/oauth/subscriptions/active/${subscriptionId}`
+    );
+  }
+
+  reactivateSubscription(subscriptionId: string) {
+    return this.fetch(
+      'POST',
+      `${this.config.servers.auth.url}/v1/oauth/subscriptions/reactivate`,
+      { body: JSON.stringify({ subscriptionId }) }
+    );
+  }
+
+  updatePayment(paymentToken: string) {
+    return this.fetch(
+      'POST',
+      `${this.config.servers.auth.url}/v1/oauth/subscriptions/updatePayment`,
+      { body: JSON.stringify({ paymentToken }) }
+    );
   }
 }

@@ -66,18 +66,11 @@ export const selectors: Selectors = {
 
 export const actions = createActions(
   {
-    fetchProfile: (apiClient: any) =>
-      apiClient.get(`${apiClient.config.servers.profile.url}/v1/profile`),
-    fetchPlans: (apiClient: any) =>
-      apiClient.get(`${apiClient.config.servers.auth.url}/v1/oauth/subscriptions/plans`),
-    fetchSubscriptions: (apiClient: any) =>
-      apiClient.get(`${apiClient.config.servers.auth.url}/v1/oauth/subscriptions/active`),
-    fetchToken: (apiClient: any) =>
-      apiClient.post(`${apiClient.config.servers.oauth.url}/v1/introspect`, {
-        token: apiClient.accessToken,
-      }),
-    fetchCustomer: (apiClient: any) =>
-      apiClient.get(`${apiClient.config.servers.auth.url}/v1/oauth/subscriptions/customer`),
+    fetchProfile: (apiClient: any) => apiClient.getProfile(),
+    fetchPlans: (apiClient: any) => apiClient.getPlans(),
+    fetchSubscriptions: (apiClient: any) => apiClient.getSubscriptions(),
+    fetchToken: (apiClient: any) => apiClient.getToken(),
+    fetchCustomer: (apiClient: any) => apiClient.getCustomer(),
     createSubscription: (
       apiClient: any,
       params: {
@@ -85,26 +78,21 @@ export const actions = createActions(
         planId: string;
         displayName: string;
       }
-    ) =>
-      apiClient.post(`${apiClient.config.servers.auth.url}/v1/oauth/subscriptions/active`, params),
-    cancelSubscription: (apiClient: any, subscriptionId: string) =>
-      apiClient.delete(`${apiClient.config.servers.auth.url}/v1/oauth/subscriptions/active/${subscriptionId}`)
-      .then((result: any) => {
-        // HACK: cancellation response does not include subscriptionId, but we want it.
-        return { ...result, subscriptionId };
-      }),
-    reactivateSubscription: async (
+    ) => apiClient.createSubscription(params),
+    cancelSubscription: async (apiClient: any, subscriptionId: string) => {
+      const result = await apiClient.cancelSubscription(subscriptionId);
+      // Cancellation response does not include subscriptionId, but we want it.
+      return { ...result, subscriptionId };
+    },
+    reactivateSubscription: (
       apiClient: any,
       subscriptionId: string
     ) =>
-      apiClient.post(`${apiClient.config.servers.auth.url}/v1/oauth/subscriptions/reactivate`, { subscriptionId }),
+      apiClient.reactivateSubscription(subscriptionId),
     updatePayment: (
       apiClient: any,
       { paymentToken }: { paymentToken: string }
-    ) =>
-    apiClient.post(`${apiClient.config.servers.auth.url}/v1/oauth/subscriptions/updatePayment`,
-        { paymentToken }
-      ),
+    ) => apiClient.updatePayment(paymentToken),
   },
   'updateApiData',
   'resetCreateSubscription',
