@@ -20,7 +20,6 @@ type MockAppProps = {
 }
 
 export const defaultAppContextValue: AppContextType = {
-  accessToken: 'at_12345',
   config: {
     ...config,
     productRedirectURLs: {

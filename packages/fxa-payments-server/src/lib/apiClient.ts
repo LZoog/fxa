@@ -1,4 +1,4 @@
-import { defaultConfig } from './config';
+import { Config, defaultConfig } from './config';
 
 // TODO: Use a better type here
 interface APIFetchOptions {
@@ -47,7 +47,7 @@ export class APIError extends Error {
 }
 
 let accessToken = '';
-let config = defaultConfig();
+let config: Config = defaultConfig();
 
 export function updateAPIClientConfig(configFromMeta: any) {
   config = configFromMeta;
