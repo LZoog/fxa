@@ -12,6 +12,18 @@ import {
   mapToObject,
 } from './utils';
 
+import {
+  getProfile,
+  getPlans,
+  getSubscriptions,
+  getToken,
+  getCustomer,
+  createSubscription,
+  cancelSubscription,
+  reactivateSubscription,
+  updatePayment
+} from '../lib/apiClient'
+
 import { State, Action, Selectors, Plan } from './types';
 
 const RESET_PAYMENT_DELAY = 2000;
@@ -66,33 +78,30 @@ export const selectors: Selectors = {
 
 export const actions = createActions(
   {
-    fetchProfile: (apiClient: any) => apiClient.getProfile(),
-    fetchPlans: (apiClient: any) => apiClient.getPlans(),
-    fetchSubscriptions: (apiClient: any) => apiClient.getSubscriptions(),
-    fetchToken: (apiClient: any) => apiClient.getToken(),
-    fetchCustomer: (apiClient: any) => apiClient.getCustomer(),
+    fetchProfile: () => getProfile(),
+    fetchPlans: () => getPlans(),
+    fetchSubscriptions: () => getSubscriptions(),
+    fetchToken: () => getToken(),
+    fetchCustomer: () => getCustomer(),
     createSubscription: (
-      apiClient: any,
       params: {
         paymentToken: string;
         planId: string;
         displayName: string;
       }
-    ) => apiClient.createSubscription(params),
-    cancelSubscription: async (apiClient: any, subscriptionId: string) => {
-      const result = await apiClient.cancelSubscription(subscriptionId);
+    ) => createSubscription(params),
+    cancelSubscription: async (subscriptionId: string) => {
+      const result = await cancelSubscription(subscriptionId);
       // Cancellation response does not include subscriptionId, but we want it.
       return { ...result, subscriptionId };
     },
     reactivateSubscription: (
-      apiClient: any,
       subscriptionId: string
     ) =>
-      apiClient.reactivateSubscription(subscriptionId),
+      reactivateSubscription(subscriptionId),
     updatePayment: (
-      apiClient: any,
       { paymentToken }: { paymentToken: string }
-    ) => apiClient.updatePayment(paymentToken),
+    ) => updatePayment(paymentToken),
   },
   'updateApiData',
   'resetCreateSubscription',
@@ -112,39 +121,38 @@ const handleThunkError = (err: any) => {
 
 // Convenience functions to produce action sequences via react-thunk functions
 export const thunks = {
-  fetchProductRouteResources: (apiClient: any) => async (
+  fetchProductRouteResources: () => async (
     dispatch: Function
   ) => {
     await Promise.all([
-      dispatch(actions.fetchPlans(apiClient)),
-      dispatch(actions.fetchProfile(apiClient)),
-      dispatch(actions.fetchCustomer(apiClient)),
-      dispatch(actions.fetchSubscriptions(apiClient)),
+      dispatch(actions.fetchPlans()),
+      dispatch(actions.fetchProfile()),
+      dispatch(actions.fetchCustomer()),
+      dispatch(actions.fetchSubscriptions()),
     ]).catch(handleThunkError);
   },
 
-  fetchSubscriptionsRouteResources: (apiClient: any) => async (
+  fetchSubscriptionsRouteResources: () => async (
     dispatch: Function
   ) => {
     await Promise.all([
-      dispatch(actions.fetchPlans(apiClient)),
-      dispatch(actions.fetchProfile(apiClient)),
-      dispatch(actions.fetchCustomer(apiClient)),
-      dispatch(actions.fetchSubscriptions(apiClient)),
+      dispatch(actions.fetchPlans()),
+      dispatch(actions.fetchProfile()),
+      dispatch(actions.fetchCustomer()),
+      dispatch(actions.fetchSubscriptions()),
     ]).catch(handleThunkError);
   },
 
-  fetchCustomerAndSubscriptions: (apiClient: any) => async (
+  fetchCustomerAndSubscriptions: () => async (
     dispatch: Function
   ) => {
     await Promise.all([
-      dispatch(actions.fetchCustomer(apiClient)),
-      dispatch(actions.fetchSubscriptions(apiClient)),
+      dispatch(actions.fetchCustomer()),
+      dispatch(actions.fetchSubscriptions()),
     ]).catch(handleThunkError);
   },
 
   createSubscriptionAndRefresh: (
-    apiClient: any,
     params: {
       paymentToken: string;
       planId: string;
@@ -152,45 +160,43 @@ export const thunks = {
     }
   ) => async (dispatch: Function) => {
     try {
-      await dispatch(actions.createSubscription(apiClient, params));
-      await dispatch(thunks.fetchCustomerAndSubscriptions(apiClient));
+      await dispatch(actions.createSubscription(params));
+      await dispatch(thunks.fetchCustomerAndSubscriptions());
     } catch (err) {
       handleThunkError(err);
     }
   },
 
   cancelSubscriptionAndRefresh: (
-    apiClient: any,
     subscriptionId: object
   ) => async (dispatch: Function, getState: Function) => {
     try {
-      await dispatch(actions.cancelSubscription(apiClient, subscriptionId));
-      await dispatch(thunks.fetchCustomerAndSubscriptions(apiClient));
+      await dispatch(actions.cancelSubscription(subscriptionId));
+      await dispatch(thunks.fetchCustomerAndSubscriptions());
     } catch (err) {
       handleThunkError(err);
     }
   },
 
   reactivateSubscriptionAndRefresh: (
-    apiClient: any,
     subscriptionId: object
   ) => async (dispatch: Function, getState: Function) => {
     try {
       await dispatch(
-        actions.reactivateSubscription(apiClient, subscriptionId)
+        actions.reactivateSubscription(subscriptionId)
       );
-      await dispatch(thunks.fetchCustomerAndSubscriptions(apiClient));
+      await dispatch(thunks.fetchCustomerAndSubscriptions());
     } catch (err) {
       handleThunkError(err);
     }
   },
 
-  updatePaymentAndRefresh: (apiClient: any, params: object) => async (
+  updatePaymentAndRefresh: (params: object) => async (
     dispatch: Function
   ) => {
     try {
-      await dispatch(actions.updatePayment(apiClient, params));
-      await dispatch(thunks.fetchCustomerAndSubscriptions(apiClient));
+      await dispatch(actions.updatePayment(params));
+      await dispatch(thunks.fetchCustomerAndSubscriptions());
       setTimeout(
         () => dispatch(actions.resetUpdatePayment()),
         RESET_PAYMENT_DELAY

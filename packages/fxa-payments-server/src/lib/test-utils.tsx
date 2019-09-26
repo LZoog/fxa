@@ -179,7 +179,6 @@ export const elementChangeResponse = ({
 });
 
 export const defaultAppContextValue = (): AppContextType => ({
-  apiClient: {},
   config,
   queryParams: {},
   matchMedia: jest.fn().mockImplementation(query => false),

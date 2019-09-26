@@ -24,7 +24,6 @@ const RouteFallback = () => <LoadingOverlay isLoading={true} />;
 
 type AppProps = {
   config: Config;
-  apiClient: any,
   store: Store;
   queryParams: QueryParams;
   matchMedia: (query: string) => boolean;
@@ -35,7 +34,6 @@ type AppProps = {
 
 export const App = ({
   config,
-  apiClient,
   store,
   queryParams,
   matchMedia,
@@ -45,7 +43,6 @@ export const App = ({
 }: AppProps) => {
   const appContextValue: AppContextType = {
     config,
-    apiClient,
     queryParams,
     matchMedia,
     navigateToUrl,

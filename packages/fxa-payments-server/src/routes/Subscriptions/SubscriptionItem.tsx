@@ -14,8 +14,6 @@ import DialogMessage from '../../components/DialogMessage';
 import AppContext from '../../lib/AppContext';
 
 type SubscriptionItemProps = {
-  // apiClient: string;
-  apiClient: any;
   customerSubscription: CustomerSubscription;
   subscription: Subscription | null;
   plan: Plan | null;
@@ -27,7 +25,6 @@ type SubscriptionItemProps = {
   updatePayment: Function;
 };
 export const SubscriptionItem = ({
-  apiClient,
   subscription,
   cancelSubscription,
   reactivateSubscription,
@@ -76,7 +73,6 @@ export const SubscriptionItem = ({
               {...{
                 plan,
                 customerSubscription,
-                apiClient,
                 customer,
                 updatePayment,
                 resetUpdatePayment,
@@ -85,7 +81,6 @@ export const SubscriptionItem = ({
             />
             <CancelSubscriptionPanel
               {...{
-                apiClient,
                 cancelSubscription,
                 plan,
                 customerSubscription,
@@ -96,7 +91,6 @@ export const SubscriptionItem = ({
           <>
             <ReactivateSubscriptionPanel
               {...{
-                apiClient,
                 plan,
                 customerSubscription,
                 subscription,
@@ -111,14 +105,12 @@ export const SubscriptionItem = ({
 };
 
 type CancelSubscriptionPanelProps = {
-  apiClient: string;
   plan: Plan;
   cancelSubscription: Function;
   customerSubscription: CustomerSubscription;
 };
 
 const CancelSubscriptionPanel = ({
-  apiClient,
   plan,
   cancelSubscription,
   customerSubscription: { subscription_id, current_period_end },
@@ -126,8 +118,8 @@ const CancelSubscriptionPanel = ({
   const [cancelRevealed, revealCancel, hideCancel] = useBooleanState();
   const [confirmationChecked, onConfirmationChanged] = useCheckboxState();
   const confirmCancellation = useCallback(
-    () => cancelSubscription(apiClient, subscription_id),
-    [apiClient, cancelSubscription, subscription_id]
+    () => cancelSubscription(subscription_id),
+    [cancelSubscription, subscription_id]
   );
 
   // TODO: date formats will need i18n someday
@@ -193,14 +185,12 @@ const CancelSubscriptionPanel = ({
 };
 
 type ReactivateSubscriptionPanelProps = {
-  apiClient: string;
   plan: Plan;
   customerSubscription: CustomerSubscription;
   subscription: Subscription;
   reactivateSubscription: Function;
 };
 const ReactivateSubscriptionPanel = ({
-  apiClient,
   plan,
   customerSubscription,
   subscription,
@@ -208,8 +198,8 @@ const ReactivateSubscriptionPanel = ({
 }: ReactivateSubscriptionPanelProps) => {
   const { subscription_id } = customerSubscription;
   const onReactivateClick = useCallback(
-    () => reactivateSubscription(apiClient, subscription_id),
-    [apiClient, reactivateSubscription, subscription_id]
+    () => reactivateSubscription(subscription_id),
+    [reactivateSubscription, subscription_id]
   );
 
   // TODO: date formats will need i18n someday

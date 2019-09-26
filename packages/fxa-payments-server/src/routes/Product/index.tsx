@@ -60,7 +60,7 @@ export const Product = ({
   fetchProductRouteResources,
   validatorInitialState,
 }: ProductProps) => {
-  const { apiClient, queryParams, locationReload } = useContext(AppContext);
+  const { queryParams, locationReload } = useContext(AppContext);
 
   const {
     plan: planId = '',
@@ -74,8 +74,8 @@ export const Product = ({
 
   // Fetch plans on initial render, change in product ID, or auth change.
   useEffect(() => {
-    fetchProductRouteResources(apiClient);
-  }, [fetchProductRouteResources, apiClient]);
+    fetchProductRouteResources();
+  }, [fetchProductRouteResources]);
 
   // Reset subscription creation status on initial render.
   useEffect(() => {
@@ -92,7 +92,7 @@ export const Product = ({
   const onPayment = useCallback(
     (tokenResponse: stripe.TokenResponse, name: string) => {
       if (tokenResponse && tokenResponse.token) {
-        createSubscription(apiClient, {
+        createSubscription({
           paymentToken: tokenResponse.token.id,
           planId: selectedPlan.plan_id,
           displayName: name,
@@ -104,7 +104,7 @@ export const Product = ({
         setCreateTokenError(error);
       }
     },
-    [apiClient, selectedPlan, createSubscription, setCreateTokenError]
+    [selectedPlan, createSubscription, setCreateTokenError]
   );
 
   const onPaymentError = useCallback(

@@ -1,4 +1,4 @@
-import { Config } from './config';
+import { defaultConfig } from './config';
 
 // TODO: Use a better type here
 interface APIFetchOptions {
@@ -46,113 +46,114 @@ export class APIError extends Error {
   }
 }
 
-export default class APIClient {
-  config: Config;
-  accessToken: string;
+let accessToken = '';
+let config = defaultConfig();
 
-  constructor(config: Config, accessToken: string) {
-    this.config = config;
-    this.accessToken = accessToken;
-  }
+export function updateAPIClientConfig(configFromMeta: any) {
+  config = configFromMeta;
+}
 
-  async fetch(method: string, path: string, options: APIFetchOptions = {}) {
-    const response = await fetch(path, {
-      mode: 'cors',
-      credentials: 'omit',
-      method,
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.accessToken}`,
-        ...(options.headers || {}),
-      },
-    });
-    if (response.status >= 400) {
-      let body = {};
-      try {
-        // Parse the body as JSON, but will fail if things have really gone wrong
-        body = await response.json();
-      } catch (_) {
-        // No-op
-      }
-      throw new APIError(body, response);
+export function updateAPIClientToken(token: string) {
+  accessToken = token;
+}
+
+async function apiFetch(
+  method: string,
+  path: string,
+  options: APIFetchOptions = {}
+) {
+  const response = await fetch(path, {
+    mode: 'cors',
+    credentials: 'omit',
+    method,
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+      ...(options.headers || {}),
+    },
+  });
+  if (response.status >= 400) {
+    let body = {};
+    try {
+      // Parse the body as JSON, but will fail if things have really gone wrong
+      body = await response.json();
+    } catch (_) {
+      // No-op
     }
-    return response.json();
+    throw new APIError(body, response);
   }
+  return response.json();
+}
 
-  getProfile() {
-    return this.fetch('GET', `${this.config.servers.profile.url}/v1/profile`);
-  }
+export function getProfile() {
+  return apiFetch('GET', `${config.servers.profile.url}/v1/profile`);
+}
 
-  getPlans() {
-    return this.fetch(
-      'GET',
-      `${this.config.servers.auth.url}/v1/oauth/subscriptions/plans`
-    );
-  }
+export function getPlans() {
+  return apiFetch(
+    'GET',
+    `${config.servers.auth.url}/v1/oauth/subscriptions/plans`
+  );
+}
 
-  getSubscriptions() {
-    return this.fetch(
-      'GET',
-      `${this.config.servers.auth.url}/v1/oauth/subscriptions/active`
-    );
-  }
+export function getSubscriptions() {
+  return apiFetch(
+    'GET',
+    `${config.servers.auth.url}/v1/oauth/subscriptions/active`
+  );
+}
 
-  getToken() {
-    return this.fetch(
-      'POST',
-      `${this.config.servers.oauth.url}/v1/introspect`,
-      {
-        body: JSON.stringify({
-          token: this.accessToken,
-        }),
-      }
-    );
-  }
+export function getToken() {
+  return apiFetch('POST', `${config.servers.oauth.url}/v1/introspect`, {
+    body: JSON.stringify({
+      token: accessToken,
+    }),
+  });
+}
 
-  getCustomer() {
-    return this.fetch(
-      'GET',
-      `${this.config.servers.auth.url}/v1/oauth/subscriptions/customer`
-    );
-  }
+export function getCustomer() {
+  return apiFetch(
+    'GET',
+    `${config.servers.auth.url}/v1/oauth/subscriptions/customer`
+  );
+}
 
-  createSubscription(params: {
-    paymentToken: string;
-    planId: string;
-    displayName: string;
-  }) {
-    return this.fetch(
-      'POST',
-      `${this.config.servers.auth.url}/v1/oauth/subscriptions/active`,
-      {
-        body: JSON.stringify({
-          ...params,
-        }),
-      }
-    );
-  }
+export function createSubscription(params: {
+  paymentToken: string;
+  planId: string;
+  displayName: string;
+}) {
+  return apiFetch(
+    'POST',
+    `${config.servers.auth.url}/v1/oauth/subscriptions/active`,
+    {
+      body: JSON.stringify({
+        ...params,
+      }),
+    }
+  );
+}
 
-  cancelSubscription(subscriptionId: string) {
-    return this.fetch(
-      'DELETE',
-      `${this.config.servers.auth.url}/v1/oauth/subscriptions/active/${subscriptionId}`
-    );
-  }
+export function cancelSubscription(subscriptionId: string) {
+  return apiFetch(
+    'DELETE',
+    `${config.servers.auth.url}/v1/oauth/subscriptions/active/${subscriptionId}`
+  );
+}
 
-  reactivateSubscription(subscriptionId: string) {
-    return this.fetch(
-      'POST',
-      `${this.config.servers.auth.url}/v1/oauth/subscriptions/reactivate`,
-      { body: JSON.stringify({ subscriptionId }) }
-    );
-  }
+export function reactivateSubscription(subscriptionId: string) {
+  return apiFetch(
+    'POST',
+    `${config.servers.auth.url}/v1/oauth/subscriptions/reactivate`,
+    { body: JSON.stringify({ subscriptionId }) }
+  );
+}
 
-  updatePayment(paymentToken: string) {
-    return this.fetch(
-      'POST',
-      `${this.config.servers.auth.url}/v1/oauth/subscriptions/updatePayment`,
-      { body: JSON.stringify({ paymentToken }) }
-    );
-  }
+export function updatePayment(paymentToken: string) {
+  return apiFetch(
+    'POST',
+    `${config.servers.auth.url}/v1/oauth/subscriptions/updatePayment`,
+    { body: JSON.stringify({ paymentToken }) }
+  );
 }

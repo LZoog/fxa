@@ -4,9 +4,9 @@ import { createAppStore, actions } from './store';
 import * as Sentry from '@sentry/browser';
 
 import { config, readConfigFromMeta } from './lib/config';
+import { updateAPIClientToken, updateAPIClientConfig } from './lib/apiClient'
 import './index.scss';
 import App from './App';
-import APIClient from './lib/apiClient'
 import ScreenInfo from './lib/screen-info';
 
 async function init() {
@@ -27,14 +27,14 @@ async function init() {
   // We should have gotten an accessToken or else redirected, but guard here
   // anyway because App component requires a token.
   if (accessToken) {
-    const apiClient = new APIClient(config, accessToken);
-    store.dispatch(actions.fetchToken(apiClient));
-    store.dispatch(actions.fetchProfile(apiClient));
+    updateAPIClientConfig(config);
+    updateAPIClientToken(accessToken);
+    store.dispatch(actions.fetchToken());
+    store.dispatch(actions.fetchProfile());
 
     render(
       <App
         {...{
-          apiClient,
           config,
           store,
           queryParams,

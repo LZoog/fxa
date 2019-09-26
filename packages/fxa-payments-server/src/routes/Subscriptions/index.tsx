@@ -64,7 +64,6 @@ export const Subscriptions = ({
   updatePaymentStatus,
 }: SubscriptionsProps) => {
   const {
-    apiClient,
     config,
     locationReload,
     navigateToUrl,
@@ -80,8 +79,8 @@ export const Subscriptions = ({
 
   // Fetch subscriptions and customer on initial render or auth change.
   useEffect(() => {
-    fetchSubscriptionsRouteResources(apiClient);
-  }, [fetchSubscriptionsRouteResources, apiClient]);
+    fetchSubscriptionsRouteResources();
+  }, [fetchSubscriptionsRouteResources]);
 
   const onSupportClick = useCallback(() => navigateToUrl(SUPPORT_FORM_URL), [
     navigateToUrl,
@@ -221,7 +220,6 @@ export const Subscriptions = ({
             <SubscriptionItem
               key={idx}
               {...{
-                apiClient,
                 customer,
                 updatePayment,
                 resetUpdatePayment,
