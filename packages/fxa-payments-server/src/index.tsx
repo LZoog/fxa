@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from 'react-dom';
-import { createAppStore, actions } from './store';
+import { createAppStore } from './store';
 import * as Sentry from '@sentry/browser';
 
 import { config, readConfigFromMeta } from './lib/config';
@@ -8,6 +8,8 @@ import { updateAPIClientToken, updateAPIClientConfig } from './lib/apiClient'
 import './index.scss';
 import App from './App';
 import ScreenInfo from './lib/screen-info';
+
+import { fetchProfile, fetchToken } from './store/actions';
 
 async function init() {
   readConfigFromMeta(headQuerySelector);
@@ -29,8 +31,8 @@ async function init() {
   if (accessToken) {
     updateAPIClientConfig(config);
     updateAPIClientToken(accessToken);
-    store.dispatch(actions.fetchToken());
-    store.dispatch(actions.fetchProfile());
+    store.dispatch(fetchToken());
+    store.dispatch(fetchProfile());
 
     render(
       <App

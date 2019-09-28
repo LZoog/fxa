@@ -86,25 +86,25 @@ async function apiFetch(
   return response.json();
 }
 
-export function getProfile() {
+export function apiFetchProfile() {
   return apiFetch('GET', `${config.servers.profile.url}/v1/profile`);
 }
 
-export function getPlans() {
+export function apiFetchPlans() {
   return apiFetch(
     'GET',
     `${config.servers.auth.url}/v1/oauth/subscriptions/plans`
   );
 }
 
-export function getSubscriptions() {
+export function apiFetchSubscriptions() {
   return apiFetch(
     'GET',
     `${config.servers.auth.url}/v1/oauth/subscriptions/active`
   );
 }
 
-export function getToken() {
+export function apiFetchToken() {
   return apiFetch('POST', `${config.servers.oauth.url}/v1/introspect`, {
     body: JSON.stringify({
       token: accessToken,
@@ -112,14 +112,14 @@ export function getToken() {
   });
 }
 
-export function getCustomer() {
+export function apiFetchCustomer() {
   return apiFetch(
     'GET',
     `${config.servers.auth.url}/v1/oauth/subscriptions/customer`
   );
 }
 
-export function createSubscription(params: {
+export function apiCreateSubscription(params: {
   paymentToken: string;
   planId: string;
   displayName: string;
@@ -135,14 +135,14 @@ export function createSubscription(params: {
   );
 }
 
-export function cancelSubscription(subscriptionId: string) {
+export function apiCancelSubscription(subscriptionId: string) {
   return apiFetch(
     'DELETE',
     `${config.servers.auth.url}/v1/oauth/subscriptions/active/${subscriptionId}`
   );
 }
 
-export function reactivateSubscription(subscriptionId: string) {
+export function apiReactivateSubscription(subscriptionId: string) {
   return apiFetch(
     'POST',
     `${config.servers.auth.url}/v1/oauth/subscriptions/reactivate`,
@@ -150,7 +150,7 @@ export function reactivateSubscription(subscriptionId: string) {
   );
 }
 
-export function updatePayment(paymentToken: string) {
+export function apiUpdatePayment(paymentToken: string) {
   return apiFetch(
     'POST',
     `${config.servers.auth.url}/v1/oauth/subscriptions/updatePayment`,

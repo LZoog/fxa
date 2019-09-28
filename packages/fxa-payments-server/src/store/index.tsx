@@ -6,6 +6,18 @@ import { createPromise as promiseMiddleware } from 'redux-promise-middleware';
 import typeToReducer from 'type-to-reducer';
 
 import {
+  fetchProfile,
+  fetchToken,
+  fetchPlans,
+  fetchSubscriptions,
+  fetchCustomer,
+  // createSubscription,
+  // cancelSubscription,
+  // reactivateSubscription,
+  // updatePayment,
+} from './actions'
+
+import {
   fetchDefault,
   fetchReducer,
   setStatic,
@@ -13,15 +25,15 @@ import {
 } from './utils';
 
 import {
-  getProfile,
-  getPlans,
-  getSubscriptions,
-  getToken,
-  getCustomer,
-  createSubscription,
-  cancelSubscription,
-  reactivateSubscription,
-  updatePayment
+  // getProfile,
+  // getPlans,
+  // getSubscriptions,
+  // getToken,
+  // getCustomer,
+  apiCreateSubscription,
+  apiCancelSubscription,
+  apiReactivateSubscription,
+  apiUpdatePayment,
 } from '../lib/apiClient'
 
 import { State, Action, Selectors, Plan } from './types';
@@ -78,30 +90,30 @@ export const selectors: Selectors = {
 
 export const actions = createActions(
   {
-    fetchProfile: () => getProfile(),
-    fetchPlans: () => getPlans(),
-    fetchSubscriptions: () => getSubscriptions(),
-    fetchToken: () => getToken(),
-    fetchCustomer: () => getCustomer(),
+    // fetchProfile: () => getProfile(),
+    // fetchPlans: () => getPlans(),
+    // fetchSubscriptions: () => getSubscriptions(),
+    // fetchToken: () => getToken(),
+    // fetchCustomer: () => getCustomer(),
     createSubscription: (
       params: {
         paymentToken: string;
         planId: string;
         displayName: string;
       }
-    ) => createSubscription(params),
+    ) => apiCreateSubscription(params),
     cancelSubscription: async (subscriptionId: string) => {
-      const result = await cancelSubscription(subscriptionId);
+      const result = await apiCancelSubscription(subscriptionId);
       // Cancellation response does not include subscriptionId, but we want it.
       return { ...result, subscriptionId };
     },
     reactivateSubscription: (
       subscriptionId: string
     ) =>
-      reactivateSubscription(subscriptionId),
+      apiReactivateSubscription(subscriptionId),
     updatePayment: (
       { paymentToken }: { paymentToken: string }
-    ) => updatePayment(paymentToken),
+    ) => apiUpdatePayment(paymentToken),
   },
   'updateApiData',
   'resetCreateSubscription',
@@ -125,10 +137,10 @@ export const thunks = {
     dispatch: Function
   ) => {
     await Promise.all([
-      dispatch(actions.fetchPlans()),
-      dispatch(actions.fetchProfile()),
-      dispatch(actions.fetchCustomer()),
-      dispatch(actions.fetchSubscriptions()),
+      dispatch(fetchPlans()),
+      dispatch(fetchProfile()),
+      dispatch(fetchCustomer()),
+      dispatch(fetchSubscriptions()),
     ]).catch(handleThunkError);
   },
 
@@ -136,10 +148,10 @@ export const thunks = {
     dispatch: Function
   ) => {
     await Promise.all([
-      dispatch(actions.fetchPlans()),
-      dispatch(actions.fetchProfile()),
-      dispatch(actions.fetchCustomer()),
-      dispatch(actions.fetchSubscriptions()),
+      dispatch(fetchPlans()),
+      dispatch(fetchProfile()),
+      dispatch(fetchCustomer()),
+      dispatch(fetchSubscriptions()),
     ]).catch(handleThunkError);
   },
 
@@ -147,8 +159,8 @@ export const thunks = {
     dispatch: Function
   ) => {
     await Promise.all([
-      dispatch(actions.fetchCustomer()),
-      dispatch(actions.fetchSubscriptions()),
+      dispatch(fetchCustomer()),
+      dispatch(fetchSubscriptions()),
     ]).catch(handleThunkError);
   },
 
@@ -210,11 +222,11 @@ export const thunks = {
 export const reducers = {
   api: typeToReducer(
     {
-      [actions.fetchProfile.toString()]: fetchReducer('profile'),
-      [actions.fetchPlans.toString()]: fetchReducer('plans'),
-      [actions.fetchSubscriptions.toString()]: fetchReducer('subscriptions'),
-      [actions.fetchToken.toString()]: fetchReducer('token'),
-      [actions.fetchCustomer.toString()]: fetchReducer('customer'),
+      [fetchProfile.toString()]: fetchReducer('profile'),
+      [fetchPlans.toString()]: fetchReducer('plans'),
+      [fetchSubscriptions.toString()]: fetchReducer('subscriptions'),
+      [fetchToken.toString()]: fetchReducer('token'),
+      [fetchCustomer.toString()]: fetchReducer('customer'),
       [actions.createSubscription.toString()]: fetchReducer(
         'createSubscription'
       ),
@@ -246,11 +258,11 @@ export const reducers = {
   ),
 };
 
-export const selectorsFromState = (...names: Array<string>) => (state: State) =>
-  mapToObject(names, (name: string) => selectors[name](state));
+// export const selectorsFromState = (...names: Array<string>) => (state: State) =>
+//   mapToObject(names, (name: string) => selectors[name](state));
 
-export const pickActions = (...names: Array<string>) =>
-  mapToObject(names, (name: string) => actions[name]);
+// export const pickActions = (...names: Array<string>) =>
+//   mapToObject(names, (name: string) => actions[name]);
 
 export const createAppStore = (initialState?: State, enhancers?: Array<any>) =>
   createStore<State, Action, unknown, unknown>(
