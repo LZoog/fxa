@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 import dayjs from 'dayjs';
 
 import { AuthServerErrno } from '../../lib/errors';
-import { thunks, selectors } from '../../store';
+import { thunks } from '../../store';
+import { selectors } from '../../store/selectors';
 import { resetUpdatePayment, resetCancelSubscription, resetReactivateSubscription } from '../../store/actions';
 import { AppContext } from '../../lib/AppContext';
 

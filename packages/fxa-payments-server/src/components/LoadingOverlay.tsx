@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { selectors } from '../store';
+import { selectors } from '../store/selectors';
 import { State } from '../store/types';
 
 import './LoadingOverlay.scss';
