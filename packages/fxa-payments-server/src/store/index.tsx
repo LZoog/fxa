@@ -11,10 +11,10 @@ import {
   fetchPlans,
   fetchSubscriptions,
   fetchCustomer,
-  // createSubscription,
-  // cancelSubscription,
-  // reactivateSubscription,
-  // updatePayment,
+  createSubscription,
+  cancelSubscription,
+  reactivateSubscription,
+  updatePayment,
 } from './actions'
 
 import {
@@ -24,17 +24,17 @@ import {
   mapToObject,
 } from './utils';
 
-import {
+// import {
   // getProfile,
   // getPlans,
   // getSubscriptions,
   // getToken,
   // getCustomer,
-  apiCreateSubscription,
-  apiCancelSubscription,
-  apiReactivateSubscription,
-  apiUpdatePayment,
-} from '../lib/apiClient'
+  // apiCreateSubscription,
+  // apiCancelSubscription,
+  // apiReactivateSubscription,
+  // apiUpdatePayment,
+// } from '../lib/apiClient'
 
 import { State, Action, Selectors, Plan } from './types';
 
@@ -89,32 +89,6 @@ export const selectors: Selectors = {
 };
 
 export const actions = createActions(
-  {
-    // fetchProfile: () => getProfile(),
-    // fetchPlans: () => getPlans(),
-    // fetchSubscriptions: () => getSubscriptions(),
-    // fetchToken: () => getToken(),
-    // fetchCustomer: () => getCustomer(),
-    createSubscription: (
-      params: {
-        paymentToken: string;
-        planId: string;
-        displayName: string;
-      }
-    ) => apiCreateSubscription(params),
-    cancelSubscription: async (subscriptionId: string) => {
-      const result = await apiCancelSubscription(subscriptionId);
-      // Cancellation response does not include subscriptionId, but we want it.
-      return { ...result, subscriptionId };
-    },
-    reactivateSubscription: (
-      subscriptionId: string
-    ) =>
-      apiReactivateSubscription(subscriptionId),
-    updatePayment: (
-      { paymentToken }: { paymentToken: string }
-    ) => apiUpdatePayment(paymentToken),
-  },
   'updateApiData',
   'resetCreateSubscription',
   'resetCancelSubscription',
@@ -172,7 +146,7 @@ export const thunks = {
     }
   ) => async (dispatch: Function) => {
     try {
-      await dispatch(actions.createSubscription(params));
+      await dispatch(createSubscription(params));
       await dispatch(thunks.fetchCustomerAndSubscriptions());
     } catch (err) {
       handleThunkError(err);
@@ -180,10 +154,10 @@ export const thunks = {
   },
 
   cancelSubscriptionAndRefresh: (
-    subscriptionId: object
+    subscriptionId: string
   ) => async (dispatch: Function, getState: Function) => {
     try {
-      await dispatch(actions.cancelSubscription(subscriptionId));
+      await dispatch(cancelSubscription(subscriptionId));
       await dispatch(thunks.fetchCustomerAndSubscriptions());
     } catch (err) {
       handleThunkError(err);
@@ -191,11 +165,11 @@ export const thunks = {
   },
 
   reactivateSubscriptionAndRefresh: (
-    subscriptionId: object
+    subscriptionId: string
   ) => async (dispatch: Function, getState: Function) => {
     try {
       await dispatch(
-        actions.reactivateSubscription(subscriptionId)
+        reactivateSubscription(subscriptionId)
       );
       await dispatch(thunks.fetchCustomerAndSubscriptions());
     } catch (err) {
@@ -203,11 +177,11 @@ export const thunks = {
     }
   },
 
-  updatePaymentAndRefresh: (params: object) => async (
+  updatePaymentAndRefresh: ({ paymentToken }: { paymentToken: string }) => async (
     dispatch: Function
   ) => {
     try {
-      await dispatch(actions.updatePayment(params));
+      await dispatch(updatePayment(paymentToken));
       await dispatch(thunks.fetchCustomerAndSubscriptions());
       setTimeout(
         () => dispatch(actions.resetUpdatePayment()),
@@ -227,16 +201,16 @@ export const reducers = {
       [fetchSubscriptions.toString()]: fetchReducer('subscriptions'),
       [fetchToken.toString()]: fetchReducer('token'),
       [fetchCustomer.toString()]: fetchReducer('customer'),
-      [actions.createSubscription.toString()]: fetchReducer(
+      [createSubscription.toString()]: fetchReducer(
         'createSubscription'
       ),
-      [actions.cancelSubscription.toString()]: fetchReducer(
+      [cancelSubscription.toString()]: fetchReducer(
         'cancelSubscription'
       ),
-      [actions.reactivateSubscription.toString()]: fetchReducer(
+      [reactivateSubscription.toString()]: fetchReducer(
         'reactivateSubscription'
       ),
-      [actions.updatePayment.toString()]: fetchReducer('updatePayment'),
+      [updatePayment.toString()]: fetchReducer('updatePayment'),
       [actions.updateApiData.toString()]: (state, { payload }) => ({
         ...state,
         ...payload,

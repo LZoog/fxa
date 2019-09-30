@@ -12,31 +12,6 @@ import {
   apiUpdatePayment,
 } from '../lib/apiClient';
 
-// Action creators
-// export function fetchProfile() {
-//   return {
-//     type: 'fetchProfile',
-//     payload: getProfile(),
-//   }
-// }
-// fetchProfile.toString = () => 'fetchProfile';
-
-// export function fetchToken() {
-//   return {
-//     type: 'fetchToken',
-//     payload: getToken(),
-//   }
-// }
-// fetchToken.toString = () => 'fetchToken';
-
-// export function fetchPlans() {
-//   return {
-//     type: 'fetchPlans',
-//     payload: getPlans(),
-//   }
-// }
-// fetchPlans.toString = () => 'fetchPlans';
-
 function makeActionCreator(type: string, payload: Function) {
   return () => ({ type, payload });
 }
@@ -61,3 +36,35 @@ export const fetchCustomer = makeActionCreator(
   apiFetchCustomer
 );
 fetchCustomer.toString = () => 'fetchCustomer';
+
+export const createSubscription = (params: {
+  paymentToken: string;
+  planId: string;
+  displayName: string;
+}) => ({
+  type: 'createSubscription',
+  payload: apiCreateSubscription(params),
+});
+createSubscription.toString = () => 'createSubscription';
+
+export const cancelSubscription = (subscriptionId: string) => ({
+  type: 'cancelSubscription',
+  payload: async () => {
+    const result = await apiCancelSubscription(subscriptionId);
+    // Cancellation response does not include subscriptionId, but we want it.
+    return { ...result, subscriptionId };
+  },
+});
+cancelSubscription.toString = () => 'cancelSubscription';
+
+export const reactivateSubscription = (subscriptionId: string) => ({
+  type: 'reactivateSubscription',
+  payload: apiReactivateSubscription(subscriptionId),
+});
+reactivateSubscription.toString = () => 'reactivateSubscription';
+
+export const updatePayment = (paymentToken: string) => ({
+  type: 'updatePayment',
+  payload: apiUpdatePayment(paymentToken),
+});
+updatePayment.toString = () => 'updatePayment';
