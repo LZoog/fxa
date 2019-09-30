@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useContext } from 'react';
 import { connect } from 'react-redux';
 import { AuthServerErrno, getErrorMessage } from '../../lib/errors';
-import { thunks } from '../../store';
+import { thunks } from '../../store/thunks';
 import { selectors } from '../../store/selectors'
 import { resetCreateSubscription } from '../../store/actions';
 import { AppContext } from '../../lib/AppContext';
