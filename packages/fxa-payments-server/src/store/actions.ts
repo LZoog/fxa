@@ -16,6 +16,10 @@ function makeActionCreator(type: string, payload: Function) {
   return () => ({ type, payload });
 }
 
+function makeActionObject(type: string, payload?: any) {
+  return { type, payload };
+}
+
 export const fetchProfile = makeActionCreator('fetchProfile', apiFetchProfile);
 fetchProfile.toString = () => 'fetchProfile';
 
@@ -68,3 +72,23 @@ export const updatePayment = (paymentToken: string) => ({
   payload: apiUpdatePayment(paymentToken),
 });
 updatePayment.toString = () => 'updatePayment';
+
+export const updateApiData = (payload: any) =>
+  makeActionObject('updateApiData', payload);
+updateApiData.toString = () => 'updateApiData';
+
+export const resetCreateSubscription = (payload?: any) =>
+  makeActionObject('resetCreateSubscription', payload);
+resetCreateSubscription.toString = () => 'resetCreateSubscription';
+
+export const resetCancelSubscription = (payload: any) =>
+  makeActionObject('resetCancelSubscription', payload);
+resetCancelSubscription.toString = () => 'resetCancelSubscription';
+
+export const resetReactivateSubscription = (payload: any) =>
+  makeActionObject('resetReactivateSubscription', payload);
+resetReactivateSubscription.toString = () => 'resetReactivateSubscription';
+
+export const resetUpdatePayment = (payload?: any) =>
+  makeActionObject('resetUpdatePayment', payload);
+resetUpdatePayment.toString = () => 'resetUpdatePayment';

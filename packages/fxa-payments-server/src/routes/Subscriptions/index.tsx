@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 import dayjs from 'dayjs';
 
 import { AuthServerErrno } from '../../lib/errors';
-import { actions, thunks, selectors } from '../../store';
+import { thunks, selectors } from '../../store';
+import { resetUpdatePayment, resetCancelSubscription, resetReactivateSubscription } from '../../store/actions';
 import { AppContext } from '../../lib/AppContext';
 
 import {
@@ -336,10 +337,10 @@ export default connect(
   {
     fetchSubscriptionsRouteResources: thunks.fetchSubscriptionsRouteResources,
     updatePayment: thunks.updatePaymentAndRefresh,
-    resetUpdatePayment: actions.resetUpdatePayment,
+    resetUpdatePayment: resetUpdatePayment,
     cancelSubscription: thunks.cancelSubscriptionAndRefresh,
-    resetCancelSubscription: actions.resetCancelSubscription,
+    resetCancelSubscription: resetCancelSubscription,
     reactivateSubscription: thunks.reactivateSubscriptionAndRefresh,
-    resetReactivateSubscription: actions.resetReactivateSubscription,
+    resetReactivateSubscription: resetReactivateSubscription,
   }
 )(Subscriptions);

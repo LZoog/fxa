@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback, useContext } from 'react';
 import { connect } from 'react-redux';
 import { AuthServerErrno, getErrorMessage } from '../../lib/errors';
 import { thunks, selectors } from '../../store';
-// import { resetCreateSubscription } from '../../store/actions';
-import { actions } from '../../store';
+import { resetCreateSubscription } from '../../store/actions';
+// import { actions } from '../../store';
 import { AppContext } from '../../lib/AppContext';
 import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { State as ValidatorState } from '../../lib/validator';
@@ -308,8 +308,8 @@ export default connect(
     plansByProductId: selectors.plansByProductId(state),
   }),
   {
-    resetCreateSubscription: actions.resetCreateSubscription,
-    resetCreateSubscriptionError: actions.resetCreateSubscription,
+    resetCreateSubscription: resetCreateSubscription,
+    resetCreateSubscriptionError: resetCreateSubscription,
     fetchProductRouteResources: thunks.fetchProductRouteResources,
     createSubscription: thunks.createSubscriptionAndRefresh,
   }

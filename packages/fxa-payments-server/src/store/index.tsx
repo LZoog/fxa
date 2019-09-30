@@ -1,6 +1,5 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
-import { createActions } from 'redux-actions';
 import ReduxThunk, { ThunkMiddleware } from 'redux-thunk';
 import { createPromise as promiseMiddleware } from 'redux-promise-middleware';
 import typeToReducer from 'type-to-reducer';
@@ -15,6 +14,11 @@ import {
   cancelSubscription,
   reactivateSubscription,
   updatePayment,
+  updateApiData,
+  resetCreateSubscription,
+  resetCancelSubscription,
+  resetReactivateSubscription,
+  resetUpdatePayment
 } from './actions'
 
 import {
@@ -23,18 +27,6 @@ import {
   setStatic,
   mapToObject,
 } from './utils';
-
-// import {
-  // getProfile,
-  // getPlans,
-  // getSubscriptions,
-  // getToken,
-  // getCustomer,
-  // apiCreateSubscription,
-  // apiCancelSubscription,
-  // apiReactivateSubscription,
-  // apiUpdatePayment,
-// } from '../lib/apiClient'
 
 import { State, Action, Selectors, Plan } from './types';
 
@@ -87,14 +79,6 @@ export const selectors: Selectors = {
     return [];
   },
 };
-
-export const actions = createActions(
-  'updateApiData',
-  'resetCreateSubscription',
-  'resetCancelSubscription',
-  'resetReactivateSubscription',
-  'resetUpdatePayment'
-);
 
 // TODO: Find another way to handle these errors? Rejected promises result
 // in Redux actions dispatched *and* exceptions thrown. We handle the
@@ -184,7 +168,7 @@ export const thunks = {
       await dispatch(updatePayment(paymentToken));
       await dispatch(thunks.fetchCustomerAndSubscriptions());
       setTimeout(
-        () => dispatch(actions.resetUpdatePayment()),
+        () => dispatch(resetUpdatePayment()),
         RESET_PAYMENT_DELAY
       );
     } catch (err) {
@@ -211,20 +195,20 @@ export const reducers = {
         'reactivateSubscription'
       ),
       [updatePayment.toString()]: fetchReducer('updatePayment'),
-      [actions.updateApiData.toString()]: (state, { payload }) => ({
+      [updateApiData.toString()]: (state, { payload }) => ({
         ...state,
         ...payload,
       }),
-      [actions.resetCreateSubscription.toString()]: setStatic({
+      [resetCreateSubscription.toString()]: setStatic({
         createSubscription: fetchDefault(null),
       }),
-      [actions.resetCancelSubscription.toString()]: setStatic({
+      [resetCancelSubscription.toString()]: setStatic({
         cancelSubscription: fetchDefault(null),
       }),
-      [actions.resetReactivateSubscription.toString()]: setStatic({
+      [resetReactivateSubscription.toString()]: setStatic({
         reactivateSubscription: fetchDefault(null),
       }),
-      [actions.resetUpdatePayment.toString()]: setStatic({
+      [resetUpdatePayment.toString()]: setStatic({
         updatePayment: fetchDefault(null),
       }),
     },
