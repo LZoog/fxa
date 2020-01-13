@@ -94,6 +94,8 @@ describe('views/ready', function() {
       SIGN_IN: SIGNIN_COMPLETE.HEADER,
       SIGN_UP: SIGNUP_COMPLETE.HEADER,
       SUCCESSFUL_OAUTH: '#fxa-oauth-success-header',
+      PRIMARY_EMAIL_VERIFIED: SIGNUP_COMPLETE.HEADER,
+      // SECONDARY_EMAIL_VERIFIED: SIGNUP_COMPLETE.HEADER,
     };
 
     for (var type in expectedHeaders) {
@@ -118,6 +120,34 @@ describe('views/ready', function() {
         );
       });
     });
+
+    // it('renders `escapedEmailReadyText` as expected with `primary_email_verified` view type and param', () => {
+    //   windowMock.location.search = '?primary_email_verified=some@email.com';
+    //   // model.set('type', VerificationReasons.PRIMARY_EMAIL_VERIFIED);
+    //   createView(VerificationReasons.PRIMARY_EMAIL_VERIFIED);
+
+    //   return view.render().then(() => {
+    //     assert.equal(
+    //       view.$(SIGNIN_COMPLETE.SERVICE_NAME).text(),
+    //       'You are now ready to make changes to your Firefox Account.'
+    //     );
+    //     assert.lengthOf(view.$('.btn-continue'), 1);
+    //   });
+    // });
+
+    // it('renders `escapedEmailReadyText` as expected with `secondary_email_verified` view type and param', () => {
+    //   windowMock.location.search = '?secondary_email_verified=some@email.com';
+    //   // model.set('type', VerificationReasons.SECONDARY_EMAIL_VERIFIED);
+    //   createView(VerificationReasons.SECONDARY_EMAIL_VERIFIED);
+
+    //   return view.render().then(() => {
+    //     assert.equal(
+    //       view.$(SIGNIN_COMPLETE.SERVICE_NAME).text(),
+    //       'Account notifications will now also be sent to some@email.com.'
+    //     );
+    //    assert.lengthOf(view.$('.btn-continue'), 1);
+    //   });
+    // });
 
     // regression test for #1216
     it('does not show service name if service is defined but serviceName is not', function() {
