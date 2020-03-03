@@ -17,13 +17,8 @@ const app = express();
 
 // TO DO:
 // * CSP, CORS, other security-related tasks (#4312)
-// * ensure VPN / SSO is setup
-// * versioning
 
 app.use(
-  // Side effect - Adds default_fxa and dev_fxa to express.logger formats
-  // (TODO)
-  // require('./logging/route-logging')(),
   helmet.frameguard({
     action: 'deny',
   }),
