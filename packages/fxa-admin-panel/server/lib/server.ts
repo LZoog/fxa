@@ -4,8 +4,10 @@
 
 import express from 'express';
 import path from 'path';
-import config from '../config';
 import serveStatic from 'serve-static';
+import helmet from 'helmet';
+import config from '../config';
+// import noRobots from './no-robots';
 
 const STATIC_DIRECTORY = path.join(
   __dirname,
@@ -17,6 +19,42 @@ const proxyUrl = config.get('proxyStaticResourcesFrom');
 
 const app = express();
 
+// TO DO:
+// * logging
+// * CSP, CORS, other security-related tasks (#4312)
+// * ensure VPN / SSO is setup
+// * versioning
+// * connect to graphQL endpoint (apollo-client setup)
+
+app.use(
+  // Side effect - Adds default_fxa and dev_fxa to express.logger formats
+  // (TODO)
+  // require('./logging/route-logging')(),
+  helmet.frameguard({
+    action: 'deny',
+  }),
+  helmet.xssFilter(),
+  helmet.noSniff(),
+  //   noRobots, // TODO: y u cause TS error?
+  require('./no-robots').default
+);
+
+app.disable('x-powered-by');
+
+const hstsEnabled = config.get('hstsEnabled');
+if (hstsEnabled) {
+  app.use(
+    helmet.hsts({
+      force: true,
+      includeSubDomains: true,
+      maxAge: config.get('hstsMaxAge'),
+    })
+  );
+}
+
+// Note - the static route handlers must come last
+// because the proxyUrl handler's app.use('/') captures
+// all requests that match no others.
 if (proxyUrl) {
   // logger.info('static.proxying', { url: proxyUrl });
   const proxy = require('express-http-proxy');
@@ -28,7 +66,6 @@ if (proxyUrl) {
       maxAge: config.get('staticResources.maxAge'),
     })
   );
-  // TODO routes
 }
 
 export async function createServer() {

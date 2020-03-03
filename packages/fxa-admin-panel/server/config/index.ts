@@ -69,7 +69,7 @@ const conf = convict({
     },
   },
   logging: {
-    app: { default: 'fxa-payments-server' },
+    app: { default: 'fxa-admin-panel' },
     fmt: {
       default: 'heka',
       env: 'LOGGING_FORMAT',
