@@ -8,23 +8,17 @@ import serveStatic from 'serve-static';
 import helmet from 'helmet';
 import config from '../config';
 // import noRobots from './no-robots';
+import log from './logging';
 
-const STATIC_DIRECTORY = path.join(
-  __dirname,
-  '..',
-  '..',
-  config.get('staticResources.directory')
-);
+const logger = log('server.main');
 const proxyUrl = config.get('proxyStaticResourcesFrom');
 
 const app = express();
 
 // TO DO:
-// * logging
 // * CSP, CORS, other security-related tasks (#4312)
 // * ensure VPN / SSO is setup
 // * versioning
-// * connect to graphQL endpoint (apollo-client setup)
 
 app.use(
   // Side effect - Adds default_fxa and dev_fxa to express.logger formats
@@ -56,11 +50,18 @@ if (hstsEnabled) {
 // because the proxyUrl handler's app.use('/') captures
 // all requests that match no others.
 if (proxyUrl) {
-  // logger.info('static.proxying', { url: proxyUrl });
+  logger.info('static.proxying', { url: proxyUrl });
   const proxy = require('express-http-proxy');
   app.use('/', proxy(proxyUrl));
 } else {
-  // logger.info('static.directory', { directory: STATIC_DIRECTORY });
+  const STATIC_DIRECTORY = path.join(
+    __dirname,
+    '..',
+    '..',
+    config.get('staticResources.directory')
+  );
+
+  logger.info('static.directory', { directory: STATIC_DIRECTORY });
   app.use(
     serveStatic(STATIC_DIRECTORY, {
       maxAge: config.get('staticResources.maxAge'),
@@ -71,13 +72,13 @@ if (proxyUrl) {
 export async function createServer() {
   const port = config.get('listen.port');
   const host = config.get('listen.host');
-  // logger.info('server.starting', { port });
+  logger.info('server.starting', { port });
   app.listen(port, host, error => {
     if (error) {
-      // logger.error('server.start.error', { error });
+      logger.error('server.start.error', { error });
       return;
     }
 
-    // logger.info('server.started', { port });
+    logger.info('server.started', { port });
   });
 }
