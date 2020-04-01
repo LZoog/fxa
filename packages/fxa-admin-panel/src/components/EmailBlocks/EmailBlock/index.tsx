@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React from 'react';
+import React, { useState } from 'react';
 import './index.scss';
 
 const mockEmailBlock = {
@@ -26,6 +26,9 @@ export const EmailBlock = () => {
   const { account } = mockEmailBlock;
   const accountIsVerified = account.emailVerified;
   const emailBounce = account.emailBounces[0];
+
+  const [clicked, setClicked] = useState<Boolean>(false);
+
   return (
     <section className="email-block">
       <ul>
@@ -68,10 +71,14 @@ export const EmailBlock = () => {
             </li>
             <li>
               bounce subtype:{' '}
-              <span className="result">{emailBounce.bounceSubType}</span>
+              <span className="result">{emailBounce.bounceSubType} </span>
             </li>
             <li>
-              <button className="delete">Delete email block</button>
+              <button className="delete" onClick={() => setClicked(true)}>
+                Delete email block
+              </button>
+              <br />
+              Clicked? {clicked ? 'yep!' : 'nope'}
             </li>
           </ul>
         </li>
