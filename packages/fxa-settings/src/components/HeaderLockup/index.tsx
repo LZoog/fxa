@@ -11,6 +11,11 @@ import { ReactComponent as Bento } from './bento.svg';
 import { ReactComponent as DefaultAvatar } from '../../images/avatar-default.svg';
 import { ReactComponent as Menu } from './menu.svg';
 
+type HeaderLockupProps = {
+  avatarUrl: string | null;
+  primaryEmail: string;
+};
+
 const leftHeaderContent = (
   <>
     <button
@@ -60,7 +65,10 @@ const rightHeaderContent = (
   </>
 );
 
-export const HeaderLockup = () => (
+export const HeaderLockup = ({
+  avatarUrl,
+  primaryEmail,
+}: HeaderLockupProps) => (
   <Header left={leftHeaderContent} right={rightHeaderContent} />
 );
 
