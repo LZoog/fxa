@@ -8,6 +8,7 @@ import UnitRow from '../UnitRow';
 import UnitRowWithAvatar from '../UnitRowWithAvatar';
 import Modal from '../Modal';
 import { AccountData } from '../AccountDataHOC/gql';
+import AlertBar from '../AlertBar';
 
 export const Settings = ({ account }: { account: AccountData }) => {
   const [modalRevealed, revealModal, hideModal] = useBooleanState();
@@ -103,6 +104,7 @@ export const Settings = ({ account }: { account: AccountData }) => {
             )}
           </UnitRow>
         </div>
+        <AlertBar>message</AlertBar>
       </section>
     </>
   );
