@@ -393,8 +393,11 @@ const Account = Backbone.Model.extend(
      * @returns {Promise}
      */
     async generateEcosystemAnonId(options = {}) {
+      console.log('this.canFetchKeys()', this.canFetchKeys());
+      console.log('this.get("uid")', this.get('uid'));
+      console.log('options', options);
       try {
-        let ecosystemAnonId;
+        let ecosystemAnonId = undefined;
 
         if (!this._ecosystemAnonIdPublicKeys.length) {
           return;
@@ -450,13 +453,7 @@ const Account = Backbone.Model.extend(
           );
         }
 
-        if (ecosystemAnonId) {
-          this.set('ecosystemAnonId', ecosystemAnonId);
-          await this._fxaClient.updateEcosystemAnonId(
-            this.get('sessionToken'),
-            ecosystemAnonId
-          );
-        }
+        return ecosystemAnonId;
       } catch (err) {
         // In the event of errors, we don't want to block any user actions, just log it
         // TODO: Follow up with some better error handling
@@ -1068,24 +1065,23 @@ const Account = Backbone.Model.extend(
 
       return fxaClient
         .checkPassword(email, oldPassword, this.get('sessionToken'))
-        .then(() => {
+        .then(async () => {
           if (oldPassword === newPassword) {
             throw AuthErrors.toError('PASSWORDS_MUST_BE_DIFFERENT');
           }
+          const ecosystemAnonId = await this.generateEcosystemAnonId({});
 
           return fxaClient.changePassword(
             email,
             oldPassword,
             newPassword,
+            ecosystemAnonId,
             this.get('sessionToken'),
             this.get('sessionTokenContext'),
             relier
           );
         })
-        .then(this.set.bind(this))
-        .then(async () => {
-          await this.generateEcosystemAnonId({});
-        });
+        .then(this.set.bind(this));
     },
 
     /**
@@ -1128,11 +1124,14 @@ const Account = Backbone.Model.extend(
      * @param {String} emailToHashWith - use this email to hash password with.
      * @returns {Promise} - resolves when complete
      */
-    completePasswordReset(password, token, code, relier, emailToHashWith) {
+    async completePasswordReset(password, token, code, relier, emailToHashWith) {
+      const ecosystemAnonId = await this.generateEcosystemAnonId({ password });
+
       return this._fxaClient
         .completePasswordReset(
           this.get('email'),
           password,
+          ecosystemAnonId,
           token,
           code,
           relier,
@@ -1141,10 +1140,7 @@ const Account = Backbone.Model.extend(
             metricsContext: this._metrics.getFlowEventMetadata(),
           }
         )
-        .then(this.set.bind(this))
-        .then(async () => {
-          await this.generateEcosystemAnonId({ password });
-        });
+        .then(this.set.bind(this));
     },
 
     /**
@@ -1731,7 +1727,7 @@ const Account = Backbone.Model.extend(
      * @param {String} emailToHashWith - has password with this email address
      * @returns {Promise} resolves with response when complete.
      */
-    resetPasswordWithRecoveryKey(
+    async resetPasswordWithRecoveryKey(
       accountResetToken,
       password,
       recoveryKeyId,
@@ -1739,11 +1735,14 @@ const Account = Backbone.Model.extend(
       relier,
       emailToHashWith
     ) {
+      const ecosystemAnonId = await this.generateEcosystemAnonId({ kB });
+
       return this._fxaClient
         .resetPasswordWithRecoveryKey(
           accountResetToken,
           this.get('email'),
           password,
+          ecosystemAnonId,
           recoveryKeyId,
           kB,
           relier,
@@ -1752,10 +1751,7 @@ const Account = Backbone.Model.extend(
             metricsContext: this._metrics.getFlowEventMetadata(),
           }
         )
-        .then(this.set.bind(this))
-        .then(async () => {
-          await this.generateEcosystemAnonId({ kB });
-        });
+        .then(this.set.bind(this));
     },
 
     /**

@@ -410,6 +410,7 @@ export default class AuthClient {
   async accountReset(
     email: string,
     newPassword: string,
+    ecosystemAnonId: string,
     accountResetToken: string,
     options: {
       keys?: boolean;
@@ -431,6 +432,14 @@ export default class AuthClient {
     );
     if (options.keys && accountData.keyFetchToken) {
       accountData.unwrapBKey = credentials.unwrapBKey;
+    }
+    if (ecosystemAnonId) {
+      try {
+        await this.updateEcosystemAnonId(ecosystemAnonId, tokenType.sessionToken);
+      } catch(error) {
+        // user successfully reset their password but their ecosystemAnonId
+        // could not be updated. Do we need this try/catch?
+      }
     }
     return accountData;
   }
@@ -626,6 +635,7 @@ export default class AuthClient {
     email: string,
     oldPassword: string,
     newPassword: string,
+    ecosystemAnonId: string,
     options: {
       keys?: boolean;
       sessionToken?: string;
@@ -659,6 +669,14 @@ export default class AuthClient {
     );
     if (options.keys && accountData.keyFetchToken) {
       accountData.unwrapBKey = newCredentials.unwrapBKey;
+    }
+    if (ecosystemAnonId) {
+      try {
+        await this.updateEcosystemAnonId(ecosystemAnonId, tokenType.sessionToken);
+      } catch(error) {
+        // user successfully changed their password but their ecosystemAnonId
+        // could not be updated. Do we need this try/catch?
+      }
     }
     return accountData;
   }
@@ -979,6 +997,7 @@ export default class AuthClient {
     accountResetToken: string,
     email: string,
     newPassword: string,
+    ecosystemAnonId: string,
     recoveryKeyId: string,
     keys: {
       kB: string;
@@ -1006,6 +1025,16 @@ export default class AuthClient {
     if (options.keys && accountData.keyFetchToken) {
       accountData.unwrapBKey = credentials.unwrapBKey;
     }
+
+    if (ecosystemAnonId) {
+      try {
+        await this.updateEcosystemAnonId(ecosystemAnonId, tokenType.sessionToken);
+      } catch(error) {
+        // user successfully reset their password with recovery key but their
+        // ecosystemAnonId could not be updated. Do we need this try/catch?
+      }
+    }
+
     return accountData;
   }
 

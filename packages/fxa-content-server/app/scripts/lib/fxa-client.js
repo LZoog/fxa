@@ -591,6 +591,7 @@ FxaClientWrapper.prototype = {
    * @method passwordForgotVerifyCode
    * @param {String} originalEmail
    * @param {String} newPassword
+   * @param {String} ecosystemAnonId
    * @param {String} token
    * @param {String} code
    * @param {Object} relier
@@ -601,10 +602,10 @@ FxaClientWrapper.prototype = {
    * @return {Promise} resolves when complete
    */
   completePasswordReset: withClient(
-    (client, originalEmail, newPassword, token, code, relier, options = {}) => {
+    (client, originalEmail, newPassword, ecosystemAnonId, token, code, relier, options = {}) => {
       const email = trim(originalEmail);
 
-      var accountResetOptions = {
+      const accountResetOptions = {
         keys: wantsKeys(relier),
         sessionToken: true,
       };
@@ -626,6 +627,7 @@ FxaClientWrapper.prototype = {
           return client.accountReset(
             emailToHashWith,
             newPassword,
+            ecosystemAnonId,
             result.accountResetToken,
             accountResetOptions
           );
@@ -663,6 +665,7 @@ FxaClientWrapper.prototype = {
    * @param {String} originalEmail
    * @param {String} oldPassword
    * @param {String} newPassword
+   * @param {String} ecosystemAnonId
    * @param {String} sessionToken
    * @param {String} sessionTokenContext
    * @param {Relier} relier
@@ -674,17 +677,20 @@ FxaClientWrapper.prototype = {
       originalEmail,
       oldPassword,
       newPassword,
+      ecosystemAnonId,
       sessionToken,
       sessionTokenContext,
       relier
     ) => {
+      console.log('ecosystemAnonId', ecosystemAnonId);
       var email = trim(originalEmail);
       return client
-        .passwordChange(email, oldPassword, newPassword, {
+        .passwordChange(email, oldPassword, newPassword, ecosystemAnonId, {
           keys: wantsKeys(relier, sessionTokenContext),
           sessionToken: sessionToken,
         })
         .then((accountData = {}) => {
+          console.log('in fxa-client after changePassword, accountData -->', accountData);
           return getUpdatedSessionData(email, relier, accountData, {
             sessionTokenContext: sessionTokenContext,
           });
@@ -1244,6 +1250,7 @@ FxaClientWrapper.prototype = {
    * @param {String} accountResetToken
    * @param {String} email - Email of user
    * @param {String} newPassword - New password for user
+   * @param {String} ecosystemAnonId - New ecosystemAnonId
    * @param {String} recoveryKeyId - The recoveryKeyId that mapped to original recovery key
    * @param {String} kB - Wrap new password with this kB
    * @param {String} relier - Relier to sign-in
@@ -1255,6 +1262,7 @@ FxaClientWrapper.prototype = {
       accountResetToken,
       email,
       newPassword,
+      ecosystemAnonId,
       recoveryKeyId,
       kB,
       relier
@@ -1265,6 +1273,7 @@ FxaClientWrapper.prototype = {
           accountResetToken,
           email,
           newPassword,
+          ecosystemAnonId,
           recoveryKeyId,
           keys,
           { keys: true, sessionToken: true }
