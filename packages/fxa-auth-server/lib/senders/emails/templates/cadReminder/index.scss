@@ -1,0 +1,38 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+@use '../../global.scss';
+
+body > div:first-child {
+  max-width: 310px;
+  margin: 0 auto;
+}
+
+.header-text div {
+  @include global.text-xl;
+  font-family: global.$font-sans;
+  text-align: center !important;
+  margin: 0 0 21px 0;
+}
+
+span {
+  color: global.$blue-400;
+}
+
+.mBottom {
+  margin-bottom: 20px !important;
+}
+
+.sync-logo img {
+  width: 240px !important;
+  margin: 0 auto;
+  @extend .mBottom;
+}
+
+.primary-text div {
+  @include global.text-sm;
+  font-family: global.$font-sans;
+  text-align: center !important;
+  @extend .mBottom;
+}

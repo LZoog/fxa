@@ -1,0 +1,27 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+@use '../../global.scss';
+
+.primary-button {
+  background-color: global.$blue-400;
+  width: 310px !important;
+  height: 50px !important;
+  border-radius: 4px !important;
+}
+
+.primary-button p {
+  font-family: global.$font-sans;
+  background: global.$blue-400;
+  @include global.text-lg;
+}
+
+.primary-button td {
+  background: global.$blue-400;
+}
+
+.primary-button a {
+  text-decoration: none;
+  color: global.$white;
+}
