@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 
 export interface RenderedEmailProps {
   template: string;
+  description?: string;
   variables: Record<string, any>;
 }
 
 export const RenderedEmail: React.FC<RenderedEmailProps> = ({
   template,
+  description,
   variables,
 }) => {
   const [renderedHtml, setRenderedHtml] = useState<string>('');
@@ -17,11 +19,19 @@ export const RenderedEmail: React.FC<RenderedEmailProps> = ({
   }, [template, variables, setRenderedHtml]);
 
   return (
-    <div
-      dangerouslySetInnerHTML={{
-        __html: renderedHtml,
-      }}
-    />
+    <section>
+      {description && (
+        <>
+          <p>{description}</p>
+          <hr />
+        </>
+      )}
+      <div
+        dangerouslySetInnerHTML={{
+          __html: renderedHtml,
+        }}
+      />
+    </section>
   );
 };
 

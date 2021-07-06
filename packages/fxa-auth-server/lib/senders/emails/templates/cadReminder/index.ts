@@ -1,6 +1,6 @@
-import { style } from '../styles';
-import { appBadges } from '../partials/appBadges';
-import { button } from '../partials/button';
+import { style } from '../../styles';
+import { appBadges } from '../../partials/appBadges';
+import { button } from '../../partials/button';
 
 export const render = () => {
   return `
