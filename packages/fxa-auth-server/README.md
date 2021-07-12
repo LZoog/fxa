@@ -174,11 +174,13 @@ const button = `
   <mj-include path="./lib/senders/emails/css/button/index.css" type="css" css-inline="inline" />
   <mj-section>
     <mj-column>
-      <mj-button css-class="primary-button"><%= buttonText %></mj-button>
+      <mj-button css-class="primary-button"><%- buttonText %></mj-button>
     </mj-column>
   </mj-section>
 `;
 ```
+
+Note: In ejs, `<%=` outputs the value into the template with HTML escaped, whereas `<%-` renders the string as is (unescaped)
 
 The emails for which the MJML feature flag is enabled can be rendered to disk using the `yarn write-emails` command.
 

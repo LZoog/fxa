@@ -6,30 +6,9 @@ import ejs = require('ejs');
 import mjml2html = require('mjml');
 import * as templates from './templates';
 import * as layouts from './layouts';
-import path = require('path');
-const config = require('../../../config').getProperties();
 
 const mjmlConfig: Record<any, any> = {
-  validationLevel: 'soft',
-  // ignoreIncludes: config.env === 'test' ? true : false,
-};
-
-export const context = {
-  buttonText: 'Sync another device',
-  onDesktopOrTabletDevice: true,
-  anotherDeviceUrl:
-    config.contentServer.url +
-    '/connect_another_device?utm_medium=email&utm_campaign=fx-cad-reminder-first&utm_content=fx-connect-device',
-  preHeader: 'random headers',
-  privacyUrl: config.smtp.privacyUrl,
-  supportUrl: config.smtp.supportUrl,
-  oneClickLink: true,
-  iosUrl:
-    'https://accounts-static.cdn.mozilla.net/product-icons/apple-app-store.png',
-  androidUrl:
-    'https://accounts-static.cdn.mozilla.net/product-icons/google-play.png',
-  subject: 'Reminder to sync your device',
-  cssBaseDir: `${__dirname}/css`,
+  validationLevel: 'strict',
 };
 
 function compile(
@@ -37,6 +16,10 @@ function compile(
   templateName: string,
   subTemplate?: string
 ) {
+  // Ignore MJML includes since we don't test the styles of the templates.
+  // Futher context in PR #10018
+  const ignoreIncludes = typeof global.it === 'function';
+
   let template: ejs.TemplateFunction;
   if (subTemplate) {
     template = ejs.compile(
@@ -48,7 +31,11 @@ function compile(
     );
   }
   const mjmlTemplate = template(context);
-  const htmlTemplate = mjml2html(mjmlTemplate, mjmlConfig).html;
+  const htmlTemplate = mjml2html(mjmlTemplate, {
+    ...mjmlConfig,
+    ignoreIncludes,
+  }).html;
+
   return htmlTemplate;
 }
 
@@ -57,6 +44,7 @@ export function renderWithOptionalLayout(
   context: Record<any, any>,
   layoutName?: string
 ) {
+  context.templateName = templateName;
   if (layoutName) {
     const subTemplate =
       templates[templateName as keyof typeof templates].render();

@@ -2,7 +2,8 @@
   "extends": ["plugin:fxa/recommended"],
   "plugins": ["fxa"],
   "parserOptions": {
-    "ecmaVersion": "2020"
+    "ecmaVersion": "2020",
+    "sourceType": "module"
   },
   "rules": {
     "require-atomic-updates": "off",

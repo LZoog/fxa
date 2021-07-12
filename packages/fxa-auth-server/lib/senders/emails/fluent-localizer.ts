@@ -7,7 +7,7 @@ import { FluentBundle, FluentResource } from '@fluent/bundle';
 import { negotiateLanguages } from '@fluent/langneg';
 import { JSDOM } from 'jsdom';
 import path from 'path';
-import { renderWithOptionalLayout, context } from './renderer';
+import { renderWithOptionalLayout } from './renderer';
 import { loadFtlFiles } from './load-ftl-files';
 import availableLocales from 'fxa-shared/l10n/supportedLanguages.json';
 
@@ -15,18 +15,15 @@ const OTHER_EN_LOCALES = ['en-NZ', 'en-SG', 'en-MY'];
 
 const RTL_LOCALES = [
   'ar',
-  'arc',
   'ckb',
   'dv',
-  'fa',
-  'ha',
   'he',
-  'khw',
   'ks',
   'ps',
+  'fa',
+  'syr',
   'ur',
-  'uz_AF',
-  'yi',
+  'ug',
 ];
 
 const baseDir = path.join(__dirname);
@@ -40,13 +37,12 @@ class FluentLocalizer {
   async localizeEmail(
     templateName: string,
     layoutName: string,
-    mailSubject: string,
     variables: Record<any, any>,
     acceptLanguage: string
   ) {
     const htmlDocument = renderWithOptionalLayout(
       templateName,
-      { ...variables, ...context },
+      { ...variables, ...variables.templateValues },
       layoutName
     );
 
@@ -105,7 +101,9 @@ class FluentLocalizer {
       body.classList.add('rtl');
     }
 
-    const subject = await l10n.formatValue(mailSubject);
+    const subject = await l10n.formatValue(`${templateName}-subject`);
+    document.title = subject;
+
     return {
       html: document.documentElement.outerHTML,
       // The following snippet strips out the html and is not able to preserve the links.
@@ -117,4 +115,4 @@ class FluentLocalizer {
     };
   }
 }
-module.exports = FluentLocalizer;
+export default FluentLocalizer;

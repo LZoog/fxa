@@ -12,7 +12,7 @@ const url = require('url');
 const i18n = require('i18n-abide');
 const { URL } = url;
 const { productDetailsFromPlan } = require('fxa-shared').subscriptions.metadata;
-const FluentLocalizer = require('./emails/fluent-localizer');
+import FluentLocalizer from './emails/fluent-localizer';
 
 const TEMPLATE_VERSIONS = require('./templates/_versions.json');
 
@@ -446,26 +446,29 @@ module.exports = function (log, config) {
     localizedEmailHtml = localized.html;
     const localizedEmailText = localized.text;
 
+    let localizedSubject;
     if (featureFlags.isMjmlEnabledForUser(message.email, message.template)) {
-      const { template, subject, templateValues, layout } = message;
+      const { template, acceptLanguage, layout } = message;
       localized = await this.fluentLocalizer.localizeEmail(
         template,
         layout || 'fxa',
-        subject,
-        templateValues,
-        message.acceptLanguage
+        message,
+        acceptLanguage
       );
       localizedEmailHtml = localized.html;
+      localizedSubject = localized.subject;
     }
 
     return {
       html: localizedEmailHtml,
       language: translator.language,
-      subject: translator.format(
-        translator.gettext(message.subject),
-        templateValues,
-        true
-      ),
+      subject:
+        localizedSubject ||
+        translator.format(
+          translator.gettext(message.subject),
+          templateValues,
+          true
+        ),
       text: localizedEmailText,
     };
   };

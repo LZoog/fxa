@@ -6,7 +6,7 @@ export const automatedEmailNoAction = `
 <mj-section>
   <mj-column>
     <mj-text css-class="secondary-text mt-6 mb-3"><span data-l10n-id="automated-email-text">This is an automated email; if you received it in error, no action is
-      required. For more information, please visit Mozilla Support.</span></mj-text>
+      required. For more information, please visit <a class="link-blue" href="<%- supportUrl %>" data-l10n-name="supportLink">Mozilla Support</a>.</span></mj-text>
   </mj-column>
 </mj-section>
 `;
