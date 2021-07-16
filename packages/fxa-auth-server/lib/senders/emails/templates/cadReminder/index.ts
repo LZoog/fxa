@@ -28,10 +28,10 @@ export const render = () => {
         ${appBadges}
         <mj-section>
           <mj-column>
-            <mj-text css-class="secondary-text margin-large">This is an automated email; if you received it in error, no action is required.For more information, please visit <span>Mozilla Support<span></mj-text>
+            <mj-text css-class="secondary-text mt-6 mb-3">This is an automated email; if you received it in error, no action is required.For more information, please visit Mozilla Support</mj-text>
             <mj-text css-class="secondary-text">Mozilla. 2 Harrison St, #175, San Francisco, CA 94105</mj-text>
-            <mj-text css-class="secondary-text"><span>Mozilla Privacy Policy</span></mj-text>
-            <mj-text css-class="secondary-text"><span>Firefox Cloud Terms of Service</span></mj-text>
+            <mj-text css-class="secondary-text">Mozilla Privacy Policy</mj-text>
+            <mj-text css-class="secondary-text">Firefox Cloud Terms of Service</mj-text>
           </mj-column>
         </mj-section>
       </mj-body>

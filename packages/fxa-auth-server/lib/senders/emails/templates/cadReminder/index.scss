@@ -11,28 +11,20 @@ body > div:first-child {
 
 .header-text div {
   @include global.text-xl;
-  font-family: global.$font-sans;
+  @extend .font-sans;
   text-align: center !important;
-  margin: 0 0 21px 0;
-}
-
-span {
-  color: global.$blue-400;
-}
-
-.mBottom {
-  margin-bottom: 20px !important;
+  margin: 0 0 global.$s-5 0;
 }
 
 .sync-logo img {
   width: 240px !important;
   margin: 0 auto;
-  @extend .mBottom;
+  @extend .mb-5;
 }
 
 .primary-text div {
   @include global.text-sm;
-  font-family: global.$font-sans;
+  @extend .mb-5;
+  @extend .font-sans;
   text-align: center !important;
-  @extend .mBottom;
 }

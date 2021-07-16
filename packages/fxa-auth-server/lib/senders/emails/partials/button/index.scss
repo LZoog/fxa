@@ -9,19 +9,19 @@
   width: 310px !important;
   height: 50px !important;
   border-radius: 4px !important;
-}
 
-.primary-button p {
-  font-family: global.$font-sans;
-  background: global.$blue-400;
-  @include global.text-lg;
-}
+  p {
+    @extend .font-sans;
+    @include global.text-lg;
+    background: global.$blue-400 !important;
+  }
 
-.primary-button td {
-  background: global.$blue-400;
-}
+  td {
+    background: global.$blue-400 !important;
+  }
 
-.primary-button a {
-  text-decoration: none;
-  color: global.$white;
+  a {
+    text-decoration: none;
+    color: global.$white;
+  }
 }

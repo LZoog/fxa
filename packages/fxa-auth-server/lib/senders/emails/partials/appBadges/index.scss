@@ -4,30 +4,18 @@
 
 @use '../../global.scss';
 
-$grey-400: #6d6d6e !important;
-$p-10: 40px;
-$p-3: 12px;
-
 .app-badges {
-  padding: $p-10 global.$p-0 $p-3 !important;
-}
+  padding: global.$s-10 global.$s-0 global.$s-3 !important;
 
-.app-badges img {
-  width: 152px !important;
-  height: 44px !important;
-}
-
-.margin-small div {
-  margin: 5px 0 12px 0;
-}
-
-.margin-large div {
-  margin: 24px 0 12px 0;
+  img {
+    width: 152px !important;
+    height: 44px !important;
+  }
 }
 
 .secondary-text div {
-  font-family: global.$font-sans;
-  text-align: center !important;
-  color: $grey-400;
+  @extend .font-sans;
   @include global.text-xs;
+  text-align: center !important;
+  color: global.$grey-400 !important;
 }
