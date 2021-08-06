@@ -2,6 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/* TODO: test translations with Fluent
+ * NOTE: This file tests `email.js` and the MJML/EJS templates in `lib/senders/emails`.
+ * Eventually we will retire `email.js` but as templates are being converted over to
+ * the new stack, tests per template will be added, and then any other mailer tests
+ * will be copied over.
+ */
+
 const ROOT_DIR = '../../..';
 
 import { assert } from 'chai';
@@ -61,13 +68,8 @@ const MESSAGE_PARAMS = new Map([
   ['unblockCode', 'unblockCode'],
 ]);
 
-interface Test {
-  test: 'equal' | 'include' | 'notInclude' | any;
-  expected: string;
-}
-
 // prettier-ignore
-const COMMON_TESTS = new Map<string, Test | any>([
+const COMMON_TESTS = ([
   ['from', { test: 'equal', expected: config.smtp.sender }],
   ['sender', { test: 'equal', expected: config.smtp.sender }],
   [
@@ -95,8 +97,8 @@ const COMMON_TESTS = new Map<string, Test | any>([
 ]);
 
 // prettier-ignore
-const TESTS: [string, any][] = [
-    ['cadReminderFirstEmail', new Map<string, Test | any>([
+const TESTS = [
+    ['cadReminderFirstEmail', ([
       ['subject', { test: 'equal', expected: 'Your Friendly Reminder: How To Complete Your Sync Setup' }],
       ['headers', new Map([
         ['X-Link', { test: 'equal', expected: configUrl('syncUrl', 'cad-reminder-first', 'connect-device') }],
@@ -125,18 +127,10 @@ const TESTS: [string, any][] = [
         { test: 'notInclude', expected: 'utm_source=email' },
       ]],
     ])],
-    
   ];
 
-describe('lib/senders/email:', () => {
-  type LocalizeFn = (message: Record<any, any>) => Promise<Record<any, string>>;
-  type SelectEmailServicesFn = (message: Record<any, any>) => Promise<any>;
-
-  let mockLog: Record<any, any>,
-    mailer: Record<any, any>,
-    localize: LocalizeFn,
-    selectEmailServices: SelectEmailServicesFn,
-    sendMail: Record<any, any>;
+describe('lib/senders/email', () => {
+  let mockLog, mailer, localize, selectEmailServices, sendMail;
 
   before(async () => {
     mockLog = mocks.mockLog();
@@ -182,15 +176,17 @@ describe('lib/senders/email:', () => {
 
   for (const [type, test, opts = {}] of TESTS) {
     it(`declarative test for ${type}`, async () => {
-      mailer.mailer.sendMail = stubSendMail((message: Record<any, any>) => {
+      mailer.mailer.sendMail = stubSendMail((message) => {
         COMMON_TESTS.forEach((assertions, property) => {
           applyAssertions(type, message, property, assertions);
         });
-        test.forEach((assertions: any, property: string) => {
+
+        test.forEach((assertions, property) => {
           applyAssertions(type, message, property, assertions);
         });
       });
-      const { updateTemplateValues }: any = opts;
+
+      const { updateTemplateValues } = opts;
       const tmplVals = updateTemplateValues
         ? updateTemplateValues(MESSAGE)
         : MESSAGE;
@@ -199,115 +195,18 @@ describe('lib/senders/email:', () => {
   }
 });
 
-describe('mailer constructor:', () => {
-  let mailerConfig: any, mockLog: Record<any, any>, mailer: any;
-
-  before(async () => {
-    mailerConfig = [
-      'androidUrl',
-      'iosUrl',
-      'privacyUrl',
-      'supportUrl',
-      'syncUrl',
-    ].reduce((target: Record<any, any>, key: string) => {
-      target[key] = `mock ${key}`;
-      return target;
-    }, {});
-    mockLog = mocks.mockLog();
-    mailer = await setup(
-      mockLog,
-      { ...config, smtp: mailerConfig },
-      {},
-      'en',
-      'wibble'
-    );
-  });
-
-  it('mailer and emailService are both mocked', () => {
-    assert.equal(mailer.mailer, 'wibble');
-    assert.equal(mailer.emailService, 'wibble');
-  });
-
-  it('set properties on self from config correctly', () => {
-    Object.entries(mailerConfig).forEach(([key, expected]) => {
-      assert.equal(mailer[key], expected, `${key} was correct`);
-    });
-  });
-});
-
-describe('email translations', () => {
-  let mockLog: Record<any, any>, mailer: any;
-  const message = {
-    email: 'a@b.com',
-    uid: '123',
-  };
-
-  async function setupMailerWithTranslations(locale: string) {
-    mockLog = mocks.mockLog();
-    mailer = await setup(mockLog, config, {}, locale);
-  }
-
-  afterEach(() => mailer.stop());
-
-  it('arabic emails are translated', async () => {
-    await setupMailerWithTranslations('ar');
-    mailer.mailer.sendMail = stubSendMail((emailConfig: Record<any, any>) => {
-      assert.equal(
-        emailConfig.headers['Content-Language'],
-        'ar',
-        'language header is correct'
-      );
-      // NOTE: translation might change, but we use the subject, we don't change that often.
-      // TODO: switch back to testing the subject when translations have caught up
-      assert.include(emailConfig.text, 'أُضيفَ البريد الثانوي');
-      // assert.include(emailConfig.html, 'صِلْ جهاز آخر');
-    });
-
-    return mailer.postVerifySecondaryEmail(message);
-  });
-
-  it('russian emails are translated', async () => {
-    await setupMailerWithTranslations('ru');
-    mailer.mailer.sendMail = stubSendMail((emailConfig: Record<any, any>) => {
-      assert.equal(
-        emailConfig.headers['Content-Language'],
-        'ru',
-        'language header is correct'
-      );
-      assert.include(
-        emailConfig.subject,
-        'Добавлена дополнительная электронная почта'
-      );
-      // assert.include(emailConfig.html, 'Подсоединить другое устройство');
-    });
-
-    return mailer.postVerifySecondaryEmail(message);
-  });
-});
-
-function sesMessageTagsHeaderValue(templateName: string, serviceName?: any) {
+function sesMessageTagsHeaderValue(templateName, serviceName) {
   return `messageType=fxa-${templateName}, app=fxa, service=${
     serviceName || 'fxa-auth-server'
   }`;
 }
 
-function configHref(
-  key: string,
-  campaign: string,
-  content: string,
-  ...params: Array<any>
-) {
+function configHref(key, campaign, content, ...params) {
   return `href="${configUrl(key, campaign, content, ...params)}"`;
 }
 
-function configUrl(
-  key: string,
-  campaign: string,
-  content: string,
-  ...params: Array<any>
-) {
-  let baseUri: string;
-  baseUri = config.smtp[key];
+function configUrl(key, campaign, content, ...params) {
+  const baseUri = config.smtp[key];
 
   const out = new URL(baseUri);
 
@@ -315,7 +214,7 @@ function configUrl(
     const [key, value] = param.split('=');
     out.searchParams.append(
       key,
-      value || MESSAGE[MESSAGE_PARAMS!.get(key)! as keyof typeof MESSAGE] || ''
+      value || MESSAGE[MESSAGE_PARAMS.get(key)] || ''
     );
   }
 
@@ -330,17 +229,11 @@ function configUrl(
   return url;
 }
 
-function decodeUrl(encodedUrl: string) {
+function decodeUrl(encodedUrl) {
   return encodedUrl.replace(/&/gm, '&amp;');
 }
 
-async function setup(
-  log: Record<any, any>,
-  config: Record<any, any>,
-  mocks: any,
-  locale: string = 'en',
-  sender: any = null
-) {
+async function setup(log, config, mocks, locale = 'en', sender = null) {
   const [translator, templates] = await Promise.all([
     require(`${ROOT_DIR}/lib/senders/translator`)([locale], locale),
     require(`${ROOT_DIR}/lib/senders/templates`)(log),
@@ -352,10 +245,8 @@ async function setup(
   return new Mailer(translator, templates, config.smtp, sender);
 }
 
-type CallbackFunction = (arg: any) => void;
-
-function stubSendMail(stub: CallbackFunction, status?: any) {
-  return (message: any, callback: any) => {
+function stubSendMail(stub, status) {
+  return (message, callback) => {
     try {
       stub(message);
       return callback(null, status);
@@ -365,12 +256,7 @@ function stubSendMail(stub: CallbackFunction, status?: any) {
   };
 }
 
-function applyAssertions(
-  type: string,
-  target: Record<any, any>,
-  property: string,
-  assertions: any
-) {
+function applyAssertions(type, target, property, assertions) {
   target = target[property];
 
   if (assertions instanceof Map) {
@@ -385,9 +271,8 @@ function applyAssertions(
   }
 
   describe(`${type} - ${property}`, () => {
-    assertions.forEach(({ test, expected }: Test) => {
-      it.only(`${test} - ${expected}`, () => {
-        /* @ts-ignore */
+    assertions.forEach(({ test, expected }) => {
+      it(`${test} - ${expected}`, () => {
         assert[test](target, expected, `${type}: ${property}`);
       });
     });
