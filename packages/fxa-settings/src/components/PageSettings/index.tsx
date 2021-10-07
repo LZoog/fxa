@@ -13,6 +13,7 @@ import * as Metrics from '../../lib/metrics';
 import { useAccount } from '../../models';
 import { DeleteAccountPath } from 'fxa-settings/src/constants';
 import { Localized } from '@fluent/react';
+import DataCollection from '../DataCollection';
 
 export const PageSettings = (_: RouteComponentProps) => {
   const { uid } = useAccount();
@@ -32,6 +33,7 @@ export const PageSettings = (_: RouteComponentProps) => {
         <Profile />
         <Security />
         <ConnectedServices />
+        <DataCollection showComponent />
         <div className="flex mx-4 tablet:mx-0" id="delete-account">
           <Localized id="delete-account-link">
             <Link
