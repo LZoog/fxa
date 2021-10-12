@@ -22,8 +22,8 @@ export const DataCollection = () => {
         <Localized id="dc-heading">Data Collection and Use</Localized>
       </h2>
       <div className="bg-white tablet:rounded-xl shadow px-4 tablet:px-6 pt-7 pb-5">
-        <div className="flex justify-between mb-4">
-          <div className="flex-5">
+        <div className="flex mb-4">
+          <div className="flex-7">
             <Localized id="dc-description">
               <h3 className="font-header mb-4">Analytics and Improvements</h3>
             </Localized>
@@ -37,15 +37,7 @@ export const DataCollection = () => {
             </p>
           </div>
 
-          <div className="flex-1">
-            {/* <label htmlFor="telemetry" id="telemetry">
-              <input
-                type="checkbox"
-                checked={telemetry}
-                onClick={handleTelemetryToggle}
-              />
-              Turned On
-            </label> */}
+          <div className="flex-1 text-center">
             <button
               role="switch"
               aria-checked={telemetry}
@@ -54,7 +46,11 @@ export const DataCollection = () => {
               title={telemetry ? 'Turn off' : 'Turn on'}
               onClick={handleTelemetryToggle}
             >
-              <span className="slider">{telemetry ? 'On' : 'Off'}</span>
+              <span className="slider"></span>
+              <span className="slider-status">
+                <span className="sr-only">Status: </span>
+                {telemetry ? 'on' : 'off'}
+              </span>
             </button>
             <label htmlFor="telemetry" className="sr-only">
               Analytics and Improvements

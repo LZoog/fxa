@@ -3,29 +3,70 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 .switch {
-  @apply relative w-12 h-8 bg-transparent border-0;
-}
+  @apply relative min-w-12 h-4 bg-transparent rounded-full px-1 overflow-hidden;
 
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
+  &[aria-checked='true'] {
+    @apply text-left;
 
-.slider:before {
-  position: absolute;
-  content: '';
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: 0.25;
-  transition: 0.25s;
+    .slider {
+      @apply bg-blue-500;
+
+      &:hover {
+        @apply bg-blue-600;
+      }
+
+      &:active,
+      &:focus {
+        @apply bg-blue-700;
+      }
+
+      &::before {
+        @apply right-0.5;
+      }
+
+      &-status {
+        @apply text-grey-50;
+      }
+    }
+  }
+
+  &[aria-checked='false'] {
+    @apply text-right border border-grey-100;
+    height: calc(1rem + 1px); /* this accounts for the border */
+
+    .slider {
+      @apply bg-grey-50;
+
+      &:hover {
+        @apply bg-grey-100;
+      }
+
+      &:active,
+      &:focus {
+        @apply bg-grey-200;
+      }
+
+      &::before {
+        @apply left-0.5 shadow;
+      }
+
+      &-status {
+        @apply text-grey-500;
+      }
+    }
+  }
+
+  .slider {
+    @apply rounded-full inset-0 absolute transition duration-150;
+
+    &:before {
+      @apply rounded-full w-3 h-3 bg-white absolute bottom-0.5 transition duration-150;
+      content: '';
+    }
+
+    &-status {
+      @apply relative align-top text-xs uppercase pointer-events-none;
+      bottom: 1px; /* TODO: can't seem to add to Tailwind? */
+    }
+  }
 }
