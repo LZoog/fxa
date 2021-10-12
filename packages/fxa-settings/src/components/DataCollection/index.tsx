@@ -3,16 +3,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { Localized } from '@fluent/react';
-import React from 'react';
+import React, { useState } from 'react';
 // import { useAccount } from '../../models';
 
 export const DataCollection = () => {
   // TODO: grab actual value here
-  let telemetry = true;
   // const { telemetry }  = useAccount();
+  const [telemetry, setTelemetry] = useState<boolean>(true);
 
-  const handleDataToggle = () => {
-    console.log('clicked');
+  const handleTelemetryToggle = () => {
+    setTelemetry(!telemetry);
   };
 
   return (
@@ -38,11 +38,27 @@ export const DataCollection = () => {
           </div>
 
           <div className="flex-1">
-            <input
-              type="checkbox"
-              checked={telemetry}
-              onClick={handleDataToggle}
-            />
+            {/* <label htmlFor="telemetry" id="telemetry">
+              <input
+                type="checkbox"
+                checked={telemetry}
+                onClick={handleTelemetryToggle}
+              />
+              Turned On
+            </label> */}
+            <button
+              role="switch"
+              aria-checked={telemetry}
+              id="telemetry"
+              className="switch"
+              title={telemetry ? 'Turn off' : 'Turn on'}
+              onClick={handleTelemetryToggle}
+            >
+              <span className="slider">{telemetry ? 'On' : 'Off'}</span>
+            </button>
+            <label htmlFor="telemetry" className="sr-only">
+              Analytics and Improvements
+            </label>
           </div>
         </div>
       </div>
