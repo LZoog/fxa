@@ -3,11 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from 'react';
+import { storiesOf } from '@storybook/react';
 import { DataCollection } from '.';
 
-export default {
-  title: 'components/DataCollection',
-  component: DataCollection,
-};
-
-export const Enabled = () => <DataCollection showComponent />;
+storiesOf('Components/DataCollection', module).add('default', () => (
+  <DataCollection />
+));
