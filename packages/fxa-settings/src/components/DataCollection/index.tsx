@@ -46,7 +46,7 @@ export const DataCollection = () => {
               title={telemetry ? 'Turn off' : 'Turn on'}
               onClick={handleTelemetryToggle}
             >
-              <span className="slider"></span>
+              <span className="slider" />
               <span className="slider-status">
                 <span className="sr-only">Status: </span>
                 {telemetry ? 'on' : 'off'}
