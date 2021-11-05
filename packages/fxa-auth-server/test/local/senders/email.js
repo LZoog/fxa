@@ -108,6 +108,7 @@ const MESSAGE = {
   uaOSVersion: '10',
   uid: 'uid',
   unblockCode: 'AS6334PK',
+  metricsEnabled: true,
 };
 
 const MESSAGE_FORMATTED = {

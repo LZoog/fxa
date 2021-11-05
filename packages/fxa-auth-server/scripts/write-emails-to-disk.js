@@ -175,6 +175,7 @@ function sendMail(mailer, messageToSend) {
         productName: 'Firefox Fortress',
       },
     ],
+    metricsEnabled: true,
   };
 
   return mailer[messageType](message);

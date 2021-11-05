@@ -65,6 +65,7 @@ const MESSAGE = {
     { productName: 'Firefox Fortress' },
     { productName: 'Cooking with Foxkeh' },
   ],
+  metricsEnabled: true,
 };
 
 // key = query param name, value = MESSAGE property name
