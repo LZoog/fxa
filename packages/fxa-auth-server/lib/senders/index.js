@@ -67,6 +67,7 @@ module.exports = async (
             ccEmails: cc,
             email: to || account.email,
             uid: account.uid,
+            metricsEnabled: true, // TODO: undefined every time
           });
         };
 

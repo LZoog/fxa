@@ -164,6 +164,13 @@ const COMMON_TESTS = new Map([
   ],
 ]);
 
+const COMMON_METRICS_OPT_OUT_TESTS = new Map([
+  { test: 'notInclude', expected: 'utm_source=email' },
+  { test: 'notInclude', expected: 'utm_medium=email' },
+  { test: 'notInclude', expected: 'utm_campaign=' },
+  { test: 'notInclude', expected: 'utm_context=' },
+]);
+
 // prettier-ignore
 const TESTS = [
   ['verifySecondaryCodeEmail', new Map([
@@ -729,6 +736,12 @@ const TESTS = [
       { test: 'include', expected: `For more information, please visit ${configUrl('supportUrl', 'password-reset-success', 'support')}` },
       { test: 'notInclude', expected: 'utm_source=email' },
     ]],
+  ]),
+  {updateTemplateValues: values => (
+    {...values, metricsEnabled: false })}],
+  ['passwordResetEmail', new Map([
+    ['html', COMMON_METRICS_OPT_OUT_TESTS],
+    ['text', COMMON_METRICS_OPT_OUT_TESTS],
   ])],
   ['postAddAccountRecoveryEmail', new Map([
     ['subject', { test: 'equal', expected: 'Account recovery key generated' }],

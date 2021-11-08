@@ -314,8 +314,11 @@ module.exports = function (log, config, bounces) {
     this.mailer.close();
   };
 
-  Mailer.prototype._supportLinkAttributes = function (templateName) {
-    return linkAttributes(this.createSupportLink(templateName));
+  Mailer.prototype._supportLinkAttributes = function (
+    templateName,
+    metricsEnabled
+  ) {
+    return linkAttributes(this.createSupportLink(templateName, metricsEnabled));
   };
 
   Mailer.prototype._passwordResetLinkAttributes = function (
@@ -3023,6 +3026,8 @@ module.exports = function (log, config, bounces) {
       parsedLink.searchParams.set(key, value);
     });
 
+    console.log('IN GENERATE', metricsEnabled, templateName, content);
+
     if (metricsEnabled) {
       parsedLink.searchParams.set('utm_medium', 'email');
 
@@ -3056,7 +3061,9 @@ module.exports = function (log, config, bounces) {
     appStoreLink,
     playStoreLink
   ) {
-    const { email, uid } = message;
+    const { email, uid, metricsEnabled } = message;
+
+    console.log('METRICSENABLED!!!!', metricsEnabled);
 
     const translator = this.translator(message.acceptLanguage);
     const {
@@ -3081,7 +3088,7 @@ module.exports = function (log, config, bounces) {
         query,
         templateName,
         utmContent,
-        message.metricsEnabled
+        metricsEnabled
       );
     }
 
@@ -3091,7 +3098,7 @@ module.exports = function (log, config, bounces) {
         query,
         templateName,
         utmContent,
-        message.metricsEnabled
+        metricsEnabled
       );
     }
 
@@ -3101,44 +3108,47 @@ module.exports = function (log, config, bounces) {
         query,
         templateName,
         utmContent,
-        message.metricsEnabled
+        metricsEnabled
       );
     }
 
-    links['privacyUrl'] = this.createPrivacyLink(templateName);
+    links['privacyUrl'] = this.createPrivacyLink(templateName, metricsEnabled);
 
-    links['supportLinkAttributes'] = this._supportLinkAttributes(templateName);
-    links['supportUrl'] = this.createSupportLink(templateName);
+    links['supportLinkAttributes'] = this._supportLinkAttributes(
+      templateName,
+      metricsEnabled
+    );
+    links['supportUrl'] = this.createSupportLink(templateName, metricsEnabled);
     links['subscriptionSupportUrl'] = this._generateUTMLink(
       this.subscriptionSupportUrl,
       {},
       templateName,
       'subscription-support',
-      message.metricsEnabled
+      metricsEnabled
     );
 
     links['passwordChangeLink'] = this.createPasswordChangeLink(
       email,
       templateName,
-      message.metricsEnabled
+      metricsEnabled
     );
     links['passwordChangeLinkAttributes'] = this._passwordChangeLinkAttributes(
       email,
       templateName,
-      message.metricsEnabled
+      metricsEnabled
     );
 
     links['resetLink'] = this.createPasswordResetLink(
       email,
       templateName,
       query.emailToHashWith,
-      message.metricsEnabled
+      metricsEnabled
     );
     links['resetLinkAttributes'] = this._passwordResetLinkAttributes(
       email,
       templateName,
       query.emailToHashWith,
-      message.metricsEnabled
+      metricsEnabled
     );
 
     links['androidLink'] = this._generateUTMLink(
@@ -3146,14 +3156,14 @@ module.exports = function (log, config, bounces) {
       query,
       templateName,
       'connect-android',
-      message.metricsEnabled
+      metricsEnabled
     );
     links['iosLink'] = this._generateUTMLink(
       this.iosUrl,
       query,
       templateName,
       'connect-ios',
-      message.metricsEnabled
+      metricsEnabled
     );
 
     links['passwordManagerInfoUrl'] = this._generateUTMLink(
@@ -3161,19 +3171,19 @@ module.exports = function (log, config, bounces) {
       query,
       templateName,
       'password-info',
-      message.metricsEnabled
+      metricsEnabled
     );
 
     links['reportSignInLink'] = this.createReportSignInLink(
       templateName,
       query,
-      message.metricsEnabled
+      metricsEnabled
     );
     links['reportSignInLinkAttributes'] = this._reportSignInLinkAttributes(
       email,
       templateName,
       query,
-      message.metricsEnabled
+      metricsEnabled
     );
 
     links['revokeAccountRecoveryLink'] =
@@ -3189,7 +3199,7 @@ module.exports = function (log, config, bounces) {
       { ...query, email, uid },
       templateName,
       'account-settings',
-      message.metricsEnabled
+      metricsEnabled
     );
     links.accountSettingsLinkAttributes = `href="${links.accountSettingsUrl}" target="_blank" rel="noopener noreferrer" style="color:#ffffff;font-weight:500;"`;
 
@@ -3204,7 +3214,7 @@ module.exports = function (log, config, bounces) {
         {},
         templateName,
         'subscription-terms',
-        message.metricsEnabled
+        metricsEnabled
       )
     );
     links.subscriptionPrivacyUrl = this._legalDocsRedirectUrl(
@@ -3213,7 +3223,7 @@ module.exports = function (log, config, bounces) {
         {},
         templateName,
         'subscription-privacy',
-        message.metricsEnabled
+        metricsEnabled
       )
     );
     links.cancelSubscriptionUrl = this._generateUTMLink(
@@ -3221,21 +3231,21 @@ module.exports = function (log, config, bounces) {
       { ...query, email, uid },
       templateName,
       'cancel-subscription',
-      message.metricsEnabled
+      metricsEnabled
     );
     links.reactivateSubscriptionUrl = this._generateUTMLink(
       this.subscriptionSettingsUrl,
       { ...query, email, uid },
       templateName,
       'reactivate-subscription',
-      message.metricsEnabled
+      metricsEnabled
     );
     links.updateBillingUrl = this._generateUTMLink(
       this.subscriptionSettingsUrl,
       { ...query, email, uid },
       templateName,
       'update-billing',
-      message.metricsEnabled
+      metricsEnabled
     );
 
     const queryOneClick = extend(query, { one_click: true });
@@ -3245,7 +3255,7 @@ module.exports = function (log, config, bounces) {
         queryOneClick,
         templateName,
         `${utmContent}-oneclick`,
-        message.metricsEnabled
+        metricsEnabled
       );
     }
 
@@ -3379,20 +3389,36 @@ module.exports = function (log, config, bounces) {
     );
   };
 
-  Mailer.prototype.createSupportLink = function (templateName) {
-    return this._generateUTMLink(this.supportUrl, {}, templateName, 'support');
+  Mailer.prototype.createSupportLink = function (templateName, metricsEnabled) {
+    return this._generateUTMLink(
+      this.supportUrl,
+      {},
+      templateName,
+      'support',
+      metricsEnabled
+    );
   };
 
-  Mailer.prototype.createPrivacyLink = function (templateName) {
-    return this._generateUTMLink(this.privacyUrl, {}, templateName, 'privacy');
+  Mailer.prototype.createPrivacyLink = function (templateName, metricsEnabled) {
+    return this._generateUTMLink(
+      this.privacyUrl,
+      {},
+      templateName,
+      'privacy',
+      metricsEnabled
+    );
   };
 
-  Mailer.prototype.createRevokeAccountRecoveryLink = function (templateName) {
+  Mailer.prototype.createRevokeAccountRecoveryLink = function (
+    templateName,
+    metricsEnabled
+  ) {
     return this._generateUTMLink(
       this.revokeAccountRecoveryUrl,
       {},
       templateName,
-      'report'
+      'report',
+      metricsEnabled
     );
   };
 
