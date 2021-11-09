@@ -114,6 +114,13 @@ const COMMON_TESTS = new Map<string, Test | any>([
   ],
 ]);
 
+const COMMON_METRICS_OPT_OUT_TESTS: { test: string; expected: string }[] = [
+  { test: 'notInclude', expected: 'utm_source=email' },
+  { test: 'notInclude', expected: 'utm_medium=email' },
+  { test: 'notInclude', expected: 'utm_campaign=' },
+  { test: 'notInclude', expected: 'utm_context=' },
+];
+
 // prettier-ignore
 const TESTS: [string, any, Record<string, any>?][] = [
   ['cadReminderFirstEmail', new Map<string, Test | any>([
@@ -418,6 +425,12 @@ const TESTS: [string, any, Record<string, any>?][] = [
       { test: 'include', expected: `For more information, please visit ${configUrl('supportUrl', 'password-reset-success', 'support')}` },
       { test: 'notInclude', expected: 'utm_source=email' },
     ]],
+  ]),
+  {updateTemplateValues: values => (
+    {...values, metricsEnabled: false })}],
+  ['passwordResetEmail', new Map<string, Test | any>([
+    ['html', COMMON_METRICS_OPT_OUT_TESTS],
+    ['text', COMMON_METRICS_OPT_OUT_TESTS],
   ])],
 
   ['newDeviceLoginEmail', new Map<string, Test | any>([

@@ -308,43 +308,32 @@ module.exports = function (log, config, bounces) {
     this.verifySecondaryEmailUrl = mailerConfig.verifySecondaryEmailUrl;
     this.verifyPrimaryEmailUrl = mailerConfig.verifyPrimaryEmailUrl;
     this.fluentLocalizer = new FluentLocalizer();
+    this.accountMetricsEnabled = true;
   }
 
   Mailer.prototype.stop = function () {
     this.mailer.close();
   };
 
-  Mailer.prototype._supportLinkAttributes = function (
-    templateName,
-    metricsEnabled
-  ) {
-    return linkAttributes(this.createSupportLink(templateName, metricsEnabled));
+  Mailer.prototype._supportLinkAttributes = function (templateName) {
+    return linkAttributes(this.createSupportLink(templateName));
   };
 
   Mailer.prototype._passwordResetLinkAttributes = function (
     email,
     templateName,
-    emailToHashWith,
-    metricsEnabled
+    emailToHashWith
   ) {
     return linkAttributes(
-      this.createPasswordResetLink(
-        email,
-        templateName,
-        emailToHashWith,
-        metricsEnabled
-      )
+      this.createPasswordResetLink(email, templateName, emailToHashWith)
     );
   };
 
   Mailer.prototype._passwordChangeLinkAttributes = function (
     email,
-    templateName,
-    metricsEnabled
+    templateName
   ) {
-    return linkAttributes(
-      this.createPasswordChangeLink(email, templateName, metricsEnabled)
-    );
+    return linkAttributes(this.createPasswordChangeLink(email, templateName));
   };
 
   Mailer.prototype._formatUserAgentInfo = function (message) {
@@ -3016,8 +3005,7 @@ module.exports = function (log, config, bounces) {
     link,
     query,
     templateName,
-    content,
-    metricsEnabled
+    content
   ) {
     const parsedLink = new URL(link);
 
@@ -3026,9 +3014,7 @@ module.exports = function (log, config, bounces) {
       parsedLink.searchParams.set(key, value);
     });
 
-    console.log('IN GENERATE', metricsEnabled, templateName, content);
-
-    if (metricsEnabled) {
+    if (this.accountMetricsEnabled) {
       parsedLink.searchParams.set('utm_medium', 'email');
 
       const campaign = templateNameToCampaignMap[templateName];
@@ -3062,8 +3048,8 @@ module.exports = function (log, config, bounces) {
     playStoreLink
   ) {
     const { email, uid, metricsEnabled } = message;
-
-    console.log('METRICSENABLED!!!!', metricsEnabled);
+    // set this to avoid passing `metricsEnabled` around to all link functions
+    this.accountMetricsEnabled = metricsEnabled;
 
     const translator = this.translator(message.acceptLanguage);
     const {
@@ -3087,8 +3073,7 @@ module.exports = function (log, config, bounces) {
         primaryLink,
         query,
         templateName,
-        utmContent,
-        metricsEnabled
+        utmContent
       );
     }
 
@@ -3097,8 +3082,7 @@ module.exports = function (log, config, bounces) {
         appStoreLink,
         query,
         templateName,
-        utmContent,
-        metricsEnabled
+        utmContent
       );
     }
 
@@ -3107,83 +3091,69 @@ module.exports = function (log, config, bounces) {
         playStoreLink,
         query,
         templateName,
-        utmContent,
-        metricsEnabled
+        utmContent
       );
     }
 
-    links['privacyUrl'] = this.createPrivacyLink(templateName, metricsEnabled);
+    links['privacyUrl'] = this.createPrivacyLink(templateName);
 
-    links['supportLinkAttributes'] = this._supportLinkAttributes(
-      templateName,
-      metricsEnabled
-    );
-    links['supportUrl'] = this.createSupportLink(templateName, metricsEnabled);
+    links['supportLinkAttributes'] = this._supportLinkAttributes(templateName);
+    links['supportUrl'] = this.createSupportLink(templateName);
     links['subscriptionSupportUrl'] = this._generateUTMLink(
       this.subscriptionSupportUrl,
       {},
       templateName,
-      'subscription-support',
-      metricsEnabled
+      'subscription-support'
     );
 
     links['passwordChangeLink'] = this.createPasswordChangeLink(
       email,
-      templateName,
-      metricsEnabled
+      templateName
     );
     links['passwordChangeLinkAttributes'] = this._passwordChangeLinkAttributes(
       email,
-      templateName,
-      metricsEnabled
+      templateName
     );
 
     links['resetLink'] = this.createPasswordResetLink(
       email,
       templateName,
-      query.emailToHashWith,
-      metricsEnabled
+      query.emailToHashWith
     );
     links['resetLinkAttributes'] = this._passwordResetLinkAttributes(
       email,
       templateName,
-      query.emailToHashWith,
-      metricsEnabled
+      query.emailToHashWith
     );
 
     links['androidLink'] = this._generateUTMLink(
       this.androidUrl,
       query,
       templateName,
-      'connect-android',
-      metricsEnabled
+      'connect-android'
     );
     links['iosLink'] = this._generateUTMLink(
       this.iosUrl,
       query,
       templateName,
-      'connect-ios',
-      metricsEnabled
+      'connect-ios'
     );
 
     links['passwordManagerInfoUrl'] = this._generateUTMLink(
       this.passwordManagerInfoUrl,
       query,
       templateName,
-      'password-info',
-      metricsEnabled
+      'password-info'
     );
 
     links['reportSignInLink'] = this.createReportSignInLink(
       templateName,
-      query,
-      metricsEnabled
+      query
     );
     links['reportSignInLinkAttributes'] = this._reportSignInLinkAttributes(
       email,
       templateName,
-      query,
-      metricsEnabled
+      query
     );
 
     links['revokeAccountRecoveryLink'] =
@@ -3198,8 +3168,7 @@ module.exports = function (log, config, bounces) {
       this.accountSettingsUrl,
       { ...query, email, uid },
       templateName,
-      'account-settings',
-      metricsEnabled
+      'account-settings'
     );
     links.accountSettingsLinkAttributes = `href="${links.accountSettingsUrl}" target="_blank" rel="noopener noreferrer" style="color:#ffffff;font-weight:500;"`;
 
@@ -3213,8 +3182,7 @@ module.exports = function (log, config, bounces) {
         termsOfServiceDownloadURL,
         {},
         templateName,
-        'subscription-terms',
-        metricsEnabled
+        'subscription-terms'
       )
     );
     links.subscriptionPrivacyUrl = this._legalDocsRedirectUrl(
@@ -3222,30 +3190,26 @@ module.exports = function (log, config, bounces) {
         privacyNoticeDownloadURL,
         {},
         templateName,
-        'subscription-privacy',
-        metricsEnabled
+        'subscription-privacy'
       )
     );
     links.cancelSubscriptionUrl = this._generateUTMLink(
       this.subscriptionSettingsUrl,
       { ...query, email, uid },
       templateName,
-      'cancel-subscription',
-      metricsEnabled
+      'cancel-subscription'
     );
     links.reactivateSubscriptionUrl = this._generateUTMLink(
       this.subscriptionSettingsUrl,
       { ...query, email, uid },
       templateName,
-      'reactivate-subscription',
-      metricsEnabled
+      'reactivate-subscription'
     );
     links.updateBillingUrl = this._generateUTMLink(
       this.subscriptionSettingsUrl,
       { ...query, email, uid },
       templateName,
-      'update-billing',
-      metricsEnabled
+      'update-billing'
     );
 
     const queryOneClick = extend(query, { one_click: true });
@@ -3254,8 +3218,7 @@ module.exports = function (log, config, bounces) {
         primaryLink,
         queryOneClick,
         templateName,
-        `${utmContent}-oneclick`,
-        metricsEnabled
+        `${utmContent}-oneclick`
       );
     }
 
@@ -3324,8 +3287,7 @@ module.exports = function (log, config, bounces) {
   Mailer.prototype.createPasswordResetLink = function (
     email,
     templateName,
-    emailToHashWith,
-    metricsEnabled
+    emailToHashWith
   ) {
     // Default `reset_password_confirm` to false, to show warnings about
     // resetting password and sync data
@@ -3339,32 +3301,22 @@ module.exports = function (log, config, bounces) {
       this.initiatePasswordResetUrl,
       query,
       templateName,
-      'reset-password',
-      metricsEnabled
+      'reset-password'
     );
   };
 
-  Mailer.prototype.createPasswordChangeLink = function (
-    email,
-    templateName,
-    metricsEnabled
-  ) {
+  Mailer.prototype.createPasswordChangeLink = function (email, templateName) {
     const query = { email: email };
 
     return this._generateUTMLink(
       this.initiatePasswordChangeUrl,
       query,
       templateName,
-      'change-password',
-      metricsEnabled
+      'change-password'
     );
   };
 
-  Mailer.prototype.createReportSignInLink = function (
-    templateName,
-    data,
-    metricsEnabled
-  ) {
+  Mailer.prototype.createReportSignInLink = function (templateName, data) {
     const query = {
       uid: data.uid,
       unblockCode: data.unblockCode,
@@ -3373,52 +3325,32 @@ module.exports = function (log, config, bounces) {
       this.reportSignInUrl,
       query,
       templateName,
-      'report',
-      metricsEnabled
+      'report'
     );
   };
 
   Mailer.prototype._reportSignInLinkAttributes = function (
     email,
     templateName,
-    query,
-    metricsEnabled
+    query
   ) {
-    return linkAttributes(
-      this.createReportSignInLink(templateName, query, metricsEnabled)
-    );
+    return linkAttributes(this.createReportSignInLink(templateName, query));
   };
 
-  Mailer.prototype.createSupportLink = function (templateName, metricsEnabled) {
-    return this._generateUTMLink(
-      this.supportUrl,
-      {},
-      templateName,
-      'support',
-      metricsEnabled
-    );
+  Mailer.prototype.createSupportLink = function (templateName) {
+    return this._generateUTMLink(this.supportUrl, {}, templateName, 'support');
   };
 
-  Mailer.prototype.createPrivacyLink = function (templateName, metricsEnabled) {
-    return this._generateUTMLink(
-      this.privacyUrl,
-      {},
-      templateName,
-      'privacy',
-      metricsEnabled
-    );
+  Mailer.prototype.createPrivacyLink = function (templateName) {
+    return this._generateUTMLink(this.privacyUrl, {}, templateName, 'privacy');
   };
 
-  Mailer.prototype.createRevokeAccountRecoveryLink = function (
-    templateName,
-    metricsEnabled
-  ) {
+  Mailer.prototype.createRevokeAccountRecoveryLink = function (templateName) {
     return this._generateUTMLink(
       this.revokeAccountRecoveryUrl,
       {},
       templateName,
-      'report',
-      metricsEnabled
+      'report'
     );
   };
 

@@ -67,7 +67,7 @@ module.exports = async (
             ccEmails: cc,
             email: to || account.email,
             uid: account.uid,
-            metricsEnabled: true, // TODO: undefined every time
+            metricsEnabled: account.metricsEnabled, // TODO: this is undefined
           });
         };
 
@@ -92,6 +92,7 @@ module.exports = async (
       email: emails[0].email,
       primaryEmail: account.email,
       uid: account.uid,
+      metricsEnabled: account.metricsEnabled, // TODO: undefined every time
     });
   };
 
@@ -102,6 +103,7 @@ module.exports = async (
       email: emails[0].email,
       primaryEmail: account.email,
       uid: account.uid,
+      metricsEnabled: account.metricsEnabled, // TODO: undefined every time
     });
   };
 
@@ -110,6 +112,7 @@ module.exports = async (
       ...options,
       acceptLanguage: options.acceptLanguage || defaultLanguage,
       email: account.primaryEmail.email,
+      metricsEnabled: account.metricsEnabled, // TODO: undefined every time
     });
   };
 
