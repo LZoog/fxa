@@ -112,6 +112,7 @@ export async function apiFetchAccountStatus(
 }
 
 export async function apiFetchProfile(): Promise<Profile> {
+  console.log('fetching profile');
   return apiFetch('GET', `${config.servers.profile.url}/v1/profile`);
 }
 

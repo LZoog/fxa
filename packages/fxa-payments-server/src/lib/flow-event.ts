@@ -15,6 +15,7 @@ let initialized = false;
 let optEventData: FlowEventData;
 
 function shouldSend() {
+  console.log('in shouldSend');
   return initialized && window.navigator.sendBeacon;
 }
 

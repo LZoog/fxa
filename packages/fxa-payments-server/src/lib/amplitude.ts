@@ -61,16 +61,34 @@ type Error = { message?: string } | null;
 // These can still be overwritten in the event logging function.
 let globalEventProperties = {};
 
-export function addGlobalEventProperties(props: GlobalEventProperties) {
-  globalEventProperties = { ...globalEventProperties, ...props };
+// We need the entire store passed in or this function isn't reran
+// after the profile request completes
+export function addGlobalEventProperties(
+  props: GlobalEventProperties,
+  store: Store
+) {
+  const profile = selectors.profile(store.getState());
+  if (profile.result?.metricsEnabled) {
+    console.log('inside if');
+    globalEventProperties = { ...globalEventProperties, ...props };
+  }
+  // metricsEnabled === false ? globalEventProperties = { ...globalEventProperties, ...props.plan }
+  // globalEventProperties = { ...globalEventProperties, ...props };
+  console.log('globalEventProperties (outside of if)', globalEventProperties);
 }
 
 export function subscribeToReduxStore(store: Store) {
   let unsubscribe: ReturnType<typeof store.subscribe>;
   const uidObs = () => {
     const profile = selectors.profile(store.getState());
-    if (profile && profile.result && profile.result.uid) {
-      addGlobalEventProperties({ uid: profile.result.uid });
+    console.log('subscribe???');
+    if (
+      profile &&
+      profile.result &&
+      profile.result.uid &&
+      profile.result.metricsEnabled
+    ) {
+      addGlobalEventProperties({ uid: profile.result.uid }, store);
       unsubscribe?.();
     }
   };

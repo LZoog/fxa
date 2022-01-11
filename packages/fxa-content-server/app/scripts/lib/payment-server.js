@@ -48,6 +48,7 @@ const PaymentServer = {
     });
     const url = `${managementUrl}/${redirectPath}${queryString}`;
     const account = view.getSignedInAccount();
+    console.log('accountttt', account);
     const unauthenticatedRedirect = () => {
       if (isAllowedUnauthenticatedRoute(redirectPath)) {
         return view.navigateAway(url);

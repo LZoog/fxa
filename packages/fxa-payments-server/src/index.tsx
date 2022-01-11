@@ -1,19 +1,26 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 import React from 'react';
 import { render } from 'react-dom';
+import { Provider as ReduxProvider } from 'react-redux';
 import { createAppStore } from './store';
 
 import { config, readConfigFromMeta } from './lib/config';
 import { updateAPIClientToken, updateAPIClientConfig } from './lib/apiClient';
 import './index.scss';
 import * as Amplitude from './lib/amplitude';
-import App from './App';
+import App, { AppErrorBoundary } from './App';
 import ScreenInfo from './lib/screen-info';
 import sentryMetrics from './lib/sentry';
 import { loadStripe } from '@stripe/stripe-js';
 
 import { actions } from './store/actions';
+import selectors from './store/selectors';
 
 async function init() {
+  console.log('window.location.search', window.location.search);
   readConfigFromMeta(headQuerySelector);
 
   sentryMetrics.configure(config.sentry.dsn, config.version);
@@ -21,9 +28,11 @@ async function init() {
   const store = createAppStore();
 
   const queryParams = parseParams(window.location.search);
+  console.log('queryParams', queryParams);
   const hashParams = await getHashParams();
   const accessToken = await getVerifiedAccessToken(hashParams);
-  Amplitude.addGlobalEventProperties({ ...queryParams });
+  console.log('add global event props');
+  Amplitude.addGlobalEventProperties({ ...queryParams }, store);
   Amplitude.subscribeToReduxStore(store);
   updateAPIClientConfig(config);
 
@@ -34,21 +43,25 @@ async function init() {
   }
 
   render(
-    <App
-      {...{
-        config,
-        store,
-        accessToken,
-        queryParams,
-        matchMedia,
-        matchMediaDefault,
-        navigateToUrl,
-        getScreenInfo,
-        locationReload,
-        navigatorLanguages: navigator.languages,
-        stripePromise: loadStripe(config.stripe.apiKey),
-      }}
-    />,
+    <AppErrorBoundary>
+      <ReduxProvider {...{ store }}>
+        <App
+          {...{
+            config,
+            store,
+            accessToken,
+            queryParams,
+            matchMedia,
+            matchMediaDefault,
+            navigateToUrl,
+            getScreenInfo,
+            locationReload,
+            navigatorLanguages: navigator.languages,
+            stripePromise: loadStripe(config.stripe.apiKey),
+          }}
+        />
+      </ReduxProvider>
+    </AppErrorBoundary>,
     document.getElementById('root')
   );
 }
@@ -131,7 +144,7 @@ async function getVerifiedAccessToken({
   return accessToken;
 }
 
-init().then(
-  () => console.log('init success'),
-  (err) => console.log('init error', err)
-);
+// init().then(
+//   () => console.log('init success'),
+//   (err) => console.log('init error', err)
+// );
