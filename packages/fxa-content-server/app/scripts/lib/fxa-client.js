@@ -105,6 +105,9 @@ function getUpdatedSessionData(email, relier, accountData, options = {}) {
     sessionTokenContext = Constants.SESSION_TOKEN_USED_FOR_SYNC;
   }
 
+  console.log('HELLO! accountData', accountData);
+  console.log('HELLO! metricsEnabled', accountData.metricsEnabled);
+
   var updatedSessionData = {
     email: email,
     sessionToken: accountData.sessionToken,

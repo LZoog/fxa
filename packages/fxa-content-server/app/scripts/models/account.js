@@ -633,6 +633,7 @@ const Account = Backbone.Model.extend(
 
     _profileFetchPromise: null,
     fetchProfile() {
+      console.log('IN FETCH PROFILE');
       // Avoid multiple views making profile requests by caching
       // the profile fetch request. Only allow one for a given account,
       // and then re-use the data after that. See #3053
@@ -651,9 +652,12 @@ const Account = Backbone.Model.extend(
           url: result.avatar,
         });
 
+        console.log('fetching profile!!! ');
+
         this.setProfileImage(profileImage);
         this.set('displayName', result.displayName);
         this.set('ecosystemAnonId', result.ecosystemAnonId);
+        this.set('metricsEnabled', result.metricsEnabled);
 
         this.on('change', this._boundOnChange);
       });
