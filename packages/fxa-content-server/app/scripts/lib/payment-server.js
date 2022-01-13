@@ -39,9 +39,7 @@ const PaymentServer = {
     const account = view.getSignedInAccount();
     const { metricsEnabled } = account.pick('metricsEnabled');
 
-    console.log('testing', account.pick('email'));
-    console.log('metricsEnabled!!!', metricsEnabled);
-
+    // explicitely check for `false` because `undefined` just means the user isn't logged in
     const queryString =
       metricsEnabled === false
         ? Url.objToSearchString({ ...queryParams })
