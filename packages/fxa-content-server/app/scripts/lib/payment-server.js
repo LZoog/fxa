@@ -39,10 +39,10 @@ const PaymentServer = {
     const account = view.getSignedInAccount();
     const { metricsEnabled } = account.pick('metricsEnabled');
 
-    // explicitely check for `false` because `undefined` just means the user isn't logged in
+    // explicitly check for `false` because `undefined` just means the user isn't logged in
     const queryString =
       metricsEnabled === false
-        ? Url.objToSearchString({ ...queryParams })
+        ? Url.objToSearchString(queryParams)
         : Url.objToSearchString({
             // device_id, flow_begin_time, and flow_id need to be propagated to
             // the payments server so that the user funnel can be traced from the RP,

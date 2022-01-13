@@ -21,7 +21,7 @@ type ShowDataCollectionProp = {
 };
 
 export const PageSettings = ({
-  showDataCollection = true,
+  showDataCollection = false,
 }: RouteComponentProps<{}> & ShowDataCollectionProp) => {
   const { uid } = useAccount();
 

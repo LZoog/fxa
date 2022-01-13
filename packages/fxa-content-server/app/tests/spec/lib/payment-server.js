@@ -18,6 +18,7 @@ describe('lib/payment-server-redirect', () => {
     account._fxaClient = {
       isSignedIn: sinon.stub().resolves(true),
     };
+    account.attributes.metricsEnabled = true;
     config = {
       subscriptions: {
         managementClientId: 'MOCK_CLIENT_ID',
