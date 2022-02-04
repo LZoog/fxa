@@ -158,7 +158,6 @@ const MAILER_METHOD_NAMES = [
   'sendVerifyShortCodeEmail',
   'sendVerifyLoginEmail',
   'sendVerifyLoginCodeEmail',
-  'sendVerifySecondaryEmail',
   'sendVerifySecondaryCodeEmail',
 ];
 
