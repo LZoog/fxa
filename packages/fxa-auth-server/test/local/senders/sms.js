@@ -10,7 +10,8 @@ const proxyquire = require('proxyquire');
 const sinon = require('sinon');
 
 const ROOT_DIR = '../../..';
-const ISO_8601_FORMAT = /^20[1-9][0-9]-[01][0-9]-[0-3][0-9]T[012][0-9]:[0-5][0-9]:00Z$/;
+const ISO_8601_FORMAT =
+  /^20[1-9][0-9]-[01][0-9]-[0-3][0-9]T[012][0-9]:[0-5][0-9]:00Z$/;
 
 describe('lib/senders/sms:', () => {
   let config,
@@ -77,7 +78,7 @@ describe('lib/senders/sms:', () => {
     });
     return Promise.all([
       require(`${ROOT_DIR}/lib/senders/translator`)(['en'], 'en'),
-      require(`${ROOT_DIR}/lib/senders/templates`)(mocks.mockLog()),
+      require(`${ROOT_DIR}/lib/senders/emails/templates`)(mocks.mockLog()),
     ]).then((results) => {
       translator = results[0];
       templates = results[1];
