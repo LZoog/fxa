@@ -25,7 +25,7 @@ config.smtp.subscriptionTermsUrl = 'http://example.com/terms';
 // Force enable the subscription transactional emails
 config.subscriptions.transactionalEmails.enabled = true;
 
-const TEMPLATE_VERSIONS = require(`${ROOT_DIR}/lib/senders/templates/_versions.json`);
+const TEMPLATE_VERSIONS = require(`${ROOT_DIR}/lib/senders/emails/templates/_versions.json`);
 
 const SUBSCRIPTION_TERMS_URL = 'https://example.com/subscription-product/terms';
 const SUBSCRIPTION_PRIVACY_URL =

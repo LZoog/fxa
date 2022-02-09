@@ -16,7 +16,7 @@ const { productDetailsFromPlan } = require('fxa-shared').subscriptions.metadata;
 const FluentLocalizer = require('./emails/fluent-localizer').default;
 const { NodeLocalizerBindings } = require('./emails/localizer-bindings-node');
 
-const TEMPLATE_VERSIONS = require('./templates/_versions.json');
+const TEMPLATE_VERSIONS = require('./emails/templates/_versions.json');
 
 const DEFAULT_LOCALE = 'en';
 const DEFAULT_TIMEZONE = 'Etc/UTC';
