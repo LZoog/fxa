@@ -140,7 +140,7 @@ export abstract class LocalizerBindings {
    * @param body Optional body to wrap
    * @returns Rendered EJS template
    */
-  protected abstract renderEjs(
+  abstract renderEjs(
     ejsTemplate: string,
     context: TemplateContext,
     body?: string

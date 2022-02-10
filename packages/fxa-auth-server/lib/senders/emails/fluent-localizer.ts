@@ -8,6 +8,7 @@ import { negotiateLanguages } from '@fluent/langneg';
 import { LocalizerBindings, TemplateContext } from './localizer-bindings';
 import availableLocales from 'fxa-shared/l10n/supportedLanguages.json';
 import { EN_GB_LOCALES } from 'fxa-shared/l10n/otherLanguages';
+import { NodeLocalizerBindings } from './localizer-bindings-node';
 
 const RTL_LOCALES = [
   'ar',
@@ -121,7 +122,27 @@ class FluentLocalizer {
       body.classList.add('rtl');
     }
 
-    // localize the plaintext files
+    const localizedPlaintext = await this.localizePlaintext(text, l10n);
+
+    return {
+      html: rootElement.outerHTML,
+      text: localizedPlaintext,
+      subject: context.subject,
+    };
+  }
+
+  async localizeSms(context: TemplateContext) {
+    const { acceptLanguage, template } = context;
+    const { l10n } = await this.setupLocalizer(acceptLanguage);
+
+    const text = this.bindings.renderEjs(template, context);
+    return this.localizePlaintext(text, l10n);
+  }
+
+  protected async localizePlaintext(
+    text: string,
+    l10n: DOMLocalization
+  ): Promise<string> {
     const plainTextArr = text.split('\n');
     for (let i in plainTextArr) {
       // match the lines that are of format key = "value" since we will be extracting the key
@@ -134,15 +155,7 @@ class FluentLocalizer {
     }
     // convert back to string and
     // strip excessive line breaks
-    const localizedPlainText = plainTextArr
-      .join('\n')
-      .replace(/(\n){2,}/g, '\n\n');
-
-    return {
-      html: rootElement.outerHTML,
-      text: localizedPlainText,
-      subject: context.subject,
-    };
+    return plainTextArr.join('\n').replace(/(\n){2,}/g, '\n\n');
   }
 }
 

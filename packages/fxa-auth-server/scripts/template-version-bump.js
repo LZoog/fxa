@@ -10,6 +10,8 @@
 // a deleted template is reinstated by some later commit or only one
 // format of a template is deleted.
 
+// TODO: account for sms/templates
+
 'use strict';
 
 const cp = require('child_process');
