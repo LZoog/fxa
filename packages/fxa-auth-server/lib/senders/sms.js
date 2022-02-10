@@ -9,6 +9,8 @@ const error = require('../error');
 const MockSns = require('../../test/mock-sns');
 const Sns = require('aws-sdk/clients/sns');
 const time = require('../time');
+const { default: FluentLocalizer } = require('./emails/fluent-localizer');
+const { NodeLocalizerBindings } = require('./emails/localizer-bindings-node');
 
 const SECONDS_PER_MINUTE = 60;
 const MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE * 1000;
@@ -162,7 +164,9 @@ module.exports = (log, translator, templates, config, statsd) => {
     }
   }
 
-  function getMessage(templateName, acceptLanguage, signinCode) {
+  async function getMessage(templateName, acceptLanguage, signinCode) {
+    const localizer = new FluentLocalizer(new NodeLocalizerBindings());
+
     try {
       let link;
       if (signinCode) {
@@ -173,10 +177,11 @@ module.exports = (log, translator, templates, config, statsd) => {
         link = config.sms[`${templateName}Link`];
       }
 
-      return templates.render(`sms.${templateName}`, null, {
+      return await localizer.localizeSms({
+        acceptLanguage: translator.getTranslator(acceptLanguage),
+        template: templateName,
         link,
-        translator: translator.getTranslator(acceptLanguage),
-      }).text;
+      });
     } catch (err) {
       log.error('sms.getMessage.error', { templateName });
       throw error.invalidMessageId();

@@ -26,7 +26,6 @@
   "postVerify": 5,
   "postVerifySecondary": 4,
   "recovery": 4,
-  "sms.installFirefox": 1,
   "unblockCode": 4,
   "verificationReminderFirst": 8,
   "verificationReminderSecond": 8,

@@ -65,11 +65,8 @@ export class BrowserLocalizerBindings extends LocalizerBindings {
     );
   }
 
-  protected renderEjs(
-    template: string,
-    context: TemplateContext,
-    body?: string
-  ) {
+  renderEjs(template: string, context: TemplateContext, body?: string) {
+    console.log('context', context);
     return ejs.render(template, { ...context, body: body }, this.opts.ejs);
   }
 
@@ -85,7 +82,7 @@ export class BrowserLocalizerBindings extends LocalizerBindings {
   }
 
   protected mjml2html(mjml: string): string {
-    // Work around the fact tht mjml-browser doesn't support mj-inculde tags
+    // Work around the fact that mjml-browser doesn't support mj-include tags
     mjml = transformMjIncludeTags(mjml);
     // Re-render to pull in css files
     mjml = this.renderEjs(mjml, {});
