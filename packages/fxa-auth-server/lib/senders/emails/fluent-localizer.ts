@@ -74,7 +74,10 @@ class FluentLocalizer {
     const { acceptLanguage, template, layout } = context;
     const { l10n, selectedLocale } = await this.setupLocalizer(acceptLanguage);
 
+    console.log('CONTEXT! before', context);
+
     context = { ...context, ...context.templateValues };
+    console.log('CONTEXT! after', context);
     if (template !== '_storybook') {
       // TODO: #11471 Improve dynamically rendered actions & subjects in email.js, etc.
       if (
@@ -122,7 +125,11 @@ class FluentLocalizer {
       body.classList.add('rtl');
     }
 
-    const localizedPlaintext = await this.localizePlaintext(text, l10n);
+    const localizedPlaintext = await this.localizePlaintext(
+      text,
+      l10n,
+      context
+    );
 
     return {
       html: rootElement.outerHTML,
@@ -141,8 +148,10 @@ class FluentLocalizer {
 
   protected async localizePlaintext(
     text: string,
-    l10n: DOMLocalization
+    l10n: DOMLocalization,
+    context: TemplateContext
   ): Promise<string> {
+    console.log('context', context);
     const plainTextArr = text.split('\n');
     for (let i in plainTextArr) {
       // match the lines that are of format key = "value" since we will be extracting the key
