@@ -60,7 +60,11 @@ module.exports = (log, translator, templates, config, statsd) => {
 
     async send(phoneNumber, templateName, acceptLanguage, signinCode) {
       log.trace('sms.send', { templateName, acceptLanguage });
-      const message = getMessage(templateName, acceptLanguage, signinCode);
+      const message = await getMessage(
+        templateName,
+        acceptLanguage,
+        signinCode
+      );
       const params = {
         Message: message.trim(),
         MessageAttributes: {
@@ -165,7 +169,7 @@ module.exports = (log, translator, templates, config, statsd) => {
   }
 
   async function getMessage(templateName, acceptLanguage, signinCode) {
-    const localizer = new FluentLocalizer(new NodeLocalizerBindings());
+    const { localizeSms } = new FluentLocalizer(new NodeLocalizerBindings());
 
     try {
       let link;
@@ -177,7 +181,7 @@ module.exports = (log, translator, templates, config, statsd) => {
         link = config.sms[`${templateName}Link`];
       }
 
-      return await localizer.localizeSms({
+      return await localizeSms({
         acceptLanguage: translator.getTranslator(acceptLanguage),
         template: templateName,
         link,

@@ -2,13 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { DOMLocalization } from '@fluent/dom';
+import { DOMLocalization, Localization } from '@fluent/dom';
 import { FluentBundle, FluentResource } from '@fluent/bundle';
 import { negotiateLanguages } from '@fluent/langneg';
 import { LocalizerBindings, TemplateContext } from './localizer-bindings';
 import availableLocales from 'fxa-shared/l10n/supportedLanguages.json';
 import { EN_GB_LOCALES } from 'fxa-shared/l10n/otherLanguages';
-import { NodeLocalizerBindings } from './localizer-bindings-node';
 
 const RTL_LOCALES = [
   'ar',
@@ -60,24 +59,26 @@ class FluentLocalizer {
     return generateBundles;
   }
 
-  async setupLocalizer(acceptLanguage: string) {
+  async setupLocalizer(acceptLanguage: string, needsDOM = false) {
     const currentLocales = parseAcceptLanguage(acceptLanguage);
     const messages = await this.fetchMessages(currentLocales);
     const selectedLocale = this.getSelectedLocale(currentLocales);
     const generateBundles = this.createBundleGenerator(messages);
-    const l10n = new DOMLocalization(currentLocales, generateBundles);
+    const l10n = needsDOM
+      ? new DOMLocalization(currentLocales, generateBundles)
+      : new Localization(currentLocales, generateBundles);
 
     return { currentLocales, messages, generateBundles, selectedLocale, l10n };
   }
 
   async localizeEmail(context: TemplateContext) {
     const { acceptLanguage, template, layout } = context;
-    const { l10n, selectedLocale } = await this.setupLocalizer(acceptLanguage);
-
-    console.log('CONTEXT! before', context);
-
+    const { l10n, selectedLocale } = await this.setupLocalizer(
+      acceptLanguage,
+      true
+    );
+    // emails are sent with a `templateValues` object, Storybook does not
     context = { ...context, ...context.templateValues };
-    console.log('CONTEXT! after', context);
     if (template !== '_storybook') {
       // TODO: #11471 Improve dynamically rendered actions & subjects in email.js, etc.
       if (
@@ -127,8 +128,8 @@ class FluentLocalizer {
 
     const localizedPlaintext = await this.localizePlaintext(
       text,
-      l10n,
-      context
+      context,
+      l10n
     );
 
     return {
@@ -143,15 +144,17 @@ class FluentLocalizer {
     const { l10n } = await this.setupLocalizer(acceptLanguage);
 
     const text = this.bindings.renderEjs(template, context);
-    return this.localizePlaintext(text, l10n);
+    return await this.localizePlaintext(text, context, l10n);
   }
 
   protected async localizePlaintext(
     text: string,
-    l10n: DOMLocalization,
-    context: TemplateContext
+    context: TemplateContext,
+    l10n?: DOMLocalization | Localization
   ): Promise<string> {
-    console.log('context', context);
+    if (!l10n) {
+      l10n = (await this.setupLocalizer(context.acceptLanguage)).l10n;
+    }
     const plainTextArr = text.split('\n');
     for (let i in plainTextArr) {
       // match the lines that are of format key = "value" since we will be extracting the key

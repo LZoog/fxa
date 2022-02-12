@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { FluentBundle, FluentResource } from '@fluent/bundle';
+import { FluentBundle } from '@fluent/bundle';
 import chai, { assert } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import FluentLocalizer, {

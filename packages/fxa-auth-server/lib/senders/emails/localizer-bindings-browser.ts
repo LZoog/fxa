@@ -66,7 +66,6 @@ export class BrowserLocalizerBindings extends LocalizerBindings {
   }
 
   renderEjs(template: string, context: TemplateContext, body?: string) {
-    console.log('context', context);
     return ejs.render(template, { ...context, body: body }, this.opts.ejs);
   }
 
