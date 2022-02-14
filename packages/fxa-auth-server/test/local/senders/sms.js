@@ -78,7 +78,7 @@ describe('lib/senders/sms:', () => {
     });
     return Promise.all([
       require(`${ROOT_DIR}/lib/senders/translator`)(['en'], 'en'),
-      require(`${ROOT_DIR}/lib/senders/emails/templates`)(mocks.mockLog()),
+      require(`${ROOT_DIR}/lib/senders/templates`)(mocks.mockLog()),
     ]).then((results) => {
       translator = results[0];
       templates = results[1];
@@ -197,8 +197,11 @@ describe('lib/senders/sms:', () => {
     });
 
     describe('send a valid sms without a signinCode:', () => {
-      beforeEach(() => {
-        return sms.send('+442078553000', 'installFirefox', 'en');
+      beforeEach(async () => {
+        console.log('hi');
+        const test = await sms.send('+442078553000', 'installFirefox', 'en');
+        console.log('test', test);
+        return await sms.send('+442078553000', 'installFirefox', 'en');
       });
 
       it('called sns.publish correctly', () => {

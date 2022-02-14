@@ -37,10 +37,6 @@ class FluentLocalizer {
     return fetched;
   }
 
-  protected getSelectedLocale(currentLocales: string[]) {
-    return currentLocales[0] || 'en';
-  }
-
   protected createBundleGenerator(fetched: Record<string, string>) {
     async function* generateBundles(currentLocales: string[]) {
       for (const locale of currentLocales) {
@@ -61,8 +57,8 @@ class FluentLocalizer {
 
   async setupLocalizer(acceptLanguage: string, needsDOM = false) {
     const currentLocales = parseAcceptLanguage(acceptLanguage);
+    const selectedLocale = currentLocales[0] || 'en';
     const messages = await this.fetchMessages(currentLocales);
-    const selectedLocale = this.getSelectedLocale(currentLocales);
     const generateBundles = this.createBundleGenerator(messages);
     const l10n = needsDOM
       ? new DOMLocalization(currentLocales, generateBundles)
@@ -165,10 +161,11 @@ class FluentLocalizer {
         plainTextArr[i] = (await l10n.formatValue(key, context)) || val;
       }
     }
-    // convert back to string and
-    // strip excessive line breaks
+    // convert back to string and strip excessive line breaks
     return plainTextArr.join('\n').replace(/(\n){2,}/g, '\n\n');
   }
+
+  async localizeString() {}
 }
 
 const reSplitLine = /(?<key>[a-zA-Z0-9-_]+)\s*=\s*"(?<val>.*)?"/;

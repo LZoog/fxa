@@ -505,6 +505,12 @@ module.exports = function (
           JSON.stringify(location)
         )}&ip=${encodeURIComponent(request.app.clientAddress)}`;
 
+        // const options = {
+        //   title: translate('Logging in to Firefox Accounts?'),
+        //   body: translate("Click here to verify it's you"),
+        //   url,
+        // };
+
         const options = {
           title: gettext('Logging in to Firefox Accounts?'),
           body: gettext("Click here to verify it's you"),

@@ -60,11 +60,13 @@ module.exports = (log, translator, templates, config, statsd) => {
 
     async send(phoneNumber, templateName, acceptLanguage, signinCode) {
       log.trace('sms.send', { templateName, acceptLanguage });
+      console.log('before awaiting message');
       const message = await getMessage(
         templateName,
         acceptLanguage,
         signinCode
       );
+      console.log('message!!!', message);
       const params = {
         Message: message.trim(),
         MessageAttributes: {
@@ -181,11 +183,18 @@ module.exports = (log, translator, templates, config, statsd) => {
         link = config.sms[`${templateName}Link`];
       }
 
-      return await localizeSms({
-        acceptLanguage: translator.getTranslator(acceptLanguage),
+      const localizedSms = await localizeSms({
+        acceptLanguage,
         template: templateName,
         link,
       });
+      return localizedSms;
+
+      // return await localizeSms({
+      //   acceptLanguage: translator.getTranslator(acceptLanguage),
+      //   template: templateName,
+      //   link,
+      // });
     } catch (err) {
       log.error('sms.getMessage.error', { templateName });
       throw error.invalidMessageId();
