@@ -24,14 +24,14 @@ export class NodeLocalizerBindings extends LocalizerBindings {
   constructor(opts?: Partial<LocalizerOpts>) {
     super();
 
-    // Backfill options with defaults
+    // Backfill options with (email) defaults
     this.opts = Object.assign(
       {
         templates: {
-          basePath: __dirname,
+          basePath: join(__dirname, '../senders/emails'),
         },
         ejs: {
-          root: __dirname,
+          root: join(__dirname, '../senders/emails'),
         },
         mjml: {
           validationLevel: 'strict',
@@ -42,7 +42,7 @@ export class NodeLocalizerBindings extends LocalizerBindings {
           minify: true,
         },
         l10n: {
-          basePath: join(__dirname, '../../../public/locales'),
+          basePath: join(__dirname, '../../public/locales'),
         },
       },
       opts

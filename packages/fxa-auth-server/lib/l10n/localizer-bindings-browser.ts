@@ -17,8 +17,8 @@ import mjml2html from 'mjml-browser';
  * automically pulled in by the install-ejs.sh script and is invoked before
  * storybook starts up.
  */
-import ejs from '../../../vendor/ejs';
-import { transformMjIncludeTags } from './mjml-browser-helper';
+import ejs from '../../vendor/ejs';
+import { transformMjIncludeTags } from '../senders/emails/mjml-browser-helper';
 
 /**
  * Allows ejs to import requested files. This gets invoked when include() is

@@ -6,11 +6,10 @@ import { FluentBundle } from '@fluent/bundle';
 import chai, { assert } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import FluentLocalizer, {
-  splitPlainTextLine,
   parseAcceptLanguage,
-} from '../../../../lib/senders/emails/fluent-localizer';
-
-import { NodeLocalizerBindings } from '../../../../lib/senders/emails/localizer-bindings-node';
+  splitPlainTextLine,
+} from '../../../lib/l10n/fluent-localizer';
+import { NodeLocalizerBindings } from '../../../lib/senders/emails/localizer-bindings-node';
 
 chai.use(chaiAsPromised);
 
