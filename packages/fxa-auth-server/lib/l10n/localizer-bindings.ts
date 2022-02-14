@@ -15,7 +15,7 @@ export type MjmlOpts = {
 export type TemplateOpts = {
   basePath: string;
 };
-export type L10nOpts = {
+export type FtlOpts = {
   basePath: string;
 };
 export type RenderOpts = {
@@ -24,7 +24,7 @@ export type RenderOpts = {
   mjml: MjmlOpts;
 };
 export type LocalizationOpts = {
-  l10n: L10nOpts;
+  ftl: FtlOpts;
 };
 
 // Top level types
@@ -98,7 +98,7 @@ export abstract class LocalizerBindings {
   async fetchLocalizationMessages(locale?: string) {
     // note: 'en' auth.ftl only exists for browser bindings / Storybook
     // the fallback English strings within the templates will be shown in other envs
-    const path = `${this.opts.l10n.basePath}/${locale || 'en'}/auth.ftl`;
+    const path = `${this.opts.ftl.basePath}/${locale || 'en'}/auth.ftl`;
 
     try {
       return await this.fetchResource(path);

@@ -18,15 +18,15 @@ describe('fluent localizer', () => {
     let LocalizerBindings = new NodeLocalizerBindings();
     let localizer = new FluentLocalizer(LocalizerBindings);
 
-    it('fails with a bad localizer 1l0n basePath', () => {
+    it('fails with a bad localizer ftl basePath', () => {
       assert.throws(() => {
         let LocalizerBindings = new NodeLocalizerBindings({
-          l10n: {
+          ftl: {
             basePath: '/not/a/apth',
           },
         });
         new FluentLocalizer(LocalizerBindings);
-      }, 'Invalid l10n basePath');
+      }, 'Invalid ftl basePath');
     });
 
     it('produces the current locales', async () => {

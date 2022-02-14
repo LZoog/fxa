@@ -41,7 +41,7 @@ export class NodeLocalizerBindings extends LocalizerBindings {
           ignoreIncludes: typeof global.it === 'function',
           minify: true,
         },
-        l10n: {
+        ftl: {
           basePath: join(__dirname, '../../public/locales'),
         },
       },
@@ -53,8 +53,8 @@ export class NodeLocalizerBindings extends LocalizerBindings {
   }
 
   protected validateConfig() {
-    if (!existsSync(this.opts.l10n.basePath)) {
-      throw new Error('Invalid l10n basePath');
+    if (!existsSync(this.opts.ftl.basePath)) {
+      throw new Error('Invalid ftl basePath');
     }
   }
 
