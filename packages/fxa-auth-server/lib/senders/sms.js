@@ -25,7 +25,7 @@ class MockCloudwatch {
   }
 }
 
-module.exports = (log, translator, templates, config, statsd) => {
+module.exports = (log, config, statsd) => {
   const cloudwatch = initService(config, Cloudwatch, MockCloudwatch);
   const sns = initService(config, Sns, MockSns);
 
