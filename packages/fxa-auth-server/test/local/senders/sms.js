@@ -24,7 +24,8 @@ describe('lib/senders/sms:', () => {
     translator,
     templates;
 
-  beforeEach(() => {
+  beforeEach(function () {
+    this.timeout(10000);
     config = {
       smtp: {},
       sms: {
@@ -197,10 +198,7 @@ describe('lib/senders/sms:', () => {
     });
 
     describe('send a valid sms without a signinCode:', () => {
-      beforeEach(async () => {
-        console.log('hi');
-        const test = await sms.send('+442078553000', 'installFirefox', 'en');
-        console.log('test', test);
+      beforeEach(async function () {
         return await sms.send('+442078553000', 'installFirefox', 'en');
       });
 

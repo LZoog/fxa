@@ -66,7 +66,11 @@ export class NodeLocalizerBindings extends LocalizerBindings {
     return raw;
   }
 
-  renderEjs(template: string, context: TemplateContext, body?: string) {
+  protected renderEjs(
+    template: string,
+    context: TemplateContext,
+    body?: string
+  ) {
     return ejs.render(template, { ...context, body: body }, this.opts.ejs);
   }
 

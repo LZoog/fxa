@@ -92,7 +92,7 @@ async function renderUsingMJML({
 }): Promise<Record<any, string>> {
   const localizer = new FluentLocalizer(new BrowserLocalizerBindings());
 
-  return await localizer.localizeEmail({
+  return localizer.localizeEmail({
     template,
     layout,
     acceptLanguage,

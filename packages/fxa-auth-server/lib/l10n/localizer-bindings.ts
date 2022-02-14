@@ -109,6 +109,13 @@ export abstract class LocalizerBindings {
     }
   }
 
+  async renderSms(template: string, context: TemplateContext) {
+    const text = await this.fetchResource(
+      `${this.opts.ejs.root}/templates/${template}/index.txt`
+    );
+    return this.renderEjs(text, context);
+  }
+
   /**
    * Renders an EJS template
    * @param component Component to render
@@ -140,7 +147,7 @@ export abstract class LocalizerBindings {
    * @param body Optional body to wrap
    * @returns Rendered EJS template
    */
-  abstract renderEjs(
+  protected abstract renderEjs(
     ejsTemplate: string,
     context: TemplateContext,
     body?: string

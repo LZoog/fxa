@@ -135,12 +135,13 @@ class FluentLocalizer {
     };
   }
 
+  // NOTE: We don't currently send any SMS messages. This will be removed later.
   async localizeSms(context: TemplateContext) {
     const { acceptLanguage, template } = context;
     const { l10n } = await this.setupLocalizer(acceptLanguage);
 
-    const text = this.bindings.renderEjs(template, context);
-    return await this.localizePlaintext(text, context, l10n);
+    const text = await this.bindings.renderSms(template, context);
+    return this.localizePlaintext(text, context, l10n);
   }
 
   protected async localizePlaintext(
