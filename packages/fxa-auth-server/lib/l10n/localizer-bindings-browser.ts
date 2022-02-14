@@ -57,7 +57,7 @@ export class BrowserLocalizerBindings extends LocalizerBindings {
         mjml: {
           validationLevel: 'strict',
         },
-        l10n: {
+        ftl: {
           basePath: './public/locales',
         },
       },
