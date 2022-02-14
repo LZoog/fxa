@@ -9,8 +9,9 @@ const error = require('../error');
 const MockSns = require('../../test/mock-sns');
 const Sns = require('aws-sdk/clients/sns');
 const time = require('../time');
-const { default: FluentLocalizer } = require('./emails/fluent-localizer');
-const { NodeLocalizerBindings } = require('./emails/localizer-bindings-node');
+const { default: FluentLocalizer } = require('../l10n/fluent-localizer');
+const { NodeLocalizerBindings } = require('../l10n/localizer-bindings-node');
+const { join } = require('path');
 
 const SECONDS_PER_MINUTE = 60;
 const MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE * 1000;
@@ -171,7 +172,16 @@ module.exports = (log, translator, templates, config, statsd) => {
   }
 
   async function getMessage(templateName, acceptLanguage, signinCode) {
-    const { localizeSms } = new FluentLocalizer(new NodeLocalizerBindings());
+    const { localizeSms } = new FluentLocalizer(
+      new NodeLocalizerBindings({
+        templates: {
+          basePath: join(__dirname, '../senders/sms'),
+        },
+        ejs: {
+          root: join(__dirname, '../senders/sms'),
+        },
+      })
+    );
 
     try {
       let link;

@@ -13,8 +13,8 @@ const url = require('url');
 const i18n = require('i18n-abide');
 const { URL } = url;
 const { productDetailsFromPlan } = require('fxa-shared').subscriptions.metadata;
-const FluentLocalizer = require('./emails/fluent-localizer').default;
-const { NodeLocalizerBindings } = require('./emails/localizer-bindings-node');
+const FluentLocalizer = require('../l10n/fluent-localizer').default;
+const { NodeLocalizerBindings } = require('../l10n/localizer-bindings-node');
 
 const TEMPLATE_VERSIONS = require('./emails/templates/_versions.json');
 

@@ -9,7 +9,7 @@ import FluentLocalizer, {
   parseAcceptLanguage,
   splitPlainTextLine,
 } from '../../../lib/l10n/fluent-localizer';
-import { NodeLocalizerBindings } from '../../../lib/senders/emails/localizer-bindings-node';
+import { NodeLocalizerBindings } from '../../../lib/l10n/localizer-bindings-node';
 
 chai.use(chaiAsPromised);
 
