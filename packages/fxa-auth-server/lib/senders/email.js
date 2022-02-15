@@ -429,7 +429,9 @@ module.exports = function (log, config, bounces) {
   };
 
   Mailer.prototype.localize = async function (message) {
+    console.log('message.acceptLanguage', message.acceptLanguage);
     const translator = this.translator(message.acceptLanguage);
+    console.log('translator.language', translator.language);
     message.layout = message.layout || 'fxa';
 
     const { html, text, subject } = await this.fluentLocalizer.localizeEmail(
@@ -552,8 +554,6 @@ module.exports = function (log, config, bounces) {
     log.trace('mailer.verifyEmail', { email: message.email, uid: message.uid });
 
     const templateName = 'verify';
-    const subject = gettext('Finish creating your account');
-    const action = gettext('Confirm email');
     const query = {
       uid: message.uid,
       code: message.code,
@@ -590,10 +590,8 @@ module.exports = function (log, config, bounces) {
     return this.send({
       ...message,
       headers,
-      subject,
       template: templateName,
       templateValues: {
-        action,
         device: this._formatUserAgentInfo(message),
         email: message.email,
         ip: message.ip,
@@ -603,7 +601,6 @@ module.exports = function (log, config, bounces) {
         privacyUrl: links.privacyUrl,
         serviceName: serviceName,
         style: message.style,
-        subject,
         supportLinkAttributes: links.supportLinkAttributes,
         supportUrl: links.supportUrl,
         sync: message.service === 'sync',
@@ -994,6 +991,7 @@ module.exports = function (log, config, bounces) {
       type: 'primary',
       primary_email_verified: message.email,
     };
+
     const subject = gettext('Confirm primary email');
     const action = gettext('Verify email');
 

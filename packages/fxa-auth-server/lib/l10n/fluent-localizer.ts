@@ -76,6 +76,17 @@ class FluentLocalizer {
     // emails are sent with a `templateValues` object, Storybook does not
     context = { ...context, ...context.templateValues };
     if (template !== '_storybook') {
+      if (template === 'verify') {
+        const {
+          includes: { subject, action },
+        } = await this.bindings.getIncludes(template);
+
+        context.subject =
+          (await l10n.formatValue(subject.id, context)) || subject.message;
+        context.action =
+          (await l10n.formatValue(action.id, context)) || action.message;
+      }
+
       // TODO: #11471 Improve dynamically rendered actions & subjects in email.js, etc.
       if (
         template === 'postRemoveTwoStepAuthentication' ||
@@ -166,7 +177,7 @@ class FluentLocalizer {
     return plainTextArr.join('\n').replace(/(\n){2,}/g, '\n\n');
   }
 
-  async localizeString() {}
+  async localizeString(string: string) {}
 }
 
 const reSplitLine = /(?<key>[a-zA-Z0-9-_]+)\s*=\s*"(?<val>.*)?"/;

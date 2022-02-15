@@ -27,9 +27,20 @@ export type LocalizationOpts = {
   ftl: FtlOpts;
 };
 
+interface Includes {
+  includes: IncludesContent;
+}
+interface IncludesContent {
+  subject: SubjectOrAction;
+  action: SubjectOrAction;
+}
+interface SubjectOrAction {
+  id: string;
+  message: string;
+}
+
 // Top level types
 export type TemplateContext = Record<string, any>;
-export type TemplateComponent = 'layouts' | 'templates' | 'partials';
 export type EjsComponent = {
   mjml: string;
   text: string;
@@ -40,6 +51,7 @@ export type TemplateResult = {
   rootElement: Element;
 };
 export type LocalizerOpts = RenderOpts & LocalizationOpts;
+type ComponentType = 'templates' | 'layouts';
 
 /**
  * Abstraction for binding fluent localizer to different contexts, e.g. node vs browser.
@@ -84,11 +96,19 @@ export abstract class LocalizerBindings {
     return { html, text, rootElement };
   }
 
-  protected async getComponent(type: string, name: string) {
+  protected async getComponent(type: ComponentType, name: string) {
     const path = `${this.opts.templates.basePath}/${type}/${name}`;
     const mjml = await this.fetchResource(`${path}/index.mjml`);
     const text = await this.fetchResource(`${path}/index.txt`);
     return { mjml, text };
+  }
+
+  async getIncludes(template: string): Promise<Includes> {
+    try {
+      return import(`../senders/emails/templates/${template}/includes.ts`);
+    } catch (e) {
+      throw Error(e);
+    }
   }
 
   /**
