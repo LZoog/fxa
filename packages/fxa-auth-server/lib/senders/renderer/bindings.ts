@@ -23,7 +23,7 @@ export type RenderOpts = {
   ejs: EjsOpts;
   mjml: MjmlOpts;
 };
-export type LocalizationOpts = {
+export type L10nOps = {
   ftl: FtlOpts;
 };
 
@@ -50,17 +50,17 @@ export type TemplateResult = {
   text: string;
   rootElement: Element;
 };
-export type LocalizerOpts = RenderOpts & LocalizationOpts;
+export type RendererOpts = RenderOpts & L10nOps;
 type ComponentType = 'templates' | 'layouts';
 
 /**
  * Abstraction for binding fluent localizer to different contexts, e.g. node vs browser.
  */
-export abstract class LocalizerBindings {
+export abstract class RendererBindings {
   /**
-   * Customized options for the localizer
+   * Customized options for the renderer
    */
-  protected abstract opts: LocalizerOpts;
+  abstract opts: RendererOpts;
 
   /**
    * Renders a mjml template with support for fluent localization.
@@ -105,27 +105,9 @@ export abstract class LocalizerBindings {
 
   async getIncludes(template: string): Promise<Includes> {
     try {
-      return import(`../senders/emails/templates/${template}/includes.ts`);
+      return import(`../emails/templates/${template}/includes.ts`);
     } catch (e) {
       throw Error(e);
-    }
-  }
-
-  /**
-   * Returns the set of localization strings for the specified locale.
-   * @param locale Locale to use, defaults to en.
-   */
-  async fetchLocalizationMessages(locale?: string) {
-    // note: 'en' auth.ftl only exists for browser bindings / Storybook
-    // the fallback English strings within the templates will be shown in other envs
-    const path = `${this.opts.ftl.basePath}/${locale || 'en'}/auth.ftl`;
-
-    try {
-      return await this.fetchResource(path);
-    } catch (e) {
-      // We couldn't fetch any strings; just return nothing and fluent will fall
-      // back to the default locale if needed.
-      return '';
     }
   }
 
@@ -158,7 +140,7 @@ export abstract class LocalizerBindings {
    * Fetches a resource
    * @param path Path to resource
    */
-  protected abstract fetchResource(path: string): Promise<string>;
+  abstract fetchResource(path: string): Promise<string>;
 
   /**
    * Renders EJS

@@ -4,11 +4,7 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { JSDOM } from 'jsdom';
-import {
-  LocalizerBindings,
-  LocalizerOpts,
-  TemplateContext,
-} from './localizer-bindings';
+import { RendererBindings, RendererOpts, TemplateContext } from './bindings';
 
 import ejs from 'ejs';
 import mjml2html from 'mjml';
@@ -18,10 +14,10 @@ import { join } from 'path';
  * Represents default set of bindings for fluent localizer. Used for nodejs
  * processes.
  */
-export class NodeLocalizerBindings extends LocalizerBindings {
-  protected readonly opts: LocalizerOpts;
+export class NodeRendererBindings extends RendererBindings {
+  readonly opts: RendererOpts;
 
-  constructor(opts?: Partial<LocalizerOpts>) {
+  constructor(opts?: Partial<RendererOpts>) {
     super();
 
     // Backfill options with (email) defaults
@@ -58,7 +54,7 @@ export class NodeLocalizerBindings extends LocalizerBindings {
     }
   }
 
-  protected async fetchResource(path: string): Promise<string> {
+  async fetchResource(path: string): Promise<string> {
     const raw = readFileSync(path, {
       encoding: 'utf8',
     });

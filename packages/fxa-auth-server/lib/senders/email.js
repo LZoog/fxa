@@ -13,8 +13,8 @@ const url = require('url');
 const i18n = require('i18n-abide');
 const { URL } = url;
 const { productDetailsFromPlan } = require('fxa-shared').subscriptions.metadata;
-const FluentLocalizer = require('../l10n/fluent-localizer').default;
-const { NodeLocalizerBindings } = require('../l10n/localizer-bindings-node');
+const Renderer = require('./renderer').default;
+const { NodeRendererBindings } = require('./renderer/bindings-node');
 
 const TEMPLATE_VERSIONS = require('./emails/templates/_versions.json');
 
@@ -300,7 +300,7 @@ module.exports = function (log, config, bounces) {
     this.verificationUrl = mailerConfig.verificationUrl;
     this.verifyLoginUrl = mailerConfig.verifyLoginUrl;
     this.verifyPrimaryEmailUrl = mailerConfig.verifyPrimaryEmailUrl;
-    this.fluentLocalizer = new FluentLocalizer(new NodeLocalizerBindings());
+    this.renderer = new Renderer(new NodeRendererBindings());
     this.metricsEnabled = true;
   }
 
@@ -434,9 +434,7 @@ module.exports = function (log, config, bounces) {
     console.log('translator.language', translator.language);
     message.layout = message.layout || 'fxa';
 
-    const { html, text, subject } = await this.fluentLocalizer.localizeEmail(
-      message
-    );
+    const { html, text, subject } = await this.renderer.localizeEmail(message);
 
     return {
       html,

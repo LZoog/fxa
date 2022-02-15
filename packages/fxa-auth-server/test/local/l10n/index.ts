@@ -5,27 +5,24 @@
 import { FluentBundle } from '@fluent/bundle';
 import chai, { assert } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import FluentLocalizer, {
-  parseAcceptLanguage,
-  splitPlainTextLine,
-} from '../../../lib/l10n/fluent-localizer';
-import { NodeLocalizerBindings } from '../../../lib/l10n/localizer-bindings-node';
+import Localizer, { parseAcceptLanguage } from '../../../lib/l10n';
+import { LocalizerBindings } from '../../../lib/l10n/bindings';
 
 chai.use(chaiAsPromised);
 
-describe('fluent localizer', () => {
+describe('Localizer', () => {
   describe('fetches bundles', () => {
-    let LocalizerBindings = new NodeLocalizerBindings();
-    let localizer = new FluentLocalizer(LocalizerBindings);
+    let localizerBindings = new LocalizerBindings();
+    let localizer = new Localizer(localizerBindings);
 
     it('fails with a bad localizer ftl basePath', () => {
       assert.throws(() => {
-        let LocalizerBindings = new NodeLocalizerBindings({
+        let localizerBindings = new LocalizerBindings({
           ftl: {
             basePath: '/not/a/apth',
           },
         });
-        new FluentLocalizer(LocalizerBindings);
+        new Localizer(localizerBindings);
       }, 'Invalid ftl basePath');
     });
 
@@ -86,7 +83,7 @@ describe('fluent localizer', () => {
     });
   });
 
-  describe('lanugage negotiation', () => {
+  describe('language negotiation', () => {
     it('handles empty case', () => {
       const result = parseAcceptLanguage('');
 
@@ -146,48 +143,6 @@ describe('fluent localizer', () => {
       const result = parseAcceptLanguage('en-NZ, en-GB, en-MY');
 
       assert.deepEqual(result, ['en-GB', 'en']);
-    });
-  });
-
-  describe('key value extraction', () => {
-    const pair = {
-      key: 'foo_2-Bar',
-      val: 'foo - bar',
-    };
-
-    it('splits line with default format', () => {
-      const { key, val } = splitPlainTextLine(`${pair.key} = "${pair.val}"`);
-
-      assert.equal(key, pair.key);
-      assert.equal(val, pair.val);
-    });
-
-    it('handles line with trailing whitespace', () => {
-      const { key, val } = splitPlainTextLine(
-        `  ${pair.key}  =  "${pair.val}"  `
-      );
-      assert.equal(key, pair.key);
-      assert.equal(val, pair.val);
-    });
-
-    it('handles compact line format', () => {
-      const { key, val } = splitPlainTextLine(`${pair.key}="${pair.val}"`);
-      assert.equal(key, pair.key);
-      assert.equal(val, pair.val);
-    });
-
-    it('handles escaped quote format', () => {
-      const { key, val } = splitPlainTextLine(
-        `${pair.key}="${pair.val} \"baz\" "`
-      );
-      assert.equal(key, pair.key);
-      assert.equal(val, pair.val + ' "baz" ');
-    });
-
-    it('requires value to be quoted string', () => {
-      const { key, val } = splitPlainTextLine(`${pair.key} = ${pair.val}`);
-      assert.notExists(key);
-      assert.notExists(val);
     });
   });
 });
