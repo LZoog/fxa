@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 export type FtlOpts = {
@@ -25,7 +25,17 @@ export class LocalizerBindings {
       },
       opts
     );
+
+    // Make sure config is legit
+    this.validateConfig();
   }
+
+  protected validateConfig() {
+    if (!existsSync(this.opts.ftl.basePath)) {
+      throw new Error('Invalid ftl basePath');
+    }
+  }
+
   async fetchResource(path: string): Promise<string> {
     const raw = readFileSync(path, {
       encoding: 'utf8',

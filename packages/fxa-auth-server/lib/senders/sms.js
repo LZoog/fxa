@@ -170,7 +170,7 @@ module.exports = (log, config, statsd) => {
   }
 
   async function getMessage(templateName, acceptLanguage, signinCode) {
-    const l10n = new Renderer(
+    const renderer = new Renderer(
       new NodeRendererBindings({
         ejs: {
           root: join(__dirname, '../senders/sms'),
@@ -188,7 +188,7 @@ module.exports = (log, config, statsd) => {
         link = config.sms[`${templateName}Link`];
       }
 
-      return await l10n.localizeSms({
+      return await renderer.localizeSms({
         acceptLanguage,
         template: templateName,
         link,

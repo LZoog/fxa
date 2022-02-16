@@ -1710,7 +1710,7 @@ const TESTS_WITH_PAYPAL_AS_PAYMENT_PROVIDER = new Map([
   ],
 ]);
 
-describe('lib/senders/mjml-emails:', () => {
+describe('lib/senders/emails:', () => {
   type LocalizeFn = (message: Record<any, any>) => Promise<Record<any, string>>;
 
   let mockLog: Record<any, any>,

@@ -48,6 +48,7 @@ export class BrowserRendererBindings extends RendererBindings {
       {
         templates: {
           basePath: './lib/senders/emails',
+          cssPath: './css',
         },
         ejs: {},
         mjml: {

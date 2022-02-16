@@ -24,10 +24,11 @@ export class NodeRendererBindings extends RendererBindings {
     this.opts = Object.assign(
       {
         templates: {
-          basePath: join(__dirname, '../senders/emails'),
+          basePath: join(__dirname, '../emails'),
+          cssPath: join(__dirname, '../emails/css'),
         },
         ejs: {
-          root: join(__dirname, '../senders/emails'),
+          root: join(__dirname, '../emails'),
         },
         mjml: {
           validationLevel: 'strict',
@@ -38,7 +39,7 @@ export class NodeRendererBindings extends RendererBindings {
           minify: true,
         },
         ftl: {
-          basePath: join(__dirname, '../../public/locales'),
+          basePath: join(__dirname, '../../../public/locales'),
         },
       },
       opts

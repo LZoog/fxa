@@ -35,6 +35,7 @@ class Renderer extends Localizer {
     );
     // emails are sent with a `templateValues` object, Storybook does not
     context = { ...context, ...context.templateValues };
+    context.cssPath = this.bindings.opts.templates.cssPath;
     if (template !== '_storybook') {
       if (template === 'verify') {
         const {

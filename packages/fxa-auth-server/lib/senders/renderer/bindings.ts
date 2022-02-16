@@ -105,7 +105,8 @@ export abstract class RendererBindings {
 
   async getIncludes(template: string): Promise<Includes> {
     try {
-      return import(`../emails/templates/${template}/includes.ts`);
+      console.log('returning the includes!!!');
+      return import(`../emails/templates/${template}/includes`);
     } catch (e) {
       throw Error(e);
     }
