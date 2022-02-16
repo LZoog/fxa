@@ -14,6 +14,7 @@ export type MjmlOpts = {
 };
 export type TemplateOpts = {
   basePath: string;
+  cssPath: string;
 };
 export type FtlOpts = {
   basePath: string;
@@ -26,15 +27,11 @@ export type RenderOpts = {
 export type L10nOps = {
   ftl: FtlOpts;
 };
-
-interface Includes {
-  includes: IncludesContent;
+interface GlobalTemplateValues {
+  subject: GlobalTemplateValue;
+  action: GlobalTemplateValue;
 }
-interface IncludesContent {
-  subject: SubjectOrAction;
-  action: SubjectOrAction;
-}
-interface SubjectOrAction {
+interface GlobalTemplateValue {
   id: string;
   message: string;
 }
@@ -65,7 +62,7 @@ export abstract class RendererBindings {
   /**
    * Renders a mjml template with support for fluent localization.
    * @param name Name of template
-   * @param context Contains placeholder values
+   * @param context Contains either values sent through mailer.send or mock values from Storybook
    * @param layout Optional layout, which acts as wrapper for for template
    * @returns Rendered template
    */
@@ -103,10 +100,15 @@ export abstract class RendererBindings {
     return { mjml, text };
   }
 
-  async getIncludes(template: string): Promise<Includes> {
+  async getGlobalTemplateValues(
+    template: string
+  ): Promise<GlobalTemplateValues> {
     try {
-      console.log('returning the includes!!!');
-      return import(`../emails/templates/${template}/includes`);
+      const includes = await import(
+        `../emails/templates/${template}/includes.json`
+      );
+      const globalTemplateValues: GlobalTemplateValues = includes;
+      return globalTemplateValues;
     } catch (e) {
       throw Error(e);
     }

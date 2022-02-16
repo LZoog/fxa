@@ -38,9 +38,9 @@ class Renderer extends Localizer {
     context.cssPath = this.bindings.opts.templates.cssPath;
     if (template !== '_storybook') {
       if (template === 'verify') {
-        const {
-          includes: { subject, action },
-        } = await this.bindings.getIncludes(template);
+        const { subject, action } = await this.bindings.getGlobalTemplateValues(
+          template
+        );
 
         context.subject =
           (await l10n.formatValue(subject.id, context)) || subject.message;
