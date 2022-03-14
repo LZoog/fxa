@@ -144,5 +144,46 @@ describe('Localizer', () => {
 
       assert.deepEqual(result, ['en-GB', 'en']);
     });
+
+    it('handles Chinese dialects properly', () => {
+      const result = parseAcceptLanguage('zh-CN, zh-TW, zh-HK, zh');
+
+      assert.deepEqual(result, ['zh-CN', 'zh-TW', 'en']);
+    });
+  });
+
+  describe('localizeStrings', () => {
+    const localizer = new Localizer(new LocalizerBindings());
+
+    it('localizes a string correctly', async () => {
+      const result = await localizer.localizeStrings('it', [
+        {
+          id: 'manage-account',
+          message: 'Manage account',
+        },
+      ]);
+
+      assert.deepEqual(result, {
+        'manage-account': 'Gestisci account',
+      });
+    });
+
+    it('localizes multiple strings correctly', async () => {
+      const result = await localizer.localizeStrings('it', [
+        {
+          id: 'manage-account',
+          message: 'Manage account',
+        },
+        {
+          id: 'manage-account-plaintext',
+          message: 'Manage account:',
+        },
+      ]);
+
+      assert.deepEqual(result, {
+        'manage-account': 'Gestisci account',
+        'manage-account-plaintext': 'Gestisci account:',
+      });
+    });
   });
 });
