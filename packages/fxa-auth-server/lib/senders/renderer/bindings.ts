@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { string } from '@hapi/joi';
 import { ILocalizerBindings } from '../../l10n/interfaces/ILocalizerBindings';
 import { LocalizerOpts } from '../../l10n/models/LocalizerOpts';
 

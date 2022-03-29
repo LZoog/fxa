@@ -113,8 +113,14 @@ class Localizer {
     const localizedFtlIdMsgs = await Promise.all(
       ftlIdMsgs.map(async (ftlIdMsg) => {
         const { id, message } = ftlIdMsg;
+        let localizedMessage;
+        try {
+          localizedMessage = (await l10n.formatValue(id, message)) || message;
+        } catch {
+          localizedMessage = message;
+        }
         return Promise.resolve({
-          [id]: (await l10n.formatValue(id, message)) || message,
+          [id]: localizedMessage,
         });
       })
     );
