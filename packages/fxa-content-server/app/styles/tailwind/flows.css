@@ -1,0 +1,11 @@
+.card {
+  @apply relative text-center max-w-120 bg-white rounded-xl shadow-xl px-8 py-10;
+
+  &-header {
+    @apply font-header text-xl font-bold;
+  }
+}
+
+/* TODO: this should be an inlined SVG to match other patterns */
+.card::before {
+}

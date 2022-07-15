@@ -1,4 +1,9 @@
-/* If or when content-server is using Tailwind exclusively, we should enable @base. */
-/* @tailwind base; */
-@tailwind components;
-@tailwind utilities;
+/* When content-server is using Tailwind exclusively use "@tailwind" directives instead of
+ * imports. See: https://tailwindcss.com/docs/using-with-preprocessors */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import './tailwind/fonts';
+@import './tailwind/flows';

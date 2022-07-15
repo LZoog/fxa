@@ -207,7 +207,8 @@ div + .error {
 }
 
 // custom state indicators
-#suggest-sync, #suggest-account {
+#suggest-sync,
+#suggest-account {
   /*Pull the message up to bring it closer to the header*/
   margin: -6px auto 16px;
 

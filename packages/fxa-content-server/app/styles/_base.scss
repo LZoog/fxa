@@ -74,15 +74,15 @@ header {
   h1,
   h2,
   h3 {
-    @include header-font();
-    line-height: 1em;
-    margin: 0;
+    // @include header-font();
+    // line-height: 1em;
+    // margin: 0;
   }
 
   h1 {
-    @include title30();
-    color: $header-color;
-    line-height: 26px;
+    // @include title30();
+    // color: $header-color;
+    // line-height: 26px;
 
     .description,
     .service,

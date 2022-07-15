@@ -43,19 +43,19 @@ button {
     text-decoration: none;
   }
 
-  &[type='submit']:not(.secondary-button),
-  &.primary-button {
-    background: $button-background-color-primary;
-    color: $button-text-color-primary;
+  // &[type='submit']:not(.secondary-button),
+  // &.primary-button {
+  //   background: $button-background-color-primary;
+  //   color: $button-text-color-primary;
 
-    &:hover:enabled {
-      background: $button-background-color-primary-hover;
-    }
+  //   &:hover:enabled {
+  //     background: $button-background-color-primary-hover;
+  //   }
 
-    &:active:enabled {
-      background: $button-background-color-primary-active;
-    }
-  }
+  //   &:active:enabled {
+  //     background: $button-background-color-primary-active;
+  //   }
+  // }
 
   &.tertiary-button {
     background: transparent;
