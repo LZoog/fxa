@@ -31,12 +31,12 @@
     {{{ syncSuggestionHTML }}}
 
     <form novalidate>
-      <div class="input-row">
-          <input name="email" type="email" class="email tooltip-below" autofocus placeholder="{{#t}}Enter your email{{/t}}"/>
+      <div class="mb-5 flex">
+          <input name="email" type="email" class="tooltip-below flex-1 p-4 text-grey-500 text-base rounded border border-grey-300 focus:border-blue-400 focus:outline-none focus:shadow-input-blue-focus" autofocus placeholder="{{#t}}Enter your email{{/t}}"/>
       </div>
 
-      <div class="button-row">
-        <button id="submit-btn" type="submit" class="cta-primary">
+      <div class="flex">
+        <button id="submit-btn" type="submit" class="cta-primary flex-1 focus:outline-none font-bold text-base p-4">
           {{#t}}Sign up or sign in{{/t}}
         </button>
       </div>
@@ -47,7 +47,7 @@
     {{/isInThirdPartyAuthExperiment}}
 
     {{^isInThirdPartyAuthExperiment}}
-      <p class="text-xs text-grey-500 mb-0">
+      <p class="text-xs text-grey-500 mb-0 mt-5">
         {{#t}}A Firefox account also unlocks access to more privacy-protecting products from Mozilla.{{/t}}
       </p>
     {{/isInThirdPartyAuthExperiment}}

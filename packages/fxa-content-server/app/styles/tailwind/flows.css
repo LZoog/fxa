@@ -6,7 +6,7 @@
   }
 
   &-header-span {
-    @apply font-body;
+    @apply font-body font-normal text-sm block mt-1;
   }
 }
 
