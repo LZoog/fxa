@@ -8,3 +8,4 @@
 @import './tailwind/fonts';
 @import './tailwind/flows';
 @import './tailwind/state';
+@import 'fxa-react/styles/index.css';

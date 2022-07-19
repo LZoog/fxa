@@ -43,20 +43,6 @@ button {
     text-decoration: none;
   }
 
-  // &[type='submit']:not(.secondary-button),
-  // &.primary-button {
-  //   background: $button-background-color-primary;
-  //   color: $button-text-color-primary;
-
-  //   &:hover:enabled {
-  //     background: $button-background-color-primary-hover;
-  //   }
-
-  //   &:active:enabled {
-  //     background: $button-background-color-primary-active;
-  //   }
-  // }
-
   &.tertiary-button {
     background: transparent;
     color: $blue-60;
@@ -66,39 +52,6 @@ button {
     }
     &:active {
       color: $blue-80;
-    }
-  }
-
-  &.warning-button {
-    background: $error-background-color;
-    border: 0;
-    color: $message-text-color;
-
-    &:disabled,
-    &:enabled {
-      background: $error-background-color;
-    }
-
-    &:enabled {
-      &:hover {
-        background: $error-background-color-hover;
-      }
-
-      &:active {
-        background: $error-background-color-active;
-      }
-
-      // 'type' is needed for selector specificity
-      &[type='submit'] {
-        &:active,
-        &:active:hover {
-          background: darken($error-background-color, 10);
-        }
-
-        &:hover {
-          background: darken($error-background-color, 5);
-        }
-      }
     }
   }
 

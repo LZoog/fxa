@@ -676,7 +676,7 @@ module.exports = {
     RESET_PASSWORD: 'a[href^="/reset_password"]',
     SUB_HEADER: '#fxa-signin-header .service',
     SUBMIT: 'button[type=submit]',
-    SUBMIT_USE_SIGNED_IN: '.use-logged-in',
+    SUBMIT_USE_SIGNED_IN: '#use-logged-in',
     TOOLTIP: '.tooltip',
   },
   SIGNIN_BOUNCED: {
@@ -703,7 +703,7 @@ module.exports = {
     SUB_HEADER_ENTER_PW: '#fxa-signin-password-header .description',
     SUCCESS: '.success',
     SUBMIT: 'button[type="submit"]',
-    SUBMIT_USE_SIGNED_IN: '.use-logged-in',
+    SUBMIT_USE_SIGNED_IN: '#use-logged-in',
     TOOLTIP: 'input[type=password] ~ .tooltip',
   },
   SIGNIN_RECOVERY_CODE: {
@@ -771,7 +771,7 @@ module.exports = {
     ERROR: '.error',
     ERROR_PASSWORDS_DO_NOT_MATCH: '.error',
     HEADER: '#fxa-signup-password-header',
-    LINK_USE_DIFFERENT: '.use-different',
+    LINK_USE_DIFFERENT: '#use-different',
     MARKETING_EMAIL_OPTIN: 'input.marketing-email-optin',
     PASSWORD: '#password',
     PASSWORD_BALLOON,
