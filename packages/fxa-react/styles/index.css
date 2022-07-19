@@ -6,5 +6,7 @@
   This file gathers all stylesheets in fxa-react, so that they can easily
   be imported in other packages that don't want to import tailwind.css.
 */
+@import './animations.css';
+@import './links.css';
 @import './portal.css';
 @import './ctas.css';
