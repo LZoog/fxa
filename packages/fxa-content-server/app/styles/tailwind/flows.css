@@ -4,6 +4,10 @@
   &-header {
     @apply font-header text-xl font-bold;
   }
+
+  &-header-span {
+    @apply font-body;
+  }
 }
 
 /* TODO: this should be an inlined SVG to match other patterns */
