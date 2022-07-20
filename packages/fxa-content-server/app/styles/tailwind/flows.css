@@ -1,5 +1,11 @@
 .card {
-  @apply relative text-center max-w-120 bg-white rounded-xl shadow-xl px-8 py-10;
+  @apply relative text-center max-w-120 bg-white rounded-xl shadow-xl px-8 pb-10 pt-20;
+
+  &::before {
+    @apply h-20 left-0 block absolute bg-center bg-no-repeat w-full bg-contain -top-10;
+    content: '';
+    background-image: inline('../images/firefox-logo.svg');
+  }
 
   &-header {
     @apply font-header text-xl font-bold;
@@ -8,8 +14,4 @@
   &-header-span {
     @apply font-body font-normal text-sm block mt-1;
   }
-}
-
-/* TODO: this should be an inlined SVG to match other patterns */
-.card::before {
 }
