@@ -2,6 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-.cta-xl {
-  @apply flex-1 focus:outline-none font-bold text-base p-4;
+.input-text {
+  @apply flex-1 p-4 text-grey-500 text-base rounded border border-grey-300 focus:border-blue-400 focus:outline-none focus:shadow-input-blue-focus;
 }
