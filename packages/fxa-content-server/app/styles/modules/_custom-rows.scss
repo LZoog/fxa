@@ -32,14 +32,14 @@
   }
 }
 
-.tos-pp {
-  font-size: 12px;
-  line-height: 18px;
+// .tos-pp {
+//   font-size: 12px;
+//   line-height: 18px;
 
-  & + .links {
-    margin-top: 20px;
-  }
-}
+//   & + .links {
+//     margin-top: 20px;
+//   }
+// }
 
 .verification-email-message,
 .signed-in-email-message,
@@ -255,12 +255,14 @@
       border-color: #1a1a1a;
     }
     .google-logo {
-      background: url('/images/third_party_auth/google_btn_normal.svg') 50% no-repeat;
+      background: url('/images/third_party_auth/google_btn_normal.svg') 50%
+        no-repeat;
       width: 40px;
       height: 40px;
     }
     .apple-logo {
-      background: url('/images/third_party_auth/apple_btn_normal.svg') 50% no-repeat;
+      background: url('/images/third_party_auth/apple_btn_normal.svg') 50%
+        no-repeat;
       width: 40px;
       height: 40px;
     }

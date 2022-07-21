@@ -15,3 +15,8 @@
     @apply font-body font-normal text-sm block mt-1;
   }
 }
+
+.with-default {
+  @apply bg-center bg-no-repeat bg-contain;
+  background-image: inline('../images/default-profile.svg');
+}

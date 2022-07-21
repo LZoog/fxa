@@ -411,7 +411,7 @@ module.exports = {
   },
   FORCE_AUTH: {
     EMAIL: 'input[type=email]',
-    EMAIL_NOT_EDITABLE: '.prefillEmail',
+    EMAIL_NOT_EDITABLE: '#prefillEmail',
     HEADER: '#fxa-force-auth-header',
     LINK_RESET_PASSWORD: '.reset-password',
     PASSWORD: 'input[type=password]',
@@ -585,12 +585,12 @@ module.exports = {
     SUBMIT: 'button[type=submit]',
   },
   RESET_PASSWORD: {
-    BACK: '.remember-password',
+    BACK: '#remember-password',
     EMAIL: 'input[type=email]',
     ERROR: '.error',
     HEADER: '#fxa-reset-password-header',
     LINK_ERROR_SIGNUP: '.error a[href="/signup"]',
-    LINK_SIGNIN: '.remember-password',
+    LINK_SIGNIN: '#remember-password',
     SUBMIT: 'button[type="submit"]',
     SUCCESS: '.success',
   },
@@ -668,7 +668,7 @@ module.exports = {
   },
   SIGNIN: {
     EMAIL: 'input[type=email]',
-    EMAIL_NOT_EDITABLE: '.prefillEmail',
+    EMAIL_NOT_EDITABLE: '#prefillEmail',
     ERROR: '.error',
     HEADER: '#fxa-signin-header',
     LINK_USE_DIFFERENT: '#use-different',
@@ -692,7 +692,7 @@ module.exports = {
   },
   SIGNIN_PASSWORD: {
     EMAIL: 'input[type=email]',
-    EMAIL_NOT_EDITABLE: '.prefillEmail',
+    EMAIL_NOT_EDITABLE: '#prefillEmail',
     ERROR: '.error',
     HEADER: '#fxa-signin-password-header',
     LINK_FORGOT_PASSWORD: 'a[href^="/reset_password"]',

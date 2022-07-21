@@ -59,17 +59,17 @@ noscript,
   }
 }
 
-a {
-  border-radius: 2px; // Give the focusring rounded corners
-  color: $link-color-default;
-  cursor: pointer; // Use the correct cursor for anchors without an href
-  text-decoration: none;
+// a {
+//   border-radius: 2px; // Give the focusring rounded corners
+//   color: $link-color-default;
+//   cursor: pointer; // Use the correct cursor for anchors without an href
+//   text-decoration: none;
 
-  @include anchor-default-pseudo-classes();
-}
+//   @include anchor-default-pseudo-classes();
+// }
 
 header {
-  margin-bottom: 15px;
+  // margin-bottom: 15px;
 
   h1,
   h2,

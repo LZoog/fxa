@@ -3,15 +3,26 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 .link-blue {
-  @apply underline text-blue-500;
+  @apply underline text-blue-500 rounded-sm;
 
   &:active {
     @apply text-blue-800;
   }
 }
 
+.link-grey {
+  @apply underline text-grey-500 rounded-sm;
+
+  &:active {
+    @apply text-grey-500;
+  }
+}
+
 @media (hover: hover) {
   .link-blue:hover {
     @apply text-blue-600;
+  }
+  .link-grey:hover {
+    @apply text-grey-500;
   }
 }

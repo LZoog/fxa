@@ -3,5 +3,5 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 .cta-xl {
-  @apply flex-1 focus:outline-none font-bold text-base p-4;
+  @apply flex-1 font-bold text-base p-4;
 }

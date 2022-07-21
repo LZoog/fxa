@@ -10,6 +10,6 @@
 @import './tailwind/flows';
 @import './tailwind/state';
 /* NOTE: when we refactor to React it's going to be nicer to create reusable
- * components and ditch some of these custom component classe. */
+ * components and ditch some of these custom component classes. */
 @import './tailwind/ctas';
 @import './tailwind/inputs';
