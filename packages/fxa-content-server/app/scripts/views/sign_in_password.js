@@ -56,13 +56,17 @@ const SignInPasswordView = FormView.extend({
   },
 
   submit() {
+    console.log('in submit');
     const account = this.getAccount();
     if (this.isPasswordNeededForAccount(account)) {
+      console.log('password needed for acc:', account);
       const password = this.getElementValue('input[type=password]');
+      console.log('pw', password);
       return this.signIn(account, password).catch((error) =>
         this.onSignInError(account, password, error)
       );
     } else {
+      console.log('password not needed for acc:', account);
       return this.useLoggedInAccount(account);
     }
   },

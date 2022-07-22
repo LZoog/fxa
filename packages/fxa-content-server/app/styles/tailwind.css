@@ -13,3 +13,7 @@
  * components and ditch some of these custom component classes. */
 @import './tailwind/ctas';
 @import './tailwind/inputs';
+
+body {
+  @apply min-h-screen mobileLandscape:pt-12 text-black flex flex-col justify-center;
+}
