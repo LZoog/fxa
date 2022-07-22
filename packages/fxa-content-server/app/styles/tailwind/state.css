@@ -1,5 +1,9 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 .error {
-  @apply text-xs bg-red-600 font-bold p-3 my-3 hidden rounded text-white;
+  @apply text-xs bg-red-700 font-bold p-3 my-3 hidden rounded text-white;
 
   /* NOTE: Nesting element styles with TW is not great practice, single-element specificity is
    * preferred. This is a temp "hack" until we convert to React; currently, our Backbone JS files
