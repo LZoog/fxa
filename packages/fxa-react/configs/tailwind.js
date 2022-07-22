@@ -37,6 +37,7 @@ module.exports = {
       width: {
         7: '1.75rem',
         18: '4.5rem',
+        120: '30rem',
       },
       minWidth: {
         sm: '27rem',
@@ -55,7 +56,6 @@ module.exports = {
         48: '12rem',
         64: '16rem',
         100: '25rem',
-        120: '30rem',
       },
       inset: {
         '1/2': '50%',
