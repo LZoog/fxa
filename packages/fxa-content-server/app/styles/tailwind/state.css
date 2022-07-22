@@ -5,10 +5,7 @@
 .error {
   @apply text-xs bg-red-700 font-bold p-3 my-3 hidden rounded text-white;
 
-  /* NOTE: Nesting element styles with TW is not great practice, single-element specificity is
-   * preferred. This is a temp "hack" until we convert to React; currently, our Backbone JS files
-   * can insert links here and we'd need to 1) be sure to add classes every instance of this and
-   * 2) add these JS files to content-server's TW "content" option for purging reasons. */
+  /* Temp less-than-ideal nesting until we use React since we add .error content in JS */
   a {
     @apply underline;
   }

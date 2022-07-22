@@ -4,7 +4,7 @@
 
 /* Max-height is a temp hack for .spinner */
 .cta-xl {
-  @apply flex-1 font-bold text-base p-4 max-h-[58px];
+  @apply flex-1 font-bold text-base p-4 border-0 max-h-[58px];
 }
 
 /* Temp hack until .spinner is fully converted to TW */

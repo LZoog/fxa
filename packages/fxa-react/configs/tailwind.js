@@ -90,6 +90,15 @@ module.exports = {
       outline: {
         'black-dotted': '1px dotted #000',
       },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0.01' },
+          '100%': { opacity: '1' },
+        },
+      },
+      animation: {
+        'delayed-fade-in': 'fade-in 1s linear 5s forwards',
+      },
     },
     screens: {
       mobileLandscape: '480px',

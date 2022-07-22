@@ -328,7 +328,7 @@ module.exports = {
   },
   CONFIRM_SIGNUP_CODE: {
     HEADER: '#fxa-confirm-signup-code-header',
-    SUB_HEADER: '#fxa-confirm-signup-code-header .description',
+    SUB_HEADER: '#fxa-confirm-signup-code-header .card-header-span',
     EMAIL_FIELD: '.verification-email-message',
     INPUT: '.otp-code',
     LINKS: '.links',
