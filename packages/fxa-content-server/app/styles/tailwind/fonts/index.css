@@ -1,4 +1,5 @@
 /* URL path is relative to the tailwind.out file */
+/* This file can likely be shared in `fxa-react` once content-server is using React */
 @font-face {
   font-family: 'Inter';
   font-style: normal;

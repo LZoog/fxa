@@ -8,7 +8,7 @@
       {{/isSync}}
       {{^isSync}}
         <!-- L10N: For languages structured like English, the second phrase can read "to continue to %(serviceName)s" -->
-        {{#t}}Sign in{{/t}} <span class="service">{{#t}}Continue to %(serviceName)s{{/t}}</span>
+        {{#t}}Sign in{{/t}} <span class="card-header-span" id="service">{{#t}}Continue to %(serviceName)s{{/t}}</span>
       {{/isSync}}
     </h1>
   </header>
@@ -29,8 +29,8 @@
         <input type="password" class="password tooltip-below" id="password" placeholder="{{#t}}Password{{/t}}" required pattern=".{8,}" required {{#email}}autofocus{{/email}} />
       </div>
 
-      <div class="button-row">
-        <button id="submit-btn" type="submit">{{{buttonSignInText}}}</button>
+      <div class="flex">
+        <button id="submit-btn" type="submit" class="cta-primary cta-xl">{{{buttonSignInText}}}</button>
       </div>
     </form>
 
@@ -38,9 +38,9 @@
       {{#unsafeTranslate}}By proceeding, you agree to the <a class="link-grey" id="fxa-tos" href="/legal/terms">Terms of Service</a> and <a class="link-grey" id="fxa-pp" href="/legal/privacy">Privacy Notice</a>.{{/unsafeTranslate}}
     </div>
 
-    <div class="links">
-      <a href="/" id="use-different" class="left" data-flow-event="use-different-account">{{#t}}Use a different account{{/t}}</a>
-      <a href="/reset_password" class="right reset-password" data-flow-event="forgot-password">{{#t}}Forgot password?{{/t}}</a>
+    <div class="flex justify-between">
+      <a href="/" id="use-different" class="link-blue" data-flow-event="use-different-account">{{#t}}Use a different account{{/t}}</a>
+      <a href="/reset_password" class="link-blue" data-flow-event="forgot-password" id="reset-password">{{#t}}Forgot password?{{/t}}</a>
     </div>
     {{/fatalError}}
   </section>
