@@ -8,6 +8,7 @@
   background-image: inline('../images/default-profile.svg');
 }
 
+/* When content-server is using React, inline these SVGs in the JSX */
 .bg-image-email {
   @apply mt-8 mb-3 bg-center bg-no-repeat bg-contain h-40;
   background-image: inline('../images/graphic_mail.svg');

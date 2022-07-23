@@ -89,6 +89,8 @@
   margin-top: 24px;
 }
 
+/* TODO: Once payments is using TW on its 404 page, remove this style plus #fxa-404-home style,
+ * and remove the class from the `p` on content-server's 404 page */
 .fxa-404-p {
   line-height: 1.5em;
   margin: 0;

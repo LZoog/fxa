@@ -209,8 +209,7 @@ div + .error {
 // custom state indicators
 #suggest-sync,
 #suggest-account {
-  /*Pull the message up to bring it closer to the header*/
-  margin: -6px auto 16px;
+  margin: 0px auto 16px;
 
   .dismiss {
     background-image: url('/images/icon-close.svg');
