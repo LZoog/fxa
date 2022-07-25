@@ -13,3 +13,13 @@
   @apply mt-8 mb-3 bg-center bg-no-repeat bg-contain h-40;
   background-image: inline('../images/graphic_mail.svg');
 }
+
+.bg-image-cad-hearts {
+  @apply mt-8 mb-8 bg-center bg-no-repeat bg-contain h-40;
+  background-image: inline('../images/account-verified-hearts.svg');
+}
+
+.bg-image-cad {
+  @apply mt-8 mb-3 bg-center bg-no-repeat bg-contain h-36;
+  background-image: inline('../images/account-verified.svg');
+}

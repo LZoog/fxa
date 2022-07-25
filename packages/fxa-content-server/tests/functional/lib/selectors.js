@@ -342,7 +342,7 @@ module.exports = {
     SIGNIN_BUTTON: 'form div a',
     CONNECTED: '#fxa-connected-heading',
     SUCCESS: '.success',
-    SUCCESS_DIFFERENT_BROWSER: '.success-not-authenticated',
+    SUCCESS_DIFFERENT_BROWSER: '#success-not-authenticated',
     SUCCESS_SAME_BROWSER: '.success-authenticated',
     TEXT_INSTALL_FROM_OTHER: '#install-mobile-firefox-other',
     TEXT_INSTALL_FX_ANDROID: '#install-mobile-firefox-android',
@@ -703,6 +703,7 @@ module.exports = {
     SUB_HEADER_ENTER_PW: '#fxa-signin-password-header .card-header-span',
     SUCCESS: '.success',
     SUBMIT: 'button[type="submit"]',
+    /* TODO: don't use this functionally */
     SUBMIT_USE_SIGNED_IN: '#use-logged-in',
     TOOLTIP: 'input[type=password] ~ .tooltip',
   },

@@ -168,29 +168,29 @@
   }
 }
 
-.two-col-items {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  margin-top: 20px;
-  padding: 0 15px;
+// .two-col-items {
+//   display: grid;
+//   grid-template-columns: repeat(2, 1fr);
+//   margin-top: 20px;
+//   padding: 0 15px;
 
-  .choose-what-to-sync-row {
-    display: grid;
-    grid-template-columns: 28px auto;
-    line-height: 1.5;
-    margin-bottom: 20px;
-    padding-right: 4px;
-  }
+//   .choose-what-to-sync-row {
+//     display: grid;
+//     grid-template-columns: 28px auto;
+//     line-height: 1.5;
+//     margin-bottom: 20px;
+//     padding-right: 4px;
+//   }
 
-  .fxa-checkbox__label {
-    color: $text-color;
-    top: -2px;
-  }
+//   .fxa-checkbox__label {
+//     color: $text-color;
+//     top: -2px;
+//   }
 
-  @include respond-to('small') {
-    column-width: 150px;
-  }
-}
+//   @include respond-to('small') {
+//     column-width: 150px;
+//   }
+// }
 
 .pair-auth {
   h1 {

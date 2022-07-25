@@ -1,15 +1,15 @@
 <div id="main-content" class="card">
   <header>
-    <h1 id="fxa-signin-code-header">{{#t}}Authorize this sign-in{{/t}}</h1>
+    <h1 id="fxa-signin-code-header" class="card-header">{{#t}}Authorize this sign-in{{/t}}</h1>
   </header>
 
   <section>
     <div class="error"></div>
     <div class="success"></div>
 
-    <div class="graphic graphic-mail">{{#t}}Authorize this sign-in{{/t}}</div>
+    <div class="b-gimage-email"></div>
 
-    <p class="verification-email-message">
+    <p id="verification-email-message" class="mb-5">
     {{#t}}Check your email for the code sent to %(email)s.{{/t}}
     </p>
 
@@ -19,15 +19,15 @@
           <input type="text" inputmode="numeric" pattern="\d[ ]*" class="tooltip-below otp-code" placeholder="{{#t}}Enter 6-digit code{{/t}}" required autofocus />
       </div>
 
-      <div class="button-row">
-        <button type="submit" id="use-logged-in" class="cta-primary">{{#t}}Continue{{/t}}</button>
+      <div class="flex">
+        <button type="submit" id="use-logged-in" class="cta-primary cta-xl">{{#t}}Continue{{/t}}</button>
       </div>
 
     </form>
 
-    <div class="links">
-        <a id="resend" class="left delayed-fadein" href="#">{{#t}}Need another code? Resend{{/t}}</a>
-        <a href="{{{ escapedSupportLink }}}" id="support-link" class="delayed-fadein right" target="_blank">{{#t}}Why is this happening?{{/t}}</a>
+    <div class="flex justify-between animate-delayed-fade-in opacity-0 mt-5">
+        <a id="resend" class="link-blue" href="#">{{#t}}Need another code? Resend{{/t}}</a>
+        <a href="{{{ escapedSupportLink }}}" id="support-link" class="link-blue" target="_blank">{{#t}}Why is this happening?{{/t}}</a>
     </div>
   </section>
 </div>
