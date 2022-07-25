@@ -37,35 +37,35 @@
   }
 }
 
-.graphic-connect-another-device {
-  background-image: image-url('account-verified.svg');
+// .graphic-connect-another-device {
+//   background-image: image-url('account-verified.svg');
 
-  @include respond-to('small') {
-    height: 100px;
-  }
-}
+//   @include respond-to('small') {
+//     height: 100px;
+//   }
+// }
 
-.graphic-connect-another-device-qr-code {
-  background-image: image-url('qr_code_firefox_mobile.svg');
+// .graphic-connect-another-device-qr-code {
+//   background-image: image-url('qr_code_firefox_mobile.svg');
 
-  @include respond-to('small') {
-    height: 100px;
-  }
-}
+//   @include respond-to('small') {
+//     height: 100px;
+//   }
+// }
 
-.graphic-connect-another-device-hearts {
-  background-image: image-url('account-verified-hearts.svg');
-  height: 138px;
-  margin: 0 auto 20px auto;
-}
+// .graphic-connect-another-device-hearts {
+//   background-image: image-url('account-verified-hearts.svg');
+//   height: 138px;
+//   margin: 0 auto 20px auto;
+// }
 
-.graphic-confirm-pairing {
-  background-image: image-url('confirm-pairing.svg');
+// .graphic-confirm-pairing {
+//   background-image: image-url('confirm-pairing.svg');
 
-  @include respond-to('small') {
-    height: 100px;
-  }
-}
+//   @include respond-to('small') {
+//     height: 100px;
+//   }
+// }
 
 .graphic-laptop-mobile {
   background-image: image-url('graphic_laptop_mobile.svg');

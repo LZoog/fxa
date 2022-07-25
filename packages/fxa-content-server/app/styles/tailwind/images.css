@@ -28,3 +28,8 @@
   @apply mt-9 bg-center bg-no-repeat bg-contain h-48;
   background-image: inline('../images/qr_code_firefox_mobile.svg');
 }
+
+.bg-image-location-balloon {
+  @apply mt-9 bg-center bg-no-repeat bg-contain h-36;
+  background-image: inline('../images/confirm-pairing.svg');
+}
