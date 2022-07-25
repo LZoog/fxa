@@ -313,7 +313,7 @@ describe('views/connect_another_device', () => {
         return view.render().then(() => {
           view.afterVisible();
 
-          assert.lengthOf(view.$('.pair-everywhere-cta'), 2);
+          assert.lengthOf(view.$('#pair-everywhere'), 1);
           testIsFlowEventLogged('install_from.fx_desktop');
         });
       });
@@ -392,7 +392,7 @@ describe('views/connect_another_device', () => {
 
       it('shows the marketing area, logs appropriately', () => {
         assert.isTrue(view._isSignedIn.called);
-        assert.lengthOf(view.$('.pair-everywhere-cta'), 2);
+        assert.lengthOf(view.$('#pair-everywhere'), 1);
         testIsFlowEventLogged('signedin.true');
         testIsFlowEventLogged('signin.ineligible');
         testIsFlowEventLogged('install_from.fx_desktop');

@@ -35,10 +35,7 @@ describe('views/mixins/pairing-graphics-mixin', function () {
           supportsSvgTransformOrigin: () => true,
         };
       });
-      assert.equal(
-        view.getGraphicsId(),
-        'graphic-connect-another-device-hearts'
-      );
+      assert.equal(view.getGraphicsId(), 'bg-image-cad-hearts');
     });
   });
 

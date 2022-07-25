@@ -15,11 +15,16 @@
 }
 
 .bg-image-cad-hearts {
-  @apply mt-8 mb-8 bg-center bg-no-repeat bg-contain h-40;
+  @apply mb-8 bg-center bg-no-repeat bg-contain h-40;
   background-image: inline('../images/account-verified-hearts.svg');
 }
 
 .bg-image-cad {
-  @apply mt-8 mb-3 bg-center bg-no-repeat bg-contain h-36;
+  @apply mb-3 bg-center bg-no-repeat bg-contain h-36;
   background-image: inline('../images/account-verified.svg');
+}
+
+.bg-image-cad-qr-code {
+  @apply mt-9 bg-center bg-no-repeat bg-contain h-48;
+  background-image: inline('../images/qr_code_firefox_mobile.svg');
 }
