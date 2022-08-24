@@ -78,14 +78,6 @@ const EVENTS = {
     group: GROUPS.registration,
     event: 'cwts_view',
   },
-  'settings.change-password.success': {
-    group: GROUPS.settings,
-    event: 'password',
-  },
-  'settings.signout.success': {
-    group: GROUPS.settings,
-    event: 'logout',
-  },
   'cached.signin.success': {
     group: GROUPS.login,
     event: 'complete',
@@ -259,6 +251,28 @@ const EVENTS = {
   'enter-email.thirdPartyAuth': {
     group: GROUPS.thirdPartyAuth,
     event: 'view',
+  },
+
+  // settings, aka fxa_pref
+  'settings.test.fallback.start': {
+    group: GROUPS.settings,
+    event: 'test_fallback_start',
+  },
+  'settings.test.fallback.text-needed': {
+    group: GROUPS.settings,
+    event: 'test_fallback_text_needed',
+  },
+  'settings.test.fallback.text-not-needed': {
+    group: GROUPS.settings,
+    event: 'test_fallback_text_not_needed',
+  },
+  'settings.change-password.success': {
+    group: GROUPS.settings,
+    event: 'password',
+  },
+  'settings.signout.success': {
+    group: GROUPS.settings,
+    event: 'logout',
   },
 };
 

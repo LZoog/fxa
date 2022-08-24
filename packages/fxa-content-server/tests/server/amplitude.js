@@ -471,6 +471,87 @@ registerSuite('amplitude', {
       assert.equal(logger.info.args[0][1].event_type, 'fxa_pref - logout');
     },
 
+    'settings.test.fallback.start': () => {
+      amplitude(
+        {
+          time: '1585321743',
+          type: 'settings.test.fallback.start',
+        },
+        {
+          connection: {},
+          headers: {
+            'x-forwarded-for': '63.245.221.32',
+          },
+        },
+        {
+          flowBeginTime: '1585261624219',
+          flowId:
+            '11750082326622a61b155a58a54442dd3702fa899b18d62868562ef9a3bc8484',
+          uid: '44794bdf0be84d4e8c7a8026b8580fa3',
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - test_fallback_start'
+      );
+    },
+
+    'settings.test.fallback.text-needed': () => {
+      amplitude(
+        {
+          time: '1585321743',
+          type: 'settings.test.fallback.text-needed',
+        },
+        {
+          connection: {},
+          headers: {
+            'x-forwarded-for': '63.245.221.32',
+          },
+        },
+        {
+          flowBeginTime: '1585261624219',
+          flowId:
+            '11750082326622a61b155a58a54442dd3702fa899b18d62868562ef9a3bc8484',
+          uid: '44794bdf0be84d4e8c7a8026b8580fa3',
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - test_fallback_text_needed'
+      );
+    },
+
+    'settings.test.fallback.text-not-needed': () => {
+      amplitude(
+        {
+          time: '1585321743',
+          type: 'settings.test.fallback.text-not-needed',
+        },
+        {
+          connection: {},
+          headers: {
+            'x-forwarded-for': '63.245.221.32',
+          },
+        },
+        {
+          flowBeginTime: '1585261624219',
+          flowId:
+            '11750082326622a61b155a58a54442dd3702fa899b18d62868562ef9a3bc8484',
+          uid: '44794bdf0be84d4e8c7a8026b8580fa3',
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - test_fallback_text_not_needed'
+      );
+    },
+
     'flow.update-firefox.view': () => {
       amplitude(
         {
