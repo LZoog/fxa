@@ -41,6 +41,24 @@ const amplitude = proxyquire(path.resolve('server/lib/amplitude'), {
 const APP_VERSION_RE = /([0-9]+)\.([0-9]{1,2})$/;
 const APP_VERSION = APP_VERSION_RE.exec(pkg.version)[0];
 
+const getBasicEvent = (type) => ({
+  time: '1585321743',
+  type,
+});
+
+const BASIC_REQUEST = {
+  connection: {},
+  headers: {
+    'x-forwarded-for': '63.245.221.32',
+  },
+};
+
+const BASIC_DATA = {
+  flowBeginTime: '1585261624219',
+  flowId: '11750082326622a61b155a58a54442dd3702fa899b18d62868562ef9a3bc8484',
+  uid: '44794bdf0be84d4e8c7a8026b8580fa3',
+};
+
 registerSuite('amplitude', {
   beforeEach: function () {
     amplitudeConfig.disabled = false;
@@ -294,6 +312,26 @@ registerSuite('amplitude', {
       });
     },
 
+    'screen.settings.change-password': () => {
+      amplitude(
+        {
+          ...getBasicEvent('screen.settings.change-password'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - change_password_view'
+      );
+    },
+
     'settings.change-password.success': () => {
       amplitude(
         {
@@ -365,6 +403,26 @@ registerSuite('amplitude', {
           utm_term: 'm',
         },
       });
+    },
+
+    'screen.settings.create-password': () => {
+      amplitude(
+        {
+          ...getBasicEvent('screen.settings.create-password'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - create_password_view'
+      );
     },
 
     'settings.clients.disconnect.submit': () => {
@@ -474,20 +532,13 @@ registerSuite('amplitude', {
     'settings.test.fallback.start': () => {
       amplitude(
         {
-          time: '1585321743',
-          type: 'settings.test.fallback.start',
+          ...getBasicEvent('settings.test.fallback.start'),
         },
         {
-          connection: {},
-          headers: {
-            'x-forwarded-for': '63.245.221.32',
-          },
+          ...BASIC_REQUEST,
         },
         {
-          flowBeginTime: '1585261624219',
-          flowId:
-            '11750082326622a61b155a58a54442dd3702fa899b18d62868562ef9a3bc8484',
-          uid: '44794bdf0be84d4e8c7a8026b8580fa3',
+          ...BASIC_DATA,
         }
       );
 
@@ -501,20 +552,13 @@ registerSuite('amplitude', {
     'settings.test.fallback.text-needed': () => {
       amplitude(
         {
-          time: '1585321743',
-          type: 'settings.test.fallback.text-needed',
+          ...getBasicEvent('settings.test.fallback.text-needed'),
         },
         {
-          connection: {},
-          headers: {
-            'x-forwarded-for': '63.245.221.32',
-          },
+          ...BASIC_REQUEST,
         },
         {
-          flowBeginTime: '1585261624219',
-          flowId:
-            '11750082326622a61b155a58a54442dd3702fa899b18d62868562ef9a3bc8484',
-          uid: '44794bdf0be84d4e8c7a8026b8580fa3',
+          ...BASIC_DATA,
         }
       );
 
@@ -528,20 +572,13 @@ registerSuite('amplitude', {
     'settings.test.fallback.text-not-needed': () => {
       amplitude(
         {
-          time: '1585321743',
-          type: 'settings.test.fallback.text-not-needed',
+          ...getBasicEvent('settings.test.fallback.text-not-needed'),
         },
         {
-          connection: {},
-          headers: {
-            'x-forwarded-for': '63.245.221.32',
-          },
+          ...BASIC_REQUEST,
         },
         {
-          flowBeginTime: '1585261624219',
-          flowId:
-            '11750082326622a61b155a58a54442dd3702fa899b18d62868562ef9a3bc8484',
-          uid: '44794bdf0be84d4e8c7a8026b8580fa3',
+          ...BASIC_DATA,
         }
       );
 
@@ -549,6 +586,106 @@ registerSuite('amplitude', {
       assert.equal(
         logger.info.args[0][1].event_type,
         'fxa_pref - test_fallback_text_not_needed'
+      );
+    },
+
+    'screen.settings.avatar.change': () => {
+      amplitude(
+        {
+          ...getBasicEvent('screen.settings.avatar.change'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - avatar_change_view'
+      );
+    },
+
+    'avatar.crop.submit.change': () => {
+      amplitude(
+        {
+          ...getBasicEvent('avatar.crop.submit.change'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - avatar_crop_submit_change'
+      );
+    },
+
+    'screen.settings.delete-account': () => {
+      amplitude(
+        {
+          ...getBasicEvent('screen.settings.delete-account'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - delete_account_view'
+      );
+    },
+
+    'screen.add-recovery-key': () => {
+      amplitude(
+        {
+          ...getBasicEvent('screen.add-recovery-key'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - add_recovery_key_view'
+      );
+    },
+
+    'screen.settings.emails': () => {
+      amplitude(
+        {
+          ...getBasicEvent('screen.settings.emails'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - add_secondary_email_view'
       );
     },
 

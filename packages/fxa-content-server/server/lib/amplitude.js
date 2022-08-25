@@ -101,6 +101,98 @@ const EVENTS = {
     event: 'signup_code_submit',
   },
 
+  'screen.account-recovery-confirm-key': {
+    group: GROUPS.login,
+    event: 'forgot_password_confirm_recovery_key_view',
+  },
+  'flow.account-recovery-confirm-key.engage': {
+    group: GROUPS.login,
+    event: 'forgot_password_confirm_recovery_key_engage',
+  },
+  'flow.account-recovery-confirm-key.submit': {
+    group: GROUPS.login,
+    event: 'forgot_password_confirm_recovery_key_submit',
+  },
+
+  // Password reset with recovery key metrics
+  'screen.account-recovery-reset-password': {
+    group: GROUPS.login,
+    event: 'forgot_password_recovery_key_view',
+  },
+  'flow.account-recovery-reset-password.engage': {
+    group: GROUPS.login,
+    event: 'forgot_password_recovery_key_engage',
+  },
+  'flow.account-recovery-reset-password.submit': {
+    group: GROUPS.login,
+    event: 'forgot_password_recovery_key_submit',
+  },
+  'flow.account-recovery-reset-password.recovery-key-consume.success': {
+    group: GROUPS.login,
+    event: 'forgot_password_recovery_key_success',
+  },
+
+  'flow.add-newsletters.subscribe': {
+    group: GROUPS.newsletters,
+    event: 'subscribe',
+  },
+
+  'flow.add-newsletters.link.maybe-later': {
+    group: GROUPS.newsletters,
+    event: 'later',
+  },
+
+  'screen.connect-another-device': {
+    group: GROUPS.connectDevice,
+    event: 'view',
+  },
+  'flow.rp.engage': {
+    group: GROUPS.rp,
+    event: 'engage',
+  },
+  'flow.email-domain-validation.triggered': {
+    group: GROUPS.registration,
+    event: 'domain_validation_triggered',
+  },
+  'flow.email-domain-validation.skipped': {
+    group: GROUPS.registration,
+    event: 'domain_validation_skipped',
+  },
+  'flow.email-domain-validation.ignored': {
+    group: GROUPS.registration,
+    event: 'domain_validation_ignored',
+  },
+  'flow.scan-code.device-connected': {
+    group: GROUPS.qrConnectDevice,
+    event: 'scan_code_device_connected',
+  },
+  'flow.connected.link.done': {
+    group: GROUPS.qrConnectDevice,
+    event: 'connected_done',
+  },
+  'enter-email.thirdPartyAuth': {
+    group: GROUPS.thirdPartyAuth,
+    event: 'view',
+  },
+
+  /* Everything under this point should be Settings events, aka 'fxa_pref' group */
+  // temp fallback tests
+  'settings.test.fallback.start': {
+    group: GROUPS.settings,
+    event: 'test_fallback_start',
+    minimal: true,
+  },
+  'settings.test.fallback.text-needed': {
+    group: GROUPS.settings,
+    event: 'test_fallback_text_needed',
+    minimal: true,
+  },
+  'settings.test.fallback.text-not-needed': {
+    group: GROUPS.settings,
+    event: 'test_fallback_text_not_needed',
+    minimal: true,
+  },
+
   // Add recovery key metrics
   'screen.add-recovery-key': {
     group: GROUPS.settings,
@@ -179,97 +271,41 @@ const EVENTS = {
     event: 'verified_recovery_key_submit',
   },
 
-  'screen.account-recovery-confirm-key': {
-    group: GROUPS.login,
-    event: 'forgot_password_confirm_recovery_key_view',
-  },
-  'flow.account-recovery-confirm-key.engage': {
-    group: GROUPS.login,
-    event: 'forgot_password_confirm_recovery_key_engage',
-  },
-  'flow.account-recovery-confirm-key.submit': {
-    group: GROUPS.login,
-    event: 'forgot_password_confirm_recovery_key_submit',
-  },
-
-  // Password reset with recovery key metrics
-  'screen.account-recovery-reset-password': {
-    group: GROUPS.login,
-    event: 'forgot_password_recovery_key_view',
-  },
-  'flow.account-recovery-reset-password.engage': {
-    group: GROUPS.login,
-    event: 'forgot_password_recovery_key_engage',
-  },
-  'flow.account-recovery-reset-password.submit': {
-    group: GROUPS.login,
-    event: 'forgot_password_recovery_key_submit',
-  },
-  'flow.account-recovery-reset-password.recovery-key-consume.success': {
-    group: GROUPS.login,
-    event: 'forgot_password_recovery_key_success',
-  },
-
-  'flow.add-newsletters.subscribe': {
-    group: GROUPS.newsletters,
-    event: 'subscribe',
-  },
-
-  'flow.add-newsletters.link.maybe-later': {
-    group: GROUPS.newsletters,
-    event: 'later',
-  },
-
-  'screen.connect-another-device': {
-    group: GROUPS.connectDevice,
-    event: 'view',
-  },
-  'flow.rp.engage': {
-    group: GROUPS.rp,
-    event: 'engage',
-  },
-  'flow.email-domain-validation.triggered': {
-    group: GROUPS.registration,
-    event: 'domain_validation_triggered',
-  },
-  'flow.email-domain-validation.skipped': {
-    group: GROUPS.registration,
-    event: 'domain_validation_skipped',
-  },
-  'flow.email-domain-validation.ignored': {
-    group: GROUPS.registration,
-    event: 'domain_validation_ignored',
-  },
-  'flow.scan-code.device-connected': {
-    group: GROUPS.qrConnectDevice,
-    event: 'scan_code_device_connected',
-  },
-  'flow.connected.link.done': {
-    group: GROUPS.qrConnectDevice,
-    event: 'connected_done',
-  },
-  'enter-email.thirdPartyAuth': {
-    group: GROUPS.thirdPartyAuth,
-    event: 'view',
-  },
-
-  // settings, aka fxa_pref
-  'settings.test.fallback.start': {
+  // Avatar
+  'screen.settings.avatar.change': {
     group: GROUPS.settings,
-    event: 'test_fallback_start',
+    event: 'avatar_change_view',
   },
-  'settings.test.fallback.text-needed': {
+  'avatar.crop.submit.change': {
     group: GROUPS.settings,
-    event: 'test_fallback_text_needed',
+    event: 'avatar_crop_submit_change',
   },
-  'settings.test.fallback.text-not-needed': {
+  // Change password
+  'screen.settings.change-password': {
     group: GROUPS.settings,
-    event: 'test_fallback_text_not_needed',
+    event: 'change_password_view',
   },
   'settings.change-password.success': {
     group: GROUPS.settings,
     event: 'password',
   },
+  // Create password
+  'screen.settings.create-password': {
+    group: GROUPS.settings,
+    event: 'create_password_view',
+  },
+  // Delete account
+  'screen.settings.delete-account': {
+    group: GROUPS.settings,
+    event: 'delete_account_view',
+  },
+
+  // Secondary email
+  'screen.settings.emails': {
+    group: GROUPS.settings,
+    event: 'add_secondary_email_view',
+  },
+  // Misc
   'settings.signout.success': {
     group: GROUPS.settings,
     event: 'logout',
