@@ -374,9 +374,42 @@ const EVENTS = {
     group: GROUPS.settings,
     event: 'add_secondary_email_view',
   },
-  'verify-secondary-email.success': {
+  'settings.emails.submit': {
     group: GROUPS.settings,
-    event: 'add_secondary_email_view',
+    event: 'add_secondary_email_submit',
+  },
+  'verify-secondary-email.verification.clicked': {
+    group: GROUPS.settings,
+    event: 'verify_secondary_email_clicked',
+  },
+  'verify-secondary-email.verification.success': {
+    group: GROUPS.settings,
+    event: 'verify_secondary_email_success',
+  },
+  'verify-secondary-email.verification.fail': {
+    group: GROUPS.settings,
+    event: 'verify_secondary_email_fail',
+  },
+  // Two factor auth
+  'screen.settings.two-step-authentication.recovery-codes': {
+    group: GROUPS.settings,
+    event: 'two_step_authentication_recovery_codes_view',
+  },
+  'flow.settings.two-step-authentication.submit': {
+    group: GROUPS.settings,
+    event: 'two_step_authentication_submit',
+  },
+  'flow.settings.two-step-authentication.download-option': {
+    group: GROUPS.settings,
+    event: 'two_step_authentication_recovery_codes_download',
+  },
+  'flow.settings.two-step-authentication.copy-option': {
+    group: GROUPS.settings,
+    event: 'two_step_authentication_recovery_codes_copy',
+  },
+  'flow.settings.two-step-authentication.print-option': {
+    group: GROUPS.settings,
+    event: 'two_step_authentication_recovery_codes_print',
   },
   // Misc
   'settings.signout.success': {
