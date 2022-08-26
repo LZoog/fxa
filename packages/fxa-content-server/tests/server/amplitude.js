@@ -729,6 +729,72 @@ registerSuite('amplitude', {
       );
     },
 
+    'flow.settings.account-delete.terms-checked.success': () => {
+      amplitude(
+        {
+          ...getBasicEvent(
+            'flow.settings.account-delete.terms-checked.success'
+          ),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - delete_account_terms_checked_success'
+      );
+    },
+
+    'flow.settings.account-delete.confirm-password.success': () => {
+      amplitude(
+        {
+          ...getBasicEvent(
+            'flow.settings.account-delete.confirm-password.success'
+          ),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - delete_account_confirm_password_success'
+      );
+    },
+
+    'flow.settings.account-delete.confirm-password.fail': () => {
+      amplitude(
+        {
+          ...getBasicEvent(
+            'flow.settings.account-delete.confirm-password.fail'
+          ),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - delete_account_confirm_password_fail'
+      );
+    },
+
     'screen.add-recovery-key': () => {
       amplitude(
         {

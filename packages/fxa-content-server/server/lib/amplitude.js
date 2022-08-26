@@ -101,6 +101,84 @@ const EVENTS = {
     event: 'signup_code_submit',
   },
 
+  // Add recovery key metrics, on `post_verify/account_recovery/*`
+  'screen.add-recovery-key': {
+    group: GROUPS.registration,
+    event: 'add_recovery_key_view',
+  },
+  'flow.add-recovery-key.submit': {
+    group: GROUPS.registration,
+    event: 'add_recovery_key_submit',
+  },
+
+  // Recovery key confirm password
+  'screen.confirm-password': {
+    group: GROUPS.registration,
+    event: 'recovery_key_confirm_password_view',
+  },
+  'flow.confirm-password.engage': {
+    group: GROUPS.registration,
+    event: 'recovery_key_confirm_password_engage',
+  },
+  'flow.confirm-password.submit': {
+    group: GROUPS.registration,
+    event: 'recovery_key_confirm_password_submit',
+  },
+  'flow.confirm-password.success': {
+    group: GROUPS.registration,
+    event: 'recovery_key_confirm_password_success',
+  },
+
+  // Save recovery key
+  'screen.save-recovery-key': {
+    group: GROUPS.registration,
+    event: 'save_recovery_key_view',
+  },
+  'flow.save-recovery-key.submit': {
+    group: GROUPS.registration,
+    event: 'save_recovery_key_submit',
+  },
+  'flow.save-recovery-key.copy': {
+    group: GROUPS.registration,
+    event: 'save_recovery_key_copy',
+  },
+  'flow.save-recovery-key.download': {
+    group: GROUPS.registration,
+    event: 'save_recovery_key_download',
+  },
+  'flow.save-recovery-key.print': {
+    group: GROUPS.registration,
+    event: 'save_recovery_key_print',
+  },
+
+  // Confirm recovery key
+  'screen.confirm-recovery-key': {
+    group: GROUPS.registration,
+    event: 'confirm_recovery_key_view',
+  },
+  'flow.confirm-recovery-key.engage': {
+    group: GROUPS.registration,
+    event: 'confirm_recovery_key_engage',
+  },
+  'flow.confirm-recovery-key.submit': {
+    group: GROUPS.registration,
+    event: 'confirm_recovery_key_submit',
+  },
+  'flow.confirm-recovery-key.success': {
+    group: GROUPS.registration,
+    event: 'confirm_recovery_key_success',
+  },
+
+  // Verified recovery key
+  'screen.post-verify.account-recovery.verified-recovery-key': {
+    group: GROUPS.registration,
+    event: 'verified_recovery_key_view',
+  },
+  'flow.post-verify.account-recovery.verified-recovery-key.submit': {
+    group: GROUPS.registration,
+    event: 'verified_recovery_key_submit',
+  },
+
   'screen.account-recovery-confirm-key': {
     group: GROUPS.login,
     event: 'forgot_password_confirm_recovery_key_view',
@@ -192,85 +270,49 @@ const EVENTS = {
     event: 'test_fallback_text_not_needed',
     minimal: true,
   },
-
-  // Add recovery key metrics
-  'screen.add-recovery-key': {
+  // Recovery key
+  'screen.settings.account-recovery': {
     group: GROUPS.settings,
-    event: 'add_recovery_key_view',
+    event: 'account_recovery_view',
   },
-  'flow.add-recovery-key.submit': {
+  // Revoke
+  'flow.settings.account-recovery.confirm-revoke.submit': {
     group: GROUPS.settings,
-    event: 'add_recovery_key_submit',
+    event: 'account_recovery_confirm_revoke_submit',
   },
-
-  // Recovery key confirm password
-  'screen.confirm-password': {
+  'flow.settings.account-recovery.confirm-revoke.success': {
     group: GROUPS.settings,
-    event: 'recovery_key_confirm_password_view',
+    event: 'account_recovery_confirm_revoke_submit',
   },
-  'flow.confirm-password.engage': {
+  'flow.settings.account-recovery.confirm-revoke.fail': {
     group: GROUPS.settings,
-    event: 'recovery_key_confirm_password_engage',
+    event: 'account_recovery_confirm_revoke_fail',
   },
-  'flow.confirm-password.submit': {
+  // Add
+  'flow.settings.account-recovery.confirm-password.submit': {
     group: GROUPS.settings,
-    event: 'recovery_key_confirm_password_submit',
+    event: 'account_recovery_confirm_password_submit',
   },
-  'flow.confirm-password.success': {
+  'flow.settings.account-recovery.confirm-password.success': {
     group: GROUPS.settings,
-    event: 'recovery_key_confirm_password_success',
+    event: 'account_recovery_confirm_password_success',
   },
-
-  // Save recovery key
-  'screen.save-recovery-key': {
+  'flow.settings.account-recovery.confirm-password.fail': {
     group: GROUPS.settings,
-    event: 'save_recovery_key_view',
+    event: 'account_recovery_confirm_password_success',
   },
-  'flow.save-recovery-key.submit': {
+  'flow.settings.account-recovery.recovery-key.download-option': {
     group: GROUPS.settings,
-    event: 'save_recovery_key_submit',
+    event: 'account_recovery_option_download',
   },
-  'flow.save-recovery-key.copy': {
+  'flow.settings.account-recovery.recovery-key.copy-option': {
     group: GROUPS.settings,
-    event: 'save_recovery_key_copy',
+    event: 'account_recovery_option_copy',
   },
-  'flow.save-recovery-key.download': {
+  'flow.settings.account-recovery.recovery-key.print-option': {
     group: GROUPS.settings,
-    event: 'save_recovery_key_download',
+    event: 'account_recovery_option_print',
   },
-  'flow.save-recovery-key.print': {
-    group: GROUPS.settings,
-    event: 'save_recovery_key_print',
-  },
-
-  // Confirm recovery key
-  'screen.confirm-recovery-key': {
-    group: GROUPS.settings,
-    event: 'confirm_recovery_key_view',
-  },
-  'flow.confirm-recovery-key.engage': {
-    group: GROUPS.settings,
-    event: 'confirm_recovery_key_engage',
-  },
-  'flow.confirm-recovery-key.submit': {
-    group: GROUPS.settings,
-    event: 'confirm_recovery_key_submit',
-  },
-  'flow.confirm-recovery-key.success': {
-    group: GROUPS.settings,
-    event: 'confirm_recovery_key_success',
-  },
-
-  // Verified recovery key
-  'screen.post-verify.account-recovery.verified-recovery-key': {
-    group: GROUPS.settings,
-    event: 'verified_recovery_key_view',
-  },
-  'flow.post-verify.account-recovery.verified-recovery-key.submit': {
-    group: GROUPS.settings,
-    event: 'verified_recovery_key_submit',
-  },
-
   // Avatar
   'screen.settings.avatar.change': {
     group: GROUPS.settings,
@@ -315,9 +357,24 @@ const EVENTS = {
     group: GROUPS.settings,
     event: 'delete_account_view',
   },
-
+  'flow.settings.account-delete.terms-checked.success': {
+    group: GROUPS.settings,
+    event: 'delete_account_terms_checked_success',
+  },
+  'flow.settings.account-delete.confirm-password.success': {
+    group: GROUPS.settings,
+    event: 'delete_account_confirm_password_success',
+  },
+  'flow.settings.account-delete.confirm-password.fail': {
+    group: GROUPS.settings,
+    event: 'delete_account_confirm_password_fail',
+  },
   // Secondary email
   'screen.settings.emails': {
+    group: GROUPS.settings,
+    event: 'add_secondary_email_view',
+  },
+  'verify-secondary-email.success': {
     group: GROUPS.settings,
     event: 'add_secondary_email_view',
   },
