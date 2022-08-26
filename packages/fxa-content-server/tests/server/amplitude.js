@@ -425,6 +425,86 @@ registerSuite('amplitude', {
       );
     },
 
+    'settings.create-password.engage': () => {
+      amplitude(
+        {
+          ...getBasicEvent('settings.create-password.engage'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - create_password_engage'
+      );
+    },
+
+    'settings.create-password.submit': () => {
+      amplitude(
+        {
+          ...getBasicEvent('settings.create-password.submit'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - create_password_submit'
+      );
+    },
+
+    'settings.create-password.success': () => {
+      amplitude(
+        {
+          ...getBasicEvent('settings.create-password.success'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - create_password_success'
+      );
+    },
+
+    'settings.create-password.fail': () => {
+      amplitude(
+        {
+          ...getBasicEvent('settings.create-password.fail'),
+        },
+        {
+          ...BASIC_REQUEST,
+        },
+        {
+          ...BASIC_DATA,
+        }
+      );
+
+      assert.equal(logger.info.callCount, 1);
+      assert.equal(
+        logger.info.args[0][1].event_type,
+        'fxa_pref - create_password_fail'
+      );
+    },
+
     'settings.clients.disconnect.submit': () => {
       amplitude(
         {

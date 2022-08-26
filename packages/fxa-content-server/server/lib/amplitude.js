@@ -294,6 +294,22 @@ const EVENTS = {
     group: GROUPS.settings,
     event: 'create_password_view',
   },
+  'settings.create-password.engage': {
+    group: GROUPS.settings,
+    event: 'create_password_engage',
+  },
+  'settings.create-password.submit': {
+    group: GROUPS.settings,
+    event: 'create_password_submit',
+  },
+  'settings.create-password.success': {
+    group: GROUPS.settings,
+    event: 'create_password_success',
+  },
+  'settings.create-password.fail': {
+    group: GROUPS.settings,
+    event: 'create_password_fail',
+  },
   // Delete account
   'screen.settings.delete-account': {
     group: GROUPS.settings,
