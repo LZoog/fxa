@@ -1,0 +1,4 @@
+[submodule "packages/fxa-settings/fxa-content-server-l10n"]
+	path = packages/fxa-settings/fxa-content-server-l10n
+	url = https://github.com/mozilla/fxa-content-server-l10n.git
+	branch = main
