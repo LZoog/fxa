@@ -40,6 +40,7 @@ export function getFtlBundle(locale = 'en'): FluentBundle {
     __dirname,
     '..',
     '..',
+    '..',
     'public',
     'locales',
     locale,
@@ -52,32 +53,33 @@ export function getFtlBundle(locale = 'en'): FluentBundle {
   return bundle;
 }
 
-// const ftlBundleMsg = ftlBundle.getMessage(props.id);
-// const ftlMsg = ftlBundleMsg?.value;
+function testL10n(ftlMsgMock: HTMLElement, bundle: FluentBundle) {
+  const ftlId = ftlMsgMock.getAttribute('id')!;
+  const fallbackText = ftlMsgMock.textContent;
 
-// // assert the bundle contains the Fluent ID and message
-// if (!ftlMsg) {
-//   throw Error(`Unable to locate Fluent message with id: ${props.id} `);
-// }
-// // assert the Fluent message and fallback text match
-// if (ftlMsg !== props.children) {
-//   throw Error(
-//     `Fallback text does not match Fluent message.\n\nFallback text: ${props.children}\nFluent message: ${ftlMsg}`
-//   );
-// }
-// // assert the Fluent message doesn't contain straight quotes
-// if (ftlMsg.includes("'" || '"')) {
-//   throw Error(
-//     `Fluent message contains a straight single or double quote and must be updated to its curly quote equivalent.\n\nFluent message: ${ftlMsg}`
-//   );
-// }
+  const ftlBundleMsg = bundle.getMessage(ftlId);
+  const ftlMsg = ftlBundleMsg?.value;
 
-function testL10n() {
-  // todo
+  // assert the bundle contains the Fluent ID and message
+  if (!ftlMsg) {
+    throw Error(`Unable to locate Fluent message with id: ${ftlId}`);
+  }
+  // assert the Fluent message and fallback text match
+  if (ftlMsg !== fallbackText) {
+    throw Error(
+      `Fallback text does not match Fluent message.\n\nFallback text: ${fallbackText}\nFluent message: ${ftlMsg}`
+    );
+  }
+  // assert the Fluent message doesn't contain straight quotes
+  if (ftlMsg.includes("'" || '"')) {
+    throw Error(
+      `Fluent message contains a straight single or double quote and must be updated to its curly quote equivalent.\n\nFluent message: ${ftlMsg}`
+    );
+  }
 }
 
 describe('Profile', () => {
-  // const ftlBundle = getFtlBundle();
+  const bundle = getFtlBundle();
 
   it('renders "fresh load" <Profile/> with correct content', async () => {
     renderWithRouter(
@@ -88,10 +90,9 @@ describe('Profile', () => {
       </AppContext.Provider>
     );
 
-    const mocks = screen.getAllByTestId('ftlmsg-mock');
-    mocks.forEach((mock) => {
-      console.log('mock text', mock.textContent);
-      console.log('id attribute of mock', mock.getAttribute('id'));
+    const ftlMsgMocks = screen.getAllByTestId('ftlmsg-mock');
+    ftlMsgMocks.forEach((ftlMsgMock) => {
+      testL10n(ftlMsgMock, bundle);
     });
 
     await screen.findByAltText('Default avatar');
