@@ -5,7 +5,7 @@
 import React from 'react';
 import { Localized, LocalizedProps } from '@fluent/react';
 
-type FtlMsgProps = {
+export type FtlMsgProps = {
   children: React.ReactNode;
 } & LocalizedProps;
 
