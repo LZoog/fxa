@@ -21,7 +21,7 @@ export const Profile = () => {
       </h2>
 
       <div className="bg-white tablet:rounded-xl shadow">
-        <Localized id="profile-picture" attrs={{ header: true }}>
+        <FtlMsg id="profile-picture" attrs={{ header: true }}>
           <UnitRow
             header="Picture"
             headerId="profile-picture"
@@ -30,7 +30,7 @@ export const Profile = () => {
             prefixDataTestId="avatar"
             {...{ avatar }}
           />
-        </Localized>
+        </FtlMsg>
 
         <hr className="unit-row-hr" />
 
