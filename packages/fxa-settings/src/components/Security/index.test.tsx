@@ -7,8 +7,20 @@ import { screen } from '@testing-library/react';
 import Security from '.';
 import { mockAppContext, renderWithRouter } from '../../models/mocks';
 import { Account, AppContext } from '../../models';
+import { FtlMsgProps } from 'fxa-react/lib/utils';
+import { getFtlBundle, testL10n } from 'fxa-react/lib/test-utils';
+
+jest.mock('fxa-react/lib/utils', () => ({
+  FtlMsg: (props: FtlMsgProps) => (
+    <div data-testid="ftlmsg-mock" id={props.id}>
+      {props.children}
+    </div>
+  ),
+}));
 
 describe('Security', () => {
+  const bundle = getFtlBundle();
+
   it('renders "fresh load" <Security/> with correct content', async () => {
     const account = {
       avatar: { url: null, id: null },
@@ -75,6 +87,13 @@ describe('Security', () => {
         </AppContext.Provider>
       );
       const passwordRouteLink = screen.getByTestId('password-unit-row-route');
+
+      const ftlMsgMocks = screen.getAllByTestId('ftlmsg-mock');
+      ftlMsgMocks.forEach((ftlMsgMock) => {
+        testL10n(ftlMsgMock, bundle, {
+          date: account.passwordCreated,
+        });
+      });
 
       await screen.findByText('••••••••••••••••••');
       await screen.findByText(`Created 1/${createDate}/1970`);
