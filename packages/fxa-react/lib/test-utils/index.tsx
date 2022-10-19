@@ -64,16 +64,23 @@ function testMessage(
 ) {
   const ftlMsg = bundle.formatPattern(pattern, ftlArgs);
 
-  // assert the Fluent message is in the fallback text
+  // We allow for .includes because fallback text comes from `textContent` within the
+  // `FtlMsg` wrapper which may contain more than one component and string
   if (ftlMsg !== fallbackText && !fallbackText?.includes(ftlMsg)) {
     throw Error(
-      `Fallback text does not match Fluent message.\n\nFallback text: ${fallbackText}\nFluent message: ${ftlMsg}`
+      `Fallback text does not match Fluent message.\nFallback text: ${fallbackText}\nFluent message: ${ftlMsg}`
     );
   }
-  // assert the Fluent message doesn't contain straight quotes
-  if (ftlMsg.includes("'" || '"')) {
+
+  if (ftlMsg.includes("'")) {
     throw Error(
-      `Fluent message contains a straight single or double quote and must be updated to its curly quote equivalent.\n\nFluent message: ${ftlMsg}`
+      `Fluent message contains a straight apostrophe (') or ") and must be updated to its curly equivalent (’). Fluent message: ${ftlMsg}`
+    );
+  }
+
+  if (ftlMsg.includes('"')) {
+    throw Error(
+      `Fluent message contains a straight quote (") and must be updated to its curly equivalent (“”). Fluent message: ${ftlMsg}`
     );
   }
 }
@@ -85,22 +92,21 @@ export function testL10n(
 ) {
   const ftlId = ftlMsgMock.getAttribute('id')!;
   const fallbackText = ftlMsgMock.textContent;
-
   const ftlBundleMsg = bundle.getMessage(ftlId);
-
-  if (ftlBundleMsg === undefined) {
-    throw Error(`Unable to locate Fluent message with id: ${ftlId}`);
-  }
 
   // nested attributes can happen when we define something like:
   // `profile-picture =
   //   .header = Picture`
-  const nestedAttrValues = Object.values(ftlBundleMsg.attributes);
+  const nestedAttrValues = Object.values(ftlBundleMsg?.attributes || {});
 
-  if (ftlBundleMsg.value === null && nestedAttrValues === null) {
-    throw Error(
-      `The Fluent ID ${ftlId} was found in the bundle, but the message value is null`
-    );
+  // TODO: this shouldn't run in CI because IDs or ID updates may not have made their way
+  // into the l10n repo yet, should test against `merge-ftl:test` quivalent, aka when
+  // the merge script is out of webpack
+  if (
+    ftlBundleMsg === undefined ||
+    (ftlBundleMsg.value === null && nestedAttrValues.length === 0)
+  ) {
+    throw Error(`Could not retrieve Fluent message tied to ID: ${ftlId}`);
   }
 
   if (ftlBundleMsg.value) {

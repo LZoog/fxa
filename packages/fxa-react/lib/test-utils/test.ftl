@@ -1,4 +1,9 @@
-simple-component = Simple and clean
-component-attrs =
-  .header = Example header
-component-var = Hello { $name }
+test-simple = Simple and clean
+test-missing-message =
+test-missing-message-attrs =
+  .header =
+test-attrs =
+  .header = When you walk away
+test-straight-apostrophe = you don't hear me say
+test-straight-quote = "please, don’t go"
+test-var = { $name } smiled at me
