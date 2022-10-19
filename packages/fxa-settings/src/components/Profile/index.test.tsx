@@ -21,7 +21,7 @@ jest.mock('fxa-react/lib/utils', () => ({
 }));
 
 describe('Profile', () => {
-  const bundle = getFtlBundle();
+  const bundle = getFtlBundle('settings');
 
   it('renders "fresh load" <Profile/> with correct content', async () => {
     renderWithRouter(

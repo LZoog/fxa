@@ -19,7 +19,7 @@ jest.mock('fxa-react/lib/utils', () => ({
 }));
 
 describe('Security', () => {
-  const bundle = getFtlBundle();
+  const bundle = getFtlBundle('settings');
 
   it('renders "fresh load" <Security/> with correct content', async () => {
     const account = {
@@ -80,7 +80,7 @@ describe('Security', () => {
         passwordCreated: 1234567890,
         hasPassword: true,
       } as unknown as Account;
-      const createDate = new Date(1234567890).getDate();
+      const createDate = `1/${new Date(1234567890).getDate()}/1970`;
       renderWithRouter(
         <AppContext.Provider value={mockAppContext({ account })}>
           <Security />
@@ -91,12 +91,12 @@ describe('Security', () => {
       const ftlMsgMocks = screen.getAllByTestId('ftlmsg-mock');
       ftlMsgMocks.forEach((ftlMsgMock) => {
         testL10n(ftlMsgMock, bundle, {
-          date: account.passwordCreated,
+          date: createDate,
         });
       });
 
       await screen.findByText('••••••••••••••••••');
-      await screen.findByText(`Created 1/${createDate}/1970`);
+      await screen.findByText(`Created ${createDate}`);
 
       expect(passwordRouteLink).toHaveTextContent('Change');
       expect(passwordRouteLink).toHaveAttribute(

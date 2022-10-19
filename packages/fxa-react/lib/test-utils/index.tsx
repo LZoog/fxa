@@ -7,20 +7,49 @@ import { readFileSync } from 'fs';
 import { FluentBundle, FluentResource, FluentVariable } from '@fluent/bundle';
 import { Pattern } from '@fluent/bundle/esm/ast';
 
-export function getFtlBundle(locale = 'en'): FluentBundle {
-  const ftlPath = path.join(
-    __dirname,
-    '..',
-    '..',
-    '..',
-    'packages',
-    'fxa-settings',
-    'public',
-    'locales',
-    locale,
-    'settings.ftl'
-  );
-  const messages = readFileSync(ftlPath).toString();
+type PackageName = 'settings' | 'payments' | null;
+
+function getFtlFromPackage(packageName: PackageName, locale: string) {
+  let ftlPath: string;
+  switch (packageName) {
+    case 'settings':
+      ftlPath = path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'fxa-settings',
+        'public',
+        'locales',
+        locale,
+        'settings.ftl'
+      );
+      break;
+    case 'payments':
+      ftlPath = path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'fxa-payments-server',
+        'public',
+        'locales',
+        locale,
+        'main.ftl'
+      );
+      break;
+    default:
+      ftlPath = path.join(__dirname, 'test.ftl');
+      break;
+  }
+  return readFileSync(ftlPath).toString();
+}
+
+export function getFtlBundle(
+  packageName: PackageName,
+  locale = 'en'
+): FluentBundle {
+  const messages = getFtlFromPackage(packageName, locale);
   const resource = new FluentResource(messages);
   const bundle = new FluentBundle(locale, { useIsolating: false });
   bundle.addResource(resource);
@@ -49,7 +78,11 @@ function testMessage(
   }
 }
 
-export function testL10n(ftlMsgMock: HTMLElement, bundle: FluentBundle) {
+export function testL10n(
+  ftlMsgMock: HTMLElement,
+  bundle: FluentBundle,
+  ftlArgs?: Record<string, FluentVariable>
+) {
   const ftlId = ftlMsgMock.getAttribute('id')!;
   const fallbackText = ftlMsgMock.textContent;
 
@@ -71,12 +104,12 @@ export function testL10n(ftlMsgMock: HTMLElement, bundle: FluentBundle) {
   }
 
   if (ftlBundleMsg.value) {
-    testMessage(bundle, ftlBundleMsg.value, fallbackText);
+    testMessage(bundle, ftlBundleMsg.value, fallbackText, ftlArgs);
   }
 
   if (nestedAttrValues) {
     nestedAttrValues.forEach((nestedAttrValue) =>
-      testMessage(bundle, nestedAttrValue, fallbackText)
+      testMessage(bundle, nestedAttrValue, fallbackText, ftlArgs)
     );
   }
 }
