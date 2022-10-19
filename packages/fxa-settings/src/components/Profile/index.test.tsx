@@ -9,7 +9,7 @@ import { mockAppContext, renderWithRouter } from '../../models/mocks';
 import { AppContext } from '../../models';
 import { MOCK_PROFILE_EMPTY } from './mocks';
 import { FtlMsgProps } from 'fxa-react/lib/utils';
-import { getFtlBundle, testL10n } from 'fxa-react/lib/test-utils';
+import { getFtlBundle, testAllL10n } from 'fxa-react/lib/test-utils';
 import { screen } from '@testing-library/react';
 
 jest.mock('fxa-react/lib/utils', () => ({
@@ -31,11 +31,7 @@ describe('Profile', () => {
         <Profile />
       </AppContext.Provider>
     );
-
-    const ftlMsgMocks = screen.getAllByTestId('ftlmsg-mock');
-    ftlMsgMocks.forEach((ftlMsgMock) => {
-      testL10n(ftlMsgMock, bundle);
-    });
+    testAllL10n(screen, bundle);
 
     await screen.findByAltText('Default avatar');
     expect(await screen.findAllByText('None')).toHaveLength(2);

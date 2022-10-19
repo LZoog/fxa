@@ -7,7 +7,6 @@ import { useAccount } from '../../models';
 import { UnitRow } from '../UnitRow';
 import { UnitRowSecondaryEmail } from '../UnitRowSecondaryEmail';
 import { HomePath } from '../../constants';
-import { Localized } from '@fluent/react';
 import { FtlMsg } from 'fxa-react/lib/utils';
 
 export const Profile = () => {
@@ -34,7 +33,7 @@ export const Profile = () => {
 
         <hr className="unit-row-hr" />
 
-        <Localized id="profile-display-name" attrs={{ header: true }}>
+        <FtlMsg id="profile-display-name" attrs={{ header: true }}>
           <UnitRow
             header="Display name"
             headerId="display-name"
@@ -43,11 +42,11 @@ export const Profile = () => {
             route="/settings/display_name"
             prefixDataTestId="display-name"
           />
-        </Localized>
+        </FtlMsg>
 
         <hr className="unit-row-hr" />
 
-        <Localized id="profile-primary-email" attrs={{ header: true }}>
+        <FtlMsg id="profile-primary-email" attrs={{ header: true }}>
           <UnitRow
             header="Primary email"
             headerId="primary-email"
@@ -55,7 +54,7 @@ export const Profile = () => {
             headerValueClassName="break-all"
             prefixDataTestId="primary-email"
           />
-        </Localized>
+        </FtlMsg>
 
         <hr className="unit-row-hr" />
 

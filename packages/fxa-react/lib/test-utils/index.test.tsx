@@ -23,6 +23,7 @@ const componentWithVar = (fallbackText: string, name: string) => (
   </FtlMsg>
 );
 
+// TODO: when we use this mock in most components, probably use `setupFilesAfterEnv`
 jest.mock('fxa-react/lib/utils', () => ({
   FtlMsg: (props: FtlMsgProps) => (
     <div data-testid="ftlmsg-mock" id={props.id}>

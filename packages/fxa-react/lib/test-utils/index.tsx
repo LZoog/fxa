@@ -2,10 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import React from 'react';
 import path from 'path';
 import { readFileSync } from 'fs';
 import { FluentBundle, FluentResource, FluentVariable } from '@fluent/bundle';
 import { Pattern } from '@fluent/bundle/esm/ast';
+import { queries, Screen } from '@testing-library/react';
 
 type PackageName = 'settings' | 'payments' | null;
 
@@ -85,6 +87,32 @@ function testMessage(
   }
 }
 
+/**
+ * Convenience function for running `testL10n` against all mocked `FtlMsg`s
+ * (`data-testid='ftlmsg-mock'`) found.
+ * @param screen
+ * @param bundle Fluent bundle created during test setup
+ */
+export function testAllL10n(
+  { getAllByTestId }: Screen<typeof queries>,
+  bundle: FluentBundle
+) {
+  const ftlMsgMocks = getAllByTestId('ftlmsg-mock');
+  ftlMsgMocks.forEach((ftlMsgMock) => {
+    testL10n(ftlMsgMock, bundle);
+  });
+}
+
+/**
+ * Takes in a mocked FtlMsg and tests that:
+ *  * Fluent IDs and message are present in the Fluent bundle
+ *  * Fluent messages match fallback text
+ *  * Fluent messages don't contain any straight apostrophes or quotes
+ *  * Variables are provided
+ * @param ftlMsgMock Mocked version of `FtlMsg` (`data-testid='ftlmsg-mock'`)
+ * @param bundle Fluent bundle created during test setup
+ * @param ftlArgs Optional Fluent variables to be passed into the message
+ */
 export function testL10n(
   ftlMsgMock: HTMLElement,
   bundle: FluentBundle,

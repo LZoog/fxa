@@ -88,11 +88,9 @@ describe('Security', () => {
       );
       const passwordRouteLink = screen.getByTestId('password-unit-row-route');
 
-      const ftlMsgMocks = screen.getAllByTestId('ftlmsg-mock');
-      ftlMsgMocks.forEach((ftlMsgMock) => {
-        testL10n(ftlMsgMock, bundle, {
-          date: createDate,
-        });
+      const ftlMsgMock = screen.getByTestId('ftlmsg-mock');
+      testL10n(ftlMsgMock, bundle, {
+        date: createDate,
       });
 
       await screen.findByText('••••••••••••••••••');
