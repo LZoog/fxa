@@ -8,17 +8,8 @@ import { Profile } from '.';
 import { mockAppContext, renderWithRouter } from '../../models/mocks';
 import { AppContext } from '../../models';
 import { MOCK_PROFILE_EMPTY } from './mocks';
-import { FtlMsgProps } from 'fxa-react/lib/utils';
 import { getFtlBundle, testAllL10n } from 'fxa-react/lib/test-utils';
 import { screen } from '@testing-library/react';
-
-jest.mock('fxa-react/lib/utils', () => ({
-  FtlMsg: (props: FtlMsgProps) => (
-    <div data-testid="ftlmsg-mock" id={props.id}>
-      {props.children}
-    </div>
-  ),
-}));
 
 describe('Profile', () => {
   const bundle = getFtlBundle('settings');

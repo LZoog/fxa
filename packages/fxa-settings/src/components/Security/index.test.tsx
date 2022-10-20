@@ -7,16 +7,7 @@ import { screen } from '@testing-library/react';
 import Security from '.';
 import { mockAppContext, renderWithRouter } from '../../models/mocks';
 import { Account, AppContext } from '../../models';
-import { FtlMsgProps } from 'fxa-react/lib/utils';
 import { getFtlBundle, testL10n } from 'fxa-react/lib/test-utils';
-
-jest.mock('fxa-react/lib/utils', () => ({
-  FtlMsg: (props: FtlMsgProps) => (
-    <div data-testid="ftlmsg-mock" id={props.id}>
-      {props.children}
-    </div>
-  ),
-}));
 
 describe('Security', () => {
   const bundle = getFtlBundle('settings');
