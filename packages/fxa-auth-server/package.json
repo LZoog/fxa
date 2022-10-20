@@ -20,8 +20,8 @@
     "stop": "pm2 stop pm2.config.js",
     "restart": "pm2 restart pm2.config.js",
     "delete": "pm2 delete pm2.config.js",
-    "test": "yarn merge-ftl && yarn emails-scss && VERIFIER_VERSION=0 scripts/test-local.sh",
-    "test-ci": "yarn merge-ftl && scripts/test-local.sh && npm run test-e2e",
+    "test": "yarn merge-ftl:test && yarn emails-scss && VERIFIER_VERSION=0 scripts/test-local.sh",
+    "test-ci": "yarn merge-ftl:test && scripts/test-local.sh && npm run test-e2e",
     "test-e2e": "NODE_ENV=dev mocha -r esbuild-register test/e2e",
     "test-scripts": "NODE_ENV=dev mocha -r esbuild-register test/scripts --exit",
     "test-remote": "MAILER_HOST=restmail.net MAILER_PORT=80 CORS_ORIGIN=http://baz mocha -r esbuild-register --timeout=300000 test/remote",
@@ -42,6 +42,7 @@
     "build-storybook:copy-templates": "mkdir -p ./storybook-static/lib/senders/emails/templates && cp -R ./lib/senders/emails ./storybook-static/lib/senders",
     "install-ejs": "./scripts/install-ejs.sh",
     "merge-ftl": "grunt merge-ftl",
+    "merge-ftl:test": "grunt merge-ftl:test",
     "watch-ftl": "yarn grunt watch-ftl"
   },
   "repository": {

@@ -11,23 +11,38 @@ import { queries, Screen } from '@testing-library/react';
 
 type PackageName = 'settings' | 'payments' | null;
 
+// Testing other locales will attempt to grab the package from the l10n dir.
 function getFtlFromPackage(packageName: PackageName, locale: string) {
   let ftlPath: string;
+
   switch (packageName) {
     case 'settings':
-      ftlPath = path.join(
-        __dirname,
-        '..',
-        '..',
-        '..',
-        'fxa-settings',
-        'public',
-        'locales',
-        locale,
-        'settings.ftl'
-      );
+      if (locale === 'en') {
+        ftlPath = path.join(
+          __dirname,
+          '..',
+          '..',
+          '..',
+          'fxa-settings',
+          'test',
+          'settings.ftl'
+        );
+      } else {
+        ftlPath = path.join(
+          __dirname,
+          '..',
+          '..',
+          '..',
+          'fxa-settings',
+          'public',
+          'locales',
+          locale,
+          'settings.ftl'
+        );
+      }
       break;
     case 'payments':
+      // TODO: Not currently used. We need to set up test stuff for payments similarly, FXA-5996
       ftlPath = path.join(
         __dirname,
         '..',

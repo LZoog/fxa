@@ -7,21 +7,24 @@
 module.exports = function (grunt) {
   grunt.config('concat', {
     ftl: {
-      src: ['lib/l10n/auth.ftl', 'lib/**/senders/emails/**/en.ftl'],
-      dest: 'public/locales/en/auth.ftl',
+      src: ['.license.header', 'src/**/*.ftl'],
+      // TODO: change dest to `en` in FXA-6003
+      dest: 'public/locales/en-US/settings.ftl',
     },
+
+    // We need this for tests because we pull the latest from `fxa-content-server-l10n`
+    // and place those in our `public` directory at `postinstall` time, and sometimes we have
+    // FTL updates on our side that haven't landed yet on the l10n side. We want to test
+    // against _our_ latest, and not necessarily the l10n repo's latest.
     'ftl-test': {
-      src: [
-        'test/local/senders/emails/auth.ftl',
-        'test/local/senders/emails/**/en.ftl',
-      ],
-      dest: 'test/temp/public/locales/en/auth.ftl',
+      src: ['.license.header', 'src/**/*.ftl'],
+      dest: 'test/settings.ftl',
     },
   });
 
   grunt.config('watch', {
     ftl: {
-      files: ['lib/l10n/auth.ftl', 'lib/**/en.ftl'],
+      files: ['src/**/*.ftl'],
       tasks: ['merge-ftl'],
       options: {
         interrupt: true,
