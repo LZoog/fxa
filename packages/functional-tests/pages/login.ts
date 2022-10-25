@@ -132,6 +132,28 @@ export class LoginPage extends BaseLayout {
     }
   }
 
+  // async fillOutFirstSignUp(
+  //   email: string,
+  //   password: string,
+  //   {
+  //     submit = true,
+  //     verify = true,
+  //   }: { submit?: boolean; verify?: boolean } = {}
+  // ) {
+  //   await this.setEmail(email);
+  //   await this.submit();
+  //   await this.page.fill(selectors.PASSWORD, password);
+  //   await this.page.fill(selectors.VPASSWORD, password);
+  //   await this.page.fill(selectors.AGE, '24');
+
+  //   if (submit) {
+  //     await this.submit();
+  //     if (verify) {
+  //       await this.fillOutSignUpCode(email);
+  //     }
+  //   }
+  // }
+
   // async fillOutSyncSignUp(email: string, password: string) {
   //   await this.isCWTSHeader()
   //   await this.setEmail(email);
