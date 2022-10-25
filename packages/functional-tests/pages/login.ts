@@ -26,6 +26,11 @@ export const selectors = {
   VPASSWORD: '#vpassword',
   SYNC_CONNECTED_HEADER: '#fxa-connected-heading',
   NOTES_HEADER: '#notes-by-firefox',
+  // TODO: create signup page and pull some selectors out
+  ENTER_EMAIL_HEADER: '#fxa-enter-email-header',
+  CWTS_HEADER: '#fxa-choose-what-to-sync-header',
+  CWTS_ENGINE_PASSWORDS: '#sync-engine-passwords',
+  CWTS_ENGINE_HISTORY: '#sync-engine-history',
 };
 
 export class LoginPage extends BaseLayout {
@@ -127,6 +132,14 @@ export class LoginPage extends BaseLayout {
     }
   }
 
+  // async fillOutSyncSignUp(email: string, password: string) {
+  //   await this.isCWTSHeader()
+  //   await this.setEmail(email);
+  //   await this.page.fill(this.selectors.PASSWORD, password);
+  //   await this.page.fill(this.selectors.VPASSWORD, password);
+  //   await this.page.fill(this.selectors.AGE, '24');
+  // }
+
   async fillOutSignUpCode(email: string) {
     const code = await this.target.email.waitForEmail(
       email,
@@ -213,6 +226,18 @@ export class LoginPage extends BaseLayout {
 
   async isSigninHeader() {
     return this.page.isVisible(selectors.SIGNIN_HEADER, {
+      timeout: 100,
+    });
+  }
+
+  async isEnterEmailHeader() {
+    return this.page.isVisible(selectors.ENTER_EMAIL_HEADER, {
+      timeout: 100,
+    });
+  }
+
+  async isCWTSHeader() {
+    return this.page.isVisible(selectors.CWTS_HEADER, {
       timeout: 100,
     });
   }
