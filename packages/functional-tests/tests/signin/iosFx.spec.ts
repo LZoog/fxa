@@ -35,7 +35,10 @@ test.describe('FxiOS v1 sign up', () => {
     // In Fx for iOS >= 11.0, user should be transitioned to the choose what to Sync page
     expect(await login.isCWTSHeader()).toBe(true);
 
-    // await page.click()
+    await Promise.all([
+      await page.click(login.selectors.CWTS_ENGINE_HISTORY),
+      await page.click(login.selectors.CWTS_ENGINE_PASSWORDS),
+    ]);
 
     const email = EmailClient.emailFromTestTitle(testInfo.title);
     const password = 'asdzxcasd';
