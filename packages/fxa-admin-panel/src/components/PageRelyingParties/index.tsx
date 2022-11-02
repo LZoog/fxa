@@ -159,7 +159,7 @@ const Result = ({
   }
   if (data && data.relyingParties.length > 0) {
     return (
-      <>
+      <section>
         {data.relyingParties.map(
           ({
             id,
@@ -228,7 +228,7 @@ const Result = ({
             </div>
           )
         )}
-      </>
+      </section>
     );
   }
 

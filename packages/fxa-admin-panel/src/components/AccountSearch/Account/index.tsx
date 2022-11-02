@@ -259,7 +259,7 @@ export const DangerZone = ({
   if (unverifyLoading) unverifyMessage = loadingMessage;
 
   return (
-    <>
+    <section>
       <Guard
         features={[
           AdminPanelFeature.UnverifyEmail,
@@ -270,7 +270,7 @@ export const DangerZone = ({
         <h3 className="mt-0 mb-1 bg-red-600 font-medium h-8 pb-8 pl-1 pt-1 rounded-sm text-lg text-white">
           Danger Zone
         </h3>
-        <p className="text-base leading-6 mb-4">
+        <p className="text-base leading-6 mb-4 mt-2">
           Please run these commands with caution — some actions are
           irreversible.
         </p>
@@ -348,7 +348,7 @@ export const DangerZone = ({
           </div>
         </Guard>
       )}
-    </>
+    </section>
   );
 };
 
@@ -406,309 +406,316 @@ export const Account = ({
   }
 
   return (
-    <section className="mt-8" data-testid="account-section">
-      <ul>
-        <li className="account-li">
-          <h3 className="account-header">Account Details</h3>
-        </li>
-        <li className="account-li account-border-info">
-          <ul>
-            <table className="pt-1" aria-label="account details">
-              <tbody>
-                <ResultTableRow
-                  label="Sign-up Email"
-                  value={<span className={highlight(email)}>{email}</span>}
-                  testId="sign-up-email"
-                />
-                <ResultTableRow
-                  label="uid"
-                  value={<span className={highlight(uid)}>{uid}</span>}
-                  testId="account-uid"
-                />
-                <ResultTableRow
-                  label="Created At"
-                  value={
-                    <>
-                      {createdAtDate} ({createdAt})
-                    </>
-                  }
-                  testId="account-created-at"
-                />
-                <ResultTableRow
-                  label="Locale"
-                  value={
-                    <>
-                      {locale}
-
-                      <Guard features={[AdminPanelFeature.EditLocale]}>
-                        <button
-                          className="bg-grey-10 border-2 border-grey-100 font-small leading-6 ml-2 rounded text-red-700 w-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
-                          type="button"
-                          onClick={handleEditLocale}
-                          data-testid="edit-account-locale"
-                        >
-                          Edit
-                        </button>
-                      </Guard>
-                    </>
-                  }
-                  testId="account-locale"
-                />
-                {lockedAt != null && (
-                  <ResultTableRow
-                    label="Locked At"
-                    className="bg-yellow-100"
-                    value={
-                      <>
-                        {lockedAtDate} ({lockedAt})
-                      </>
-                    }
-                    testId="account-locked-at"
-                  />
-                )}
-                {disabledAt != null && (
-                  <ResultTableRow
-                    label="Disabled At"
-                    className="bg-yellow-100"
-                    value={
-                      <>
-                        {disabledAtDate} ({disabledAt})
-                      </>
-                    }
-                    testId="account-disabled-at"
-                  />
-                )}
-              </tbody>
-            </table>
-          </ul>
-        </li>
-
-        <li className="account-li">
-          <h3 className="account-header">Primary Email</h3>
-        </li>
-        <li
-          className="account-li account-border-info"
-          data-testid="primary-section"
-        >
-          <ul>
-            <span
-              data-testid="primary-email"
-              className={highlight(primaryEmail.email)}
-            >
-              {primaryEmail.email}
-            </span>
-            <span
-              data-testid="primary-verified"
-              className={`ml-3 text-base ${
-                primaryEmail.isVerified
-                  ? 'account-enabled-verified'
-                  : 'account-disabled-unverified'
-              }`}
-            >
-              {primaryEmail.isVerified ? 'confirmed' : 'not confirmed'}
-            </span>
-          </ul>
-        </li>
-
-        <li className="account-li">
-          <h3 className="account-header">Secondary Emails</h3>
-        </li>
-        {secondaryEmails.length > 0 ? (
-          <li
-            className="account-li account-border-info"
-            data-testid="secondary-section"
-          >
+    <>
+      <section className="mt-8" data-testid="account-data">
+        <ul>
+          <li className="account-li">
+            <h3 className="account-header">Account Details</h3>
+          </li>
+          <li className="account-li account-border-info">
             <ul>
-              {secondaryEmails.map((secondaryEmail) => (
-                <li key={secondaryEmail.createdAt} className="account-li">
-                  <span
-                    data-testid="secondary-email"
-                    className={highlight(secondaryEmail.email)}
-                  >
-                    {secondaryEmail.email}
-                  </span>
-                  <span
-                    data-testid="secondary-verified"
-                    className={`ml-3 text-base ${
-                      secondaryEmail.isVerified
-                        ? 'account-enabled-verified'
-                        : 'account-disabled-unverified'
-                    }`}
-                  >
-                    {secondaryEmail.isVerified ? 'confirmed' : 'not confirmed'}
-                  </span>
-                </li>
-              ))}
+              <table className="pt-1" aria-label="account details">
+                <tbody>
+                  <ResultTableRow
+                    label="Sign-up Email"
+                    value={<span className={highlight(email)}>{email}</span>}
+                    testId="sign-up-email"
+                  />
+                  <ResultTableRow
+                    label="uid"
+                    value={<span className={highlight(uid)}>{uid}</span>}
+                    testId="account-uid"
+                  />
+                  <ResultTableRow
+                    label="Created At"
+                    value={
+                      <>
+                        {createdAtDate} ({createdAt})
+                      </>
+                    }
+                    testId="account-created-at"
+                  />
+                  <ResultTableRow
+                    label="Locale"
+                    value={
+                      <>
+                        {locale}
+
+                        <Guard features={[AdminPanelFeature.EditLocale]}>
+                          <button
+                            className="bg-grey-10 border-2 border-grey-100 font-small leading-6 ml-2 rounded text-red-700 w-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
+                            type="button"
+                            onClick={handleEditLocale}
+                            data-testid="edit-account-locale"
+                          >
+                            Edit
+                          </button>
+                        </Guard>
+                      </>
+                    }
+                    testId="account-locale"
+                  />
+                  {lockedAt != null && (
+                    <ResultTableRow
+                      label="Locked At"
+                      className="bg-yellow-100"
+                      value={
+                        <>
+                          {lockedAtDate} ({lockedAt})
+                        </>
+                      }
+                      testId="account-locked-at"
+                    />
+                  )}
+                  {disabledAt != null && (
+                    <ResultTableRow
+                      label="Disabled At"
+                      className="bg-yellow-100"
+                      value={
+                        <>
+                          {disabledAtDate} ({disabledAt})
+                        </>
+                      }
+                      testId="account-disabled-at"
+                    />
+                  )}
+                </tbody>
+              </table>
             </ul>
           </li>
-        ) : (
-          <li className="account-li account-border-info">
-            This account doesn't have any secondary emails.
-          </li>
-        )}
 
-        <li className="account-li">
-          <h3 className="account-header">Email bounces</h3>
-        </li>
-        {emailBounces && emailBounces.length > 0 ? (
-          <>
-            <ClearButton
-              {...{
-                uid,
-                emails: emails!.map((emails) => emails.email),
-                onCleared,
-              }}
-            />
-            {emailBounces.map((emailBounce: EmailBounceType) => (
-              <EmailBounce key={emailBounce.createdAt} {...emailBounce} />
-            ))}
-          </>
-        ) : (
-          <li
-            data-testid="no-bounces-message"
-            className="account-li account-border-info"
-          >
-            This account doesn't have any bounced emails.
-          </li>
-        )}
-
-        <li className="account-li">
-          <h3 className="account-header">
-            TOTP (Time-Based One-Time Passwords)
-          </h3>
-        </li>
-        {totp && totp.length > 0 ? (
-          <>
-            {totp.map((totpIndex: TotpType) => (
-              <TotpEnabled key={totpIndex.createdAt} {...totpIndex} />
-            ))}
-          </>
-        ) : (
-          <li className="account-li account-border-info">
-            This account doesn't have TOTP enabled.
-          </li>
-        )}
-
-        <li className="account-li">
-          <h3 className="account-header">Account Recovery Key</h3>
-        </li>
-        {recoveryKeys && recoveryKeys.length > 0 ? (
-          <>
-            {recoveryKeys.map((recoveryKeysIndex: RecoveryKeysType) => (
-              <RecoveryKeys
-                key={recoveryKeysIndex.createdAt}
-                {...recoveryKeysIndex}
-              />
-            ))}
-          </>
-        ) : (
-          <li className="account-li account-border-info">
-            This account doesn't have an account recovery key enabled.
-          </li>
-        )}
-
-        <>
           <li className="account-li">
-            <h3 className="account-header">Subscriptions</h3>
+            <h3 className="account-header">Primary Email</h3>
           </li>
-          {subscriptions && subscriptions.length > 0 ? (
+          <li
+            className="account-li account-border-info"
+            data-testid="primary-section"
+          >
+            <ul>
+              <span
+                data-testid="primary-email"
+                className={highlight(primaryEmail.email)}
+              >
+                {primaryEmail.email}
+              </span>
+              <span
+                data-testid="primary-verified"
+                className={`ml-3 text-base ${
+                  primaryEmail.isVerified
+                    ? 'account-enabled-verified'
+                    : 'account-disabled-unverified'
+                }`}
+              >
+                {primaryEmail.isVerified ? 'confirmed' : 'not confirmed'}
+              </span>
+            </ul>
+          </li>
+
+          <li className="account-li">
+            <h3 className="account-header">Secondary Emails</h3>
+          </li>
+          {secondaryEmails.length > 0 ? (
+            <li
+              className="account-li account-border-info"
+              data-testid="secondary-section"
+            >
+              <ul>
+                {secondaryEmails.map((secondaryEmail) => (
+                  <li key={secondaryEmail.createdAt} className="account-li">
+                    <span
+                      data-testid="secondary-email"
+                      className={highlight(secondaryEmail.email)}
+                    >
+                      {secondaryEmail.email}
+                    </span>
+                    <span
+                      data-testid="secondary-verified"
+                      className={`ml-3 text-base ${
+                        secondaryEmail.isVerified
+                          ? 'account-enabled-verified'
+                          : 'account-disabled-unverified'
+                      }`}
+                    >
+                      {secondaryEmail.isVerified
+                        ? 'confirmed'
+                        : 'not confirmed'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ) : (
+            <li className="account-li account-border-info">
+              This account doesn't have any secondary emails.
+            </li>
+          )}
+
+          <li className="account-li">
+            <h3 className="account-header">Email bounces</h3>
+          </li>
+          {emailBounces && emailBounces.length > 0 ? (
             <>
-              {subscriptions.map((subscription) => (
-                <Subscription
-                  key={subscription.subscriptionId}
-                  {...subscription}
+              <ClearButton
+                {...{
+                  uid,
+                  emails: emails!.map((emails) => emails.email),
+                  onCleared,
+                }}
+              />
+              {emailBounces.map((emailBounce: EmailBounceType) => (
+                <EmailBounce key={emailBounce.createdAt} {...emailBounce} />
+              ))}
+            </>
+          ) : (
+            <li
+              data-testid="no-bounces-message"
+              className="account-li account-border-info"
+            >
+              This account doesn't have any bounced emails.
+            </li>
+          )}
+
+          <li className="account-li">
+            <h3 className="account-header">
+              TOTP (Time-Based One-Time Passwords)
+            </h3>
+          </li>
+          {totp && totp.length > 0 ? (
+            <>
+              {totp.map((totpIndex: TotpType) => (
+                <TotpEnabled key={totpIndex.createdAt} {...totpIndex} />
+              ))}
+            </>
+          ) : (
+            <li className="account-li account-border-info">
+              This account doesn't have TOTP enabled.
+            </li>
+          )}
+
+          <li className="account-li">
+            <h3 className="account-header">Account Recovery Key</h3>
+          </li>
+          {recoveryKeys && recoveryKeys.length > 0 ? (
+            <>
+              {recoveryKeys.map((recoveryKeysIndex: RecoveryKeysType) => (
+                <RecoveryKeys
+                  key={recoveryKeysIndex.createdAt}
+                  {...recoveryKeysIndex}
                 />
               ))}
             </>
           ) : (
             <li className="account-li account-border-info">
-              This account doesn't have any subscriptions.
+              This account doesn't have an account recovery key enabled.
             </li>
           )}
-        </>
 
-        <Guard features={[AdminPanelFeature.ConnectedServices]}>
-          <li className="account-li">
-            <h3 className="account-header">Connected Services</h3>
-          </li>
-          <ConnectedServices services={attachedClients} />
-        </Guard>
-      </ul>
-
-      <hr className="border-grey-50 mb-4" />
-      <h3 className="account-header">Account History</h3>
-      <div className="account-li account-border-info">
-        {securityEvents && securityEvents.length > 0 ? (
           <>
-            <table className="pt-1" aria-label="simple table">
-              <thead>
-                <tr>
-                  <th className="text-left">Event</th>
-                  <th className="text-left">Timestamp</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {securityEvents.map((securityEvents: SecurityEventsType) => (
-                  <tr key={securityEvents.createdAt}>
-                    <td className="pr-4">{securityEvents.name}</td>
-                    <td>
-                      {dateFormat(
-                        new Date(securityEvents.createdAt!),
-                        DATE_FORMAT
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        ) : (
-          <div data-testid="account-security-events">
-            No account history to display.
-          </div>
-        )}
-      </div>
-      <h3 className="account-header">Linked Accounts</h3>
-      <div className="account-border-info">
-        {linkedAccounts && linkedAccounts.length > 0 ? (
-          <>
-            <table className="pt-1" aria-label="simple table">
-              <thead>
-                <tr>
-                  <th className="text-left">Event</th>
-                  <th className="text-left">Timestamp</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {linkedAccounts.map((linkedAccount: LinkedAccountType) => (
-                  <LinkedAccount
-                    {...{
-                      uid,
-                      providerId: linkedAccount.providerId,
-                      authAt: linkedAccount.authAt,
-                      onCleared: onCleared,
-                    }}
+            <li className="account-li">
+              <h3 className="account-header">Subscriptions</h3>
+            </li>
+            {subscriptions && subscriptions.length > 0 ? (
+              <>
+                {subscriptions.map((subscription) => (
+                  <Subscription
+                    key={subscription.subscriptionId}
+                    {...subscription}
                   />
                 ))}
-              </tbody>
-            </table>
+              </>
+            ) : (
+              <li className="account-li account-border-info">
+                This account doesn't have any subscriptions.
+              </li>
+            )}
           </>
-        ) : (
-          <div data-testid="account-security-events">No linked accounts.</div>
-        )}
-      </div>
+
+          <Guard features={[AdminPanelFeature.ConnectedServices]}>
+            <li className="account-li">
+              <h3 className="account-header">Connected Services</h3>
+            </li>
+            <ConnectedServices services={attachedClients} />
+          </Guard>
+        </ul>
+
+        <hr className="border-grey-50 mb-4" />
+        <h3 className="account-header">Account History</h3>
+        <div className="account-li account-border-info">
+          {securityEvents && securityEvents.length > 0 ? (
+            <>
+              <table className="pt-1" aria-label="simple table">
+                <thead>
+                  <tr>
+                    <th className="text-left">Event</th>
+                    <th className="text-left">Timestamp</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {securityEvents.map((securityEvents: SecurityEventsType) => (
+                    <tr key={securityEvents.createdAt}>
+                      <td className="pr-4">{securityEvents.name}</td>
+                      <td>
+                        {dateFormat(
+                          new Date(securityEvents.createdAt!),
+                          DATE_FORMAT
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : (
+            <div data-testid="account-security-events">
+              No account history to display.
+            </div>
+          )}
+        </div>
+        <h3 className="account-header">Linked Accounts</h3>
+        <div className="account-border-info">
+          {linkedAccounts && linkedAccounts.length > 0 ? (
+            <>
+              <table className="pt-1" aria-label="simple table">
+                <thead>
+                  <tr>
+                    <th className="text-left">Event</th>
+                    <th className="text-left">Timestamp</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {linkedAccounts.map((linkedAccount: LinkedAccountType) => (
+                    <LinkedAccount
+                      {...{
+                        uid,
+                        providerId: linkedAccount.providerId,
+                        authAt: linkedAccount.authAt,
+                        onCleared: onCleared,
+                      }}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : (
+            <div data-testid="account-security-events">No linked accounts.</div>
+          )}
+        </div>
+      </section>
       <hr className="border-grey-50 mb-4" />
-      <DangerZone
-        {...{
-          uid,
-          disabledAt: disabledAt!,
-          email: primaryEmail, // only the primary for now
-          onCleared: onCleared,
-        }}
-      />
-    </section>
+
+      <section>
+        <DangerZone
+          {...{
+            uid,
+            disabledAt: disabledAt!,
+            email: primaryEmail, // only the primary for now
+            onCleared: onCleared,
+          }}
+        />
+      </section>
+    </>
   );
 };
 

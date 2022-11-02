@@ -315,7 +315,7 @@ it('calls account search', async () => {
   });
   fireEvent.click(screen.getByTestId('search-button'));
 
-  await waitFor(() => screen.getByTestId('account-section'));
+  await waitFor(() => screen.getByTestId('account-data'));
   expect(calledAccountSearch).toBeTruthy();
 });
 
@@ -336,7 +336,7 @@ it('auto completes', async () => {
   );
   fireEvent.click(screen.getByTestId('search-button'));
 
-  await waitFor(() => screen.getByTestId('account-section'));
+  await waitFor(() => screen.getByTestId('account-data'));
   expect(calledGetEmailsLike).toBeTruthy();
   expect(calledAccountSearch).toBeTruthy();
   expect(screen.getByTestId('email-input')).toHaveValue(testEmail);
@@ -355,12 +355,12 @@ it('displays the account email bounces, and can clear them', async () => {
   });
   fireEvent.click(screen.getByTestId('search-button'));
 
-  await waitFor(() => screen.getByTestId('account-section'));
+  await waitFor(() => screen.getByTestId('account-data'));
   expect(screen.queryAllByTestId('bounce-group').length).toEqual(2);
 
   fireEvent.click(screen.getByTestId('clear-button'));
 
-  await waitFor(() => screen.getByTestId('account-section'));
+  await waitFor(() => screen.getByTestId('account-data'));
   await waitFor(() => screen.findAllByText(testEmail));
   expect(screen.queryAllByTestId('bounce-group').length).toEqual(0);
   expect(screen.getByTestId('no-bounces-message')).toBeInTheDocument();

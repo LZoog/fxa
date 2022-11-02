@@ -324,7 +324,7 @@ const AccountSearchResult = ({
     return <Account {...{ query, onCleared }} {...data.accountByUid} />;
   }
   return (
-    <p data-testid="no-account-message" className="mt-2">
+    <p data-testid="no-account-message" className="mt-4">
       Account not found.
     </p>
   );

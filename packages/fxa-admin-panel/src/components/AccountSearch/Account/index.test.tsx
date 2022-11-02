@@ -88,7 +88,7 @@ it('renders without imploding', () => {
     </MockedProvider>
   );
 
-  expect(getByTestId('account-section')).toBeInTheDocument();
+  expect(getByTestId('account-data')).toBeInTheDocument();
 });
 
 it('displays the account', async () => {
@@ -98,7 +98,7 @@ it('displays the account', async () => {
     </MockedProvider>
   );
 
-  expect(getByTestId('account-section')).toBeInTheDocument();
+  expect(getByTestId('account-data')).toBeInTheDocument();
   expect(getByTestId('sign-up-email')).toHaveTextContent(accountResponse.email);
   expect(getByTestId('primary-verified')).toHaveTextContent('confirmed');
   expect(getByTestId('primary-email')).toHaveTextContent(
