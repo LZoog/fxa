@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { ApolloError, gql, useMutation, useQuery } from '@apollo/client';
 import LinkExternal from 'fxa-react/components/LinkExternal';
 import { RelyingParty } from 'fxa-admin-server/src/graphql';
-import { DATE_FORMAT } from '../AccountSearch/Account';
+import { DATE_FORMAT } from '../PageAccountSearch/Account';
 import dateFormat from 'dateformat';
 import ErrorAlert from '../ErrorAlert';
 import { AdminPanelFeature } from '../../../../fxa-shared/guards';

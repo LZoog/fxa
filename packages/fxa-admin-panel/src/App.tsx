@@ -7,7 +7,7 @@ import { UserContext } from './hooks/UserContext';
 import { GuardContext } from './hooks/GuardContext';
 import { Route, Routes, BrowserRouter, Navigate } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
-import AccountSearch from './components/AccountSearch';
+import AccountSearch from './components/PageAccountSearch';
 import Permissions from './components/Permissions';
 import { IClientConfig, IUserInfo } from '../interfaces';
 import { AdminPanelFeature, AdminPanelGuard } from 'fxa-shared/guards';
