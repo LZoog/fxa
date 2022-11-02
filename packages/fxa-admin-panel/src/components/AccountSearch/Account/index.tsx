@@ -407,7 +407,8 @@ export const Account = ({
 
   return (
     <>
-      <section className="mt-8" data-testid="account-data">
+      <hr className="mt-4" />
+      <section data-testid="account-data">
         <ul>
           <li className="account-li">
             <h3 className="account-header">Account Details</h3>
@@ -638,7 +639,7 @@ export const Account = ({
           </Guard>
         </ul>
 
-        <hr className="border-grey-50 mb-4" />
+        <hr />
         <h3 className="account-header">Account History</h3>
         <div className="account-li account-border-info">
           {securityEvents && securityEvents.length > 0 ? (
@@ -703,7 +704,7 @@ export const Account = ({
           )}
         </div>
       </section>
-      <hr className="border-grey-50 mb-4" />
+      <hr />
 
       <section>
         <DangerZone

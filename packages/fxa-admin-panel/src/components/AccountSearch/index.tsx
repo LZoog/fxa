@@ -308,9 +308,12 @@ const AccountSearchResult = ({
 }) => {
   if (loading)
     return (
-      <p data-testid="loading-message" className="mt-2">
-        Loading...
-      </p>
+      <>
+        <hr className="mt-4" />
+        <p data-testid="loading-message" className="mt-2">
+          Loading...
+        </p>
+      </>
     );
   if (error) {
     return <ErrorAlert {...{ error }}></ErrorAlert>;
@@ -324,9 +327,10 @@ const AccountSearchResult = ({
     return <Account {...{ query, onCleared }} {...data.accountByUid} />;
   }
   return (
-    <p data-testid="no-account-message" className="mt-4">
-      Account not found.
-    </p>
+    <>
+      <hr className="mt-4" />
+      <p data-testid="no-account-message">Account not found.</p>
+    </>
   );
 };
 
