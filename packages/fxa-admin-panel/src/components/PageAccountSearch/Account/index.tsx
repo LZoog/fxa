@@ -17,9 +17,10 @@ import Guard from '../../Guard';
 import Subscription from '../Subscription';
 import { ConnectedServices } from '../ConnectedServices';
 import { ReactElement } from 'react';
-import getEmailBounceDescription from './getBounceDescription';
+import getEmailBounceDescription from '../EmailBounces/getBounceDescription';
 import { TableRowYHeader, TableYHeaders } from '../../TableYHeaders';
 import { TableRowXHeader, TableXHeaders } from '../../TableXHeaders';
+import { EmailBounces } from '../EmailBounces';
 
 export type AccountProps = AccountType & {
   onCleared: () => void;
@@ -34,12 +35,6 @@ type DangerZoneProps = {
 };
 
 export const DATE_FORMAT = 'yyyy-mm-dd @ HH:MM:ss Z';
-
-export const CLEAR_BOUNCES_BY_EMAIL = gql`
-  mutation clearBouncesByEmail($email: String!) {
-    clearEmailBounce(email: $email)
-  }
-`;
 
 export const RECORD_ADMIN_SECURITY_EVENT = gql`
   mutation recordAdminSecurityEvent($uid: String!, $name: String!) {
@@ -118,66 +113,6 @@ export const LinkedAccount = ({
         Unlink
       </button>
     </TableRowXHeader>
-  );
-
-  // return (
-  //   <tr key={`${authAt}-${providerId}`}>
-  //     <td>{providerId}</td>
-  //     <td className="text-left pl-8">
-  //       {dateFormat(new Date(authAt!), DATE_FORMAT)}
-  //     </td>
-  //     <td className="pl-4 align-middle">
-  //       <button
-  //         className="p-1 text-red-700 border-2 rounded border-grey-100 bg-grey-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
-  //         type="button"
-  //         onClick={handleUnlinkAccount}
-  //       >
-  //         Unlink
-  //       </button>
-  //     </td>
-  //   </tr>
-  // );
-};
-
-export const ClearButton = ({
-  emails,
-  onCleared,
-  uid,
-}: {
-  emails: string[];
-  onCleared: Function;
-  uid: string;
-}) => {
-  const [clearBounces] = useMutation(CLEAR_BOUNCES_BY_EMAIL);
-  const [recordAdminSecurityEvent] = useMutation(RECORD_ADMIN_SECURITY_EVENT);
-
-  const handleClear = () => {
-    if (!window.confirm('Are you sure? This cannot be undone.')) {
-      return;
-    }
-
-    // This could be improved to clear bounces for individual email
-    // addresses, but for now it seems satisfactory to clear all bounces
-    // for all emails, since they own all of the addresses
-    emails.forEach((email) => clearBounces({ variables: { email } }));
-    recordAdminSecurityEvent({
-      variables: { uid: uid, name: 'emails.clearBounces' },
-    });
-    onCleared();
-  };
-
-  return (
-    <>
-      <Guard features={[AdminPanelFeature.ClearEmailBounces]}>
-        <button
-          data-testid="clear-button"
-          className="bg-red-600 border-0 rounded-md text-base mx-0 mb-6 px-4 py-3 text-white transition duration-200 hover:bg-red-700"
-          onClick={handleClear}
-        >
-          Clear all bounces
-        </button>
-      </Guard>
-    </>
   );
 };
 
@@ -559,28 +494,7 @@ export const Account = ({
           <p>This account doesn't have any secondary emails.</p>
         )}
 
-        <h3 className="header-lg">Email Bounces</h3>
-        {emailBounces && emailBounces.length > 0 ? (
-          <>
-            <ClearButton
-              {...{
-                uid,
-                emails: emails!.map((emails) => emails.email),
-                onCleared,
-              }}
-            />
-            {emailBounces.map((emailBounce: EmailBounceType) => (
-              <EmailBounce key={emailBounce.createdAt} {...emailBounce} />
-            ))}
-          </>
-        ) : (
-          <p
-            data-testid="no-bounces-message"
-            className="account-li account-border-info"
-          >
-            This account doesn't have any bounced emails.
-          </p>
-        )}
+        <EmailBounces {...{ emailBounces, uid, emails, onCleared }} />
 
         <h3 className="header-lg">Linked Accounts</h3>
         {linkedAccounts && linkedAccounts.length > 0 ? (
@@ -617,58 +531,6 @@ export const Account = ({
 };
 
 export const HIDE_ROW = 'N/A';
-
-const EmailBounce = ({
-  email,
-  templateName,
-  createdAt,
-  bounceType,
-  bounceSubType,
-  diagnosticCode,
-}: EmailBounceType) => {
-  const date = dateFormat(new Date(createdAt), DATE_FORMAT);
-  const bounceDescription = getEmailBounceDescription(
-    bounceType,
-    bounceSubType
-  );
-  return (
-    <table className="table-y-headers" data-testid={'bounce-group'}>
-      <tbody>
-        <TableRowYHeader header="email" value={email} testId={'bounce-email'} />
-        <TableRowYHeader
-          header="template"
-          value={templateName}
-          testId={'bounce-template'}
-        />
-        <TableRowYHeader
-          header="created at"
-          value={`${createdAt} (${date})`}
-          testId={'bounce-createdAt'}
-        />
-        <TableRowYHeader
-          header="bounce type"
-          value={bounceType}
-          testId={'bounce-type'}
-        />
-        <TableRowYHeader
-          header="bounce subtype"
-          value={bounceSubType}
-          testId={'bounce-subtype'}
-        />
-        <TableRowYHeader
-          header="bounce description"
-          value={bounceDescription}
-          testId={'bounce-description'}
-        />
-        <TableRowYHeader
-          header="diagnostic code"
-          value={diagnosticCode?.length ? diagnosticCode : HIDE_ROW}
-          testId={'bounce-diagnostic-code'}
-        />
-      </tbody>
-    </table>
-  );
-};
 
 const TotpEnabled = ({ verified, createdAt, enabled }: TotpType) => {
   const totpDate = dateFormat(new Date(createdAt), DATE_FORMAT);

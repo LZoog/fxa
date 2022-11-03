@@ -5,9 +5,8 @@
 import React from 'react';
 import dateFormat from 'dateformat';
 import { AttachedClient, Location } from 'fxa-admin-server/src/graphql';
-import { DATE_FORMAT, HIDE_ROW, TableRowYHeader } from '../Account';
-
-type Nullable<T> = T | null;
+import { DATE_FORMAT, HIDE_ROW } from '../Account';
+import { TableRowYHeader } from '../../TableYHeaders';
 
 export const NUMBER_OF_SERVICES_TO_SHOW = 3;
 

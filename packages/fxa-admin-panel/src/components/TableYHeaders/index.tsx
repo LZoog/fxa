@@ -6,7 +6,8 @@ import React, { ReactElement } from 'react';
 import { HIDE_ROW } from '../PageAccountSearch/Account';
 
 interface TableYHeadersProps {
-  header: string;
+  header?: string;
+  testId?: string;
   children:
     | ReactElement<TableRowYHeaderProps>
     | ReactElement<TableRowYHeaderProps>[];
@@ -39,10 +40,14 @@ export const TableRowYHeader = ({
   );
 };
 
-export const TableYHeaders = ({ header, children }: TableYHeadersProps) => (
+export const TableYHeaders = ({
+  header,
+  children,
+  testId,
+}: TableYHeadersProps) => (
   <>
-    <h3 className="header-lg">{header}</h3>
-    <table className="table-y-headers">
+    {header && <h3 className="header-lg">{header}</h3>}
+    <table className="table-y-headers" data-testid={testId}>
       <tbody>{children}</tbody>
     </table>
   </>
