@@ -320,6 +320,22 @@ export const Account = ({
           <ConnectedServices services={attachedClients} />
         </Guard>
 
+        <h3 className="header-lg">Account History</h3>
+        {securityEvents && securityEvents.length > 0 ? (
+          <TableXHeaders rowHeaders={['Event', 'Timestamp']}>
+            {securityEvents.map((securityEvents: SecurityEventsType) => (
+              <TableRowXHeader>
+                <>{securityEvents.name}</>
+                <>{getFormattedDate(securityEvents.createdAt)}</>
+              </TableRowXHeader>
+            ))}
+          </TableXHeaders>
+        ) : (
+          <p data-testid="account-security-events">
+            This account doesn't have any linked accounts.
+          </p>
+        )}
+
         <h3 className="header-lg">Linked Accounts</h3>
         {linkedAccounts && linkedAccounts.length > 0 ? (
           <TableXHeaders rowHeaders={['Event', 'Timestamp', 'Action']}>
