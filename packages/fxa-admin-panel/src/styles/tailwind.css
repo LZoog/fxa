@@ -15,7 +15,7 @@ hr {
 }
 
 .header-lg {
-  @apply text-lg mt-5 mb-2;
+  @apply text-lg mt-6 mb-2;
 }
 
 .table-xy-headers {

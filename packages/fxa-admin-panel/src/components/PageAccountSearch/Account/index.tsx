@@ -306,7 +306,7 @@ export const Account = ({
   locale,
   lockedAt,
   emailBounces,
-  totp,
+  totp: totps,
   recoveryKeys,
   attachedClients,
   subscriptions,
@@ -464,6 +464,52 @@ export const Account = ({
 
         <EmailBounces {...{ emailBounces, uid, emails, onCleared }} />
 
+        <h3 className="header-lg">
+          2FA / TOTP (Time-Based One-Time Passwords)
+        </h3>
+        {totps && totps.length > 0 ? (
+          <TableXHeaders rowHeaders={['Created At', 'Enabled', 'Confirmed']}>
+            {totps.map((totp: TotpType) => (
+              <TableRowXHeader key={totp.createdAt}>
+                <span data-testid="totp-created-at">
+                  {getFormattedDate(totp.createdAt)}
+                </span>
+                <span data-testid="totp-enabled">
+                  {totp.enabled ? 'enabled' : 'not enabled'}
+                </span>
+                <span data-testid="totp-verified">
+                  {totp.verified ? 'confirmed' : 'unconfirmed'}
+                </span>
+              </TableRowXHeader>
+            ))}
+          </TableXHeaders>
+        ) : (
+          <p>This account doesn't have 2FA / TOTP created.</p>
+        )}
+
+        <h3 className="header-lg">Account Recovery Key</h3>
+        {recoveryKeys && recoveryKeys.length > 0 ? (
+          <TableXHeaders rowHeaders={['Created At', 'Enabled', 'Confirmed At']}>
+            {recoveryKeys.map((recoveryKey: RecoveryKeysType) => (
+              <TableRowXHeader key={recoveryKey.createdAt}>
+                <span data-testid="recovery-keys-created-at">
+                  {getFormattedDate(recoveryKey.createdAt)}
+                </span>
+                <span data-testid="recovery-keys-enabled">
+                  {recoveryKey.enabled ? 'enabled' : 'not enabled'}
+                </span>
+                <span data-testid="recovery-keys-verified">
+                  {recoveryKey.verifiedAt
+                    ? getFormattedDate(recoveryKey.verifiedAt)
+                    : 'unconfirmed'}
+                </span>
+              </TableRowXHeader>
+            ))}
+          </TableXHeaders>
+        ) : (
+          <p>This account doesn't have an account recovery key created.</p>
+        )}
+
         <h3 className="header-lg">Linked Accounts</h3>
         {linkedAccounts && linkedAccounts.length > 0 ? (
           <TableXHeaders rowHeaders={['Event', 'Timestamp', 'Action']}>
@@ -495,80 +541,6 @@ export const Account = ({
         />
       </section>
     </>
-  );
-};
-
-const TotpEnabled = ({ verified, createdAt, enabled }: TotpType) => {
-  const totpDate = getFormattedDate(createdAt);
-  return (
-    <li className="account-li">
-      <ul className="account-border-info">
-        <li className="account-li">
-          TOTP Created At: <span data-testid="totp-created-at">{totpDate}</span>
-        </li>
-        <li className="account-li">
-          TOTP Confirmed:{' '}
-          <span
-            data-testid="totp-verified"
-            className={`ml-3 text-base ${
-              verified ? 'confirmed' : 'unconfirmed'
-            }`}
-          >
-            {verified ? 'confirmed' : 'unconfirmed'}
-          </span>
-        </li>
-        <li className="account-li">
-          TOTP Enabled:{' '}
-          <span
-            data-testid="totp-enabled"
-            className={`ml-3 text-base ${
-              enabled ? 'confirmed' : 'unconfirmed'
-            }`}
-          >
-            {enabled ? 'enabled' : 'not-enabled'}
-          </span>
-        </li>
-      </ul>
-    </li>
-  );
-};
-
-const RecoveryKeys = ({ verifiedAt, createdAt, enabled }: RecoveryKeysType) => {
-  const recoveryKeyCreatedDate = getFormattedDate(createdAt);
-  const recoveryKeyVerifiedDate = getFormattedDate(verifiedAt);
-  return (
-    <li className="account-li">
-      <ul className="account-border-info">
-        <li className="account-li">
-          Account Recovery Key Created At:{' '}
-          <span data-testid="recovery-keys-created-at">
-            {recoveryKeyCreatedDate}
-          </span>
-        </li>
-        <li className="account-li">
-          Account Recovery Key Confirmed At:{' '}
-          <span
-            data-testid="recovery-keys-verified"
-            className={`ml-3 text-base ${
-              verifiedAt ? 'confirmed' : 'unconfirmed'
-            }`}
-          >
-            {verifiedAt ? recoveryKeyVerifiedDate : 'unconfirmed'}
-          </span>
-        </li>
-        <li className="account-li">
-          Account Recovery Key Enabled:{' '}
-          <span
-            data-testid="recovery-keys-enabled"
-            className={`ml-3 text-base ${
-              enabled ? 'confirmed' : 'unconfirmed'
-            }`}
-          >
-            {enabled ? 'enabled' : 'not-enabled'}
-          </span>
-        </li>
-      </ul>
-    </li>
   );
 };
 
