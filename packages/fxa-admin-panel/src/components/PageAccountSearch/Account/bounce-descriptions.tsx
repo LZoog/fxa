@@ -2,6 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import React from 'react';
+import { BounceType, BounceSubType } from 'fxa-admin-server/src/graphql';
+import { HIDE_ROW } from '.';
+
 const undetermined = [
   `The recipient's email provider sent a bounce message. The bounce message didn't contain enough information for Amazon SES to determine the reason for the bounce. The bounce email, which was sent to the address in the Return-Path header of the email that resulted in the bounce, might contain additional information about the issue that caused the email to bounce.`,
 ];
@@ -87,4 +91,74 @@ const BOUNCE_DESCRIPTIONS = {
   complaintVirus,
 };
 
-export default BOUNCE_DESCRIPTIONS;
+const getEmailBounceDescription = (
+  bounceType: string,
+  bounceSubType: string
+) => {
+  let description: string[] | string = HIDE_ROW;
+  switch (bounceType) {
+    case BounceType.Undetermined: {
+      if (bounceSubType === BounceSubType.Undetermined) {
+        description = BOUNCE_DESCRIPTIONS.undetermined;
+      }
+      break;
+    }
+
+    case BounceType.Permanent: {
+      if (bounceSubType === BounceSubType.General) {
+        description = BOUNCE_DESCRIPTIONS.permanentGeneral;
+      } else if (bounceSubType === BounceSubType.NoEmail) {
+        description = BOUNCE_DESCRIPTIONS.permanentNoEmail;
+      } else if (bounceSubType === BounceSubType.Suppressed) {
+        description = BOUNCE_DESCRIPTIONS.permanentSuppressed;
+      } else if (bounceSubType === BounceSubType.OnAccountSuppressionList) {
+        description = BOUNCE_DESCRIPTIONS.permanentOnAccountSuppressionList;
+      }
+      break;
+    }
+
+    case BounceType.Transient: {
+      if (bounceSubType === BounceSubType.General) {
+        description = BOUNCE_DESCRIPTIONS.transientGeneral;
+      } else if (bounceSubType === BounceSubType.MailboxFull) {
+        description = BOUNCE_DESCRIPTIONS.transientMailboxFull;
+      } else if (bounceSubType === BounceSubType.MessageTooLarge) {
+        description = BOUNCE_DESCRIPTIONS.transientMessageTooLarge;
+      } else if (bounceSubType === BounceSubType.ContentRejected) {
+        description = BOUNCE_DESCRIPTIONS.transientContentRejected;
+      } else if (bounceSubType === BounceSubType.AttachmentRejected) {
+        description = BOUNCE_DESCRIPTIONS.transientAttachmentRejected;
+      }
+      break;
+    }
+
+    case BounceType.Complaint: {
+      if (bounceSubType === BounceSubType.Abuse) {
+        description = BOUNCE_DESCRIPTIONS.complaintAbuse;
+      } else if (bounceSubType === BounceSubType.AuthFailure) {
+        description = BOUNCE_DESCRIPTIONS.complaintAuthFailure;
+      } else if (bounceSubType === BounceSubType.Fraud) {
+        description = BOUNCE_DESCRIPTIONS.complaintFraud;
+      } else if (bounceSubType === BounceSubType.NotSpam) {
+        description = BOUNCE_DESCRIPTIONS.complaintNotSpam;
+      } else if (bounceSubType === BounceSubType.Other) {
+        description = BOUNCE_DESCRIPTIONS.complaintOther;
+      } else if (bounceSubType === BounceSubType.Virus) {
+        description = BOUNCE_DESCRIPTIONS.complaintVirus;
+      }
+      break;
+    }
+
+    default: {
+    }
+  }
+
+  if (Array.isArray(description)) {
+    return description.map((paragraph, index) => (
+      <p key={index}>{paragraph}</p>
+    ));
+  }
+  return description;
+};
+
+export default getEmailBounceDescription;

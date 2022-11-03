@@ -11,16 +11,13 @@ import {
   Totp as TotpType,
   RecoveryKeys as RecoveryKeysType,
   LinkedAccount as LinkedAccountType,
-  BounceType,
-  BounceSubType,
 } from 'fxa-admin-server/src/graphql';
-
 import { AdminPanelFeature } from 'fxa-shared/guards';
-import BOUNCE_DESCRIPTIONS from './bounce-descriptions';
 import Guard from '../../Guard';
 import Subscription from '../Subscription';
 import { ConnectedServices } from '../ConnectedServices';
 import { ReactElement } from 'react';
+import getEmailBounceDescription from './bounce-descriptions';
 
 export type AccountProps = AccountType & {
   onCleared: () => void;
@@ -586,75 +583,6 @@ export const Account = ({
 
 export const HIDE_ROW = 'N/A';
 
-const getEmailBounceDescription = (
-  bounceType: string,
-  bounceSubType: string
-) => {
-  let description: string[] | string = HIDE_ROW;
-  switch (bounceType) {
-    case BounceType.Undetermined: {
-      if (bounceSubType === BounceSubType.Undetermined) {
-        description = BOUNCE_DESCRIPTIONS.undetermined;
-      }
-      break;
-    }
-
-    case BounceType.Permanent: {
-      if (bounceSubType === BounceSubType.General) {
-        description = BOUNCE_DESCRIPTIONS.permanentGeneral;
-      } else if (bounceSubType === BounceSubType.NoEmail) {
-        description = BOUNCE_DESCRIPTIONS.permanentNoEmail;
-      } else if (bounceSubType === BounceSubType.Suppressed) {
-        description = BOUNCE_DESCRIPTIONS.permanentSuppressed;
-      } else if (bounceSubType === BounceSubType.OnAccountSuppressionList) {
-        description = BOUNCE_DESCRIPTIONS.permanentOnAccountSuppressionList;
-      }
-      break;
-    }
-
-    case BounceType.Transient: {
-      if (bounceSubType === BounceSubType.General) {
-        description = BOUNCE_DESCRIPTIONS.transientGeneral;
-      } else if (bounceSubType === BounceSubType.MailboxFull) {
-        description = BOUNCE_DESCRIPTIONS.transientMailboxFull;
-      } else if (bounceSubType === BounceSubType.MessageTooLarge) {
-        description = BOUNCE_DESCRIPTIONS.transientMessageTooLarge;
-      } else if (bounceSubType === BounceSubType.ContentRejected) {
-        description = BOUNCE_DESCRIPTIONS.transientContentRejected;
-      } else if (bounceSubType === BounceSubType.AttachmentRejected) {
-        description = BOUNCE_DESCRIPTIONS.transientAttachmentRejected;
-      }
-      break;
-    }
-
-    case BounceType.Complaint: {
-      if (bounceSubType === BounceSubType.Abuse) {
-        description = BOUNCE_DESCRIPTIONS.complaintAbuse;
-      } else if (bounceSubType === BounceSubType.AuthFailure) {
-        description = BOUNCE_DESCRIPTIONS.complaintAuthFailure;
-      } else if (bounceSubType === BounceSubType.Fraud) {
-        description = BOUNCE_DESCRIPTIONS.complaintFraud;
-      } else if (bounceSubType === BounceSubType.NotSpam) {
-        description = BOUNCE_DESCRIPTIONS.complaintNotSpam;
-      } else if (bounceSubType === BounceSubType.Other) {
-        description = BOUNCE_DESCRIPTIONS.complaintOther;
-      } else if (bounceSubType === BounceSubType.Virus) {
-        description = BOUNCE_DESCRIPTIONS.complaintVirus;
-      }
-      break;
-    }
-
-    default: {
-    }
-  }
-
-  if (Array.isArray(description))
-    return description.map((paragraph, index) => (
-      <p key={index}>{paragraph}</p>
-    ));
-  return description;
-};
-
 const EmailBounce = ({
   email,
   templateName,
@@ -795,7 +723,6 @@ export const ResultTableRow = ({
   testId?: string;
   className?: string;
 }) => {
-  console.log('value', value);
   if (!value || value === 'Unknown' || value === HIDE_ROW) {
     return null;
   }
