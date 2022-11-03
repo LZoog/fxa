@@ -5,7 +5,7 @@
 import React from 'react';
 import { render, RenderResult } from '@testing-library/react';
 import { IClientConfig } from '../../../interfaces';
-import { Permissions } from './index';
+import { PagePermissions } from './index';
 import {
   AdminPanelEnv,
   AdminPanelGroup,
@@ -38,7 +38,7 @@ describe('Permissions', () => {
   let renderResult: RenderResult;
 
   beforeEach(() => {
-    renderResult = render(<Permissions />);
+    renderResult = render(<PagePermissions />);
   });
 
   function getByTestId(id: string) {

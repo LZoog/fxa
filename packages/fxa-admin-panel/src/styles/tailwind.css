@@ -6,46 +6,58 @@
   fill: #0c0c0d;
 }
 
-hr {
+. hr {
   @apply border-grey-50 mb-4;
 }
 
 th {
-  @apply font-medium text-violet-900 pl-4 pr-8 text-left;
+  @apply font-medium text-violet-900 text-left align-top p-1 pr-4 bg-grey-10;
 }
 
 .result-grey {
   @apply italic text-grey-500;
 }
 
-.account-header {
-  @apply mt-0 mb-1 text-lg;
+.result-header {
+  @apply mt-5 mb-2 text-lg;
 }
 
-.account-li {
+.result-table {
+  @apply mb-5 border border-grey-50 border-separate rounded border-l-2 border-l-grey-300;
+
+  tr:last-of-type td {
+    @apply border-none;
+  }
+}
+
+.confirmed {
+  @apply font-semibold text-green-900;
+}
+
+.unconfirmed {
+  @apply font-semibold text-red-600;
+}
+
+/* .result-table tr:last-of-type td {
+  border: none;
+} */
+
+/* .account-li {
   @apply list-none pl-0;
 }
 
 .account-li span {
   @apply font-medium text-violet-900;
-}
+} */
 
-.account-label {
+/* .account-label {
   @apply align-top w-48;
-}
+} */
 
-.notes {
+/* .notes {
   @apply w-96;
-}
+} */
 
-.account-border-info {
-  @apply border-l-2 border-grey-500 mb-8 pl-4;
-}
-
-.account-li .account-enabled-verified {
-  @apply font-semibold text-green-900;
-}
-
-.account-li .account-disabled-unverified {
-  @apply font-semibold text-red-600;
-}
+/* .account-border-info {
+  @apply border-l-2 border-grey-100 mb-8 pl-4;
+} */

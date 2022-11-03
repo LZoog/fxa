@@ -118,7 +118,7 @@ const Notes = ({ id, notes }: { id: string; notes: string }) => {
   };
 
   return (
-    <div className="notes ">
+    <div className="w-96">
       <textarea
         data-testid={`notes-${id}`}
         className="w-full mt-4 mb-2 border border-grey-100"
@@ -174,7 +174,7 @@ const Result = ({
             notes,
           }) => (
             <div key={id}>
-              <h3 className="account-header">{name}</h3>
+              <h3 className="result-header">{name}</h3>
               <table className="account-border-info">
                 <tbody>
                   <tr>
@@ -187,7 +187,13 @@ const Result = ({
                   </tr>
                   <tr>
                     <th>Redirect URI</th>
-                    <td>{redirectUri}</td>
+                    <td>
+                      {redirectUri ? (
+                        redirectUri
+                      ) : (
+                        <span className="result-grey">(empty string)</span>
+                      )}
+                    </td>
                   </tr>
                   <tr>
                     <th className="align-top">Allowed Scopes</th>

@@ -20,6 +20,7 @@ import BOUNCE_DESCRIPTIONS from './bounce-descriptions';
 import Guard from '../../Guard';
 import Subscription from '../Subscription';
 import { ConnectedServices } from '../ConnectedServices';
+import { ReactElement } from 'react';
 
 export type AccountProps = AccountType & {
   onCleared: () => void;
@@ -157,7 +158,7 @@ export const ClearButton = ({
       <Guard features={[AdminPanelFeature.ClearEmailBounces]}>
         <button
           data-testid="clear-button"
-          className="bg-red-600 border-0 rounded-md text-base mt-3 mx-0 mb-6 px-4 py-3 text-white transition duration-200 hover:bg-red-700"
+          className="bg-red-600 border-0 rounded-md text-base mx-0 mb-6 px-4 py-3 text-white transition duration-200 hover:bg-red-700"
           onClick={handleClear}
         >
           Clear all bounces
@@ -276,7 +277,7 @@ export const DangerZone = ({
         </p>
       </Guard>
       <Guard features={[AdminPanelFeature.UnverifyEmail]}>
-        <h2 className="account-header">Email Confirmation</h2>
+        <h2 className="result-header">Email Confirmation</h2>
         <div className="border-l-2 border-red-600 mb-4 pl-4">
           <p className="text-base leading-6">
             Reset email confirmation. User needs to re-confirm on next login.
@@ -293,7 +294,7 @@ export const DangerZone = ({
         </div>
       </Guard>
       <Guard features={[AdminPanelFeature.DisableAccount]}>
-        <h2 className="account-header">Disable Login</h2>
+        <h2 className="result-header">Disable Login</h2>
         <div className="border-l-2 border-red-600 mb-4 pl-4">
           <p className="text-base leading-6 ">
             Stops this account from logging in.
@@ -314,7 +315,7 @@ export const DangerZone = ({
         </div>
       </Guard>
       <Guard features={[AdminPanelFeature.SendPasswordResetEmail]}>
-        <h2 className="account-header">Send Password Reset Email</h2>
+        <h2 className="result-header">Send Password Reset Email</h2>
         <div className="border-l-2 border-red-600 mb-4 pl-4">
           <p className="text-base leading-6 ">
             Send the user a password reset email to all verified emails. For
@@ -333,7 +334,7 @@ export const DangerZone = ({
       </Guard>
       {disabledAt && (
         <Guard features={[AdminPanelFeature.EnableAccount]}>
-          <h2 className="account-header">Enable Login</h2>
+          <h2 className="result-header">Enable Login</h2>
           <div className="border-l-2 border-red-600 mb-4 pl-4">
             <p className="text-base leading-6">
               Allows this account to log in.
@@ -409,300 +410,163 @@ export const Account = ({
     <>
       <hr className="mt-4" />
       <section data-testid="account-data">
-        <ul>
-          <li className="account-li">
-            <h3 className="account-header">Account Details</h3>
-          </li>
-          <li className="account-li account-border-info">
-            <ul>
-              <table className="pt-1" aria-label="account details">
-                <tbody>
-                  <ResultTableRow
-                    label="Sign-up Email"
-                    value={<span className={highlight(email)}>{email}</span>}
-                    testId="sign-up-email"
-                  />
-                  <ResultTableRow
-                    label="uid"
-                    value={<span className={highlight(uid)}>{uid}</span>}
-                    testId="account-uid"
-                  />
-                  <ResultTableRow
-                    label="Created At"
-                    value={
-                      <>
-                        {createdAtDate} ({createdAt})
-                      </>
-                    }
-                    testId="account-created-at"
-                  />
-                  <ResultTableRow
-                    label="Locale"
-                    value={
-                      <>
-                        {locale}
+        <h3 className="result-header">Account Details</h3>
+        <table className="result-table">
+          <tbody>
+            <ResultTableRow
+              label="Sign-up Email"
+              value={<span className={highlight(email)}>{email}</span>}
+              testId="sign-up-email"
+            />
+            <ResultTableRow
+              label="uid"
+              value={<span className={highlight(uid)}>{uid}</span>}
+              testId="account-uid"
+            />
+            <ResultTableRow
+              label="Created At"
+              value={
+                <>
+                  {createdAtDate} ({createdAt})
+                </>
+              }
+              testId="account-created-at"
+            />
+            <ResultTableRow
+              label="Locale"
+              value={
+                <>
+                  {locale}
 
-                        <Guard features={[AdminPanelFeature.EditLocale]}>
-                          <button
-                            className="bg-grey-10 border-2 border-grey-100 font-small leading-6 ml-2 rounded text-red-700 w-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
-                            type="button"
-                            onClick={handleEditLocale}
-                            data-testid="edit-account-locale"
-                          >
-                            Edit
-                          </button>
-                        </Guard>
-                      </>
-                    }
-                    testId="account-locale"
-                  />
-                  {lockedAt != null && (
-                    <ResultTableRow
-                      label="Locked At"
-                      className="bg-yellow-100"
-                      value={
-                        <>
-                          {lockedAtDate} ({lockedAt})
-                        </>
-                      }
-                      testId="account-locked-at"
-                    />
-                  )}
-                  {disabledAt != null && (
-                    <ResultTableRow
-                      label="Disabled At"
-                      className="bg-yellow-100"
-                      value={
-                        <>
-                          {disabledAtDate} ({disabledAt})
-                        </>
-                      }
-                      testId="account-disabled-at"
-                    />
-                  )}
-                </tbody>
-              </table>
-            </ul>
-          </li>
-
-          <li className="account-li">
-            <h3 className="account-header">Primary Email</h3>
-          </li>
-          <li
-            className="account-li account-border-info"
-            data-testid="primary-section"
-          >
-            <ul>
-              <span
-                data-testid="primary-email"
-                className={highlight(primaryEmail.email)}
-              >
-                {primaryEmail.email}
-              </span>
-              <span
-                data-testid="primary-verified"
-                className={`ml-3 text-base ${
-                  primaryEmail.isVerified
-                    ? 'account-enabled-verified'
-                    : 'account-disabled-unverified'
-                }`}
-              >
-                {primaryEmail.isVerified ? 'confirmed' : 'not confirmed'}
-              </span>
-            </ul>
-          </li>
-
-          <li className="account-li">
-            <h3 className="account-header">Secondary Emails</h3>
-          </li>
-          {secondaryEmails.length > 0 ? (
-            <li
-              className="account-li account-border-info"
-              data-testid="secondary-section"
-            >
-              <ul>
-                {secondaryEmails.map((secondaryEmail) => (
-                  <li key={secondaryEmail.createdAt} className="account-li">
-                    <span
-                      data-testid="secondary-email"
-                      className={highlight(secondaryEmail.email)}
+                  <Guard features={[AdminPanelFeature.EditLocale]}>
+                    <button
+                      className="bg-grey-10 border-2 border-grey-100 font-small leading-6 ml-2 rounded text-red-700 w-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
+                      type="button"
+                      onClick={handleEditLocale}
+                      data-testid="edit-account-locale"
                     >
-                      {secondaryEmail.email}
-                    </span>
-                    <span
-                      data-testid="secondary-verified"
-                      className={`ml-3 text-base ${
-                        secondaryEmail.isVerified
-                          ? 'account-enabled-verified'
-                          : 'account-disabled-unverified'
-                      }`}
-                    >
-                      {secondaryEmail.isVerified
-                        ? 'confirmed'
-                        : 'not confirmed'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ) : (
-            <li className="account-li account-border-info">
-              This account doesn't have any secondary emails.
-            </li>
-          )}
-
-          <li className="account-li">
-            <h3 className="account-header">Email bounces</h3>
-          </li>
-          {emailBounces && emailBounces.length > 0 ? (
-            <>
-              <ClearButton
-                {...{
-                  uid,
-                  emails: emails!.map((emails) => emails.email),
-                  onCleared,
-                }}
+                      Edit
+                    </button>
+                  </Guard>
+                </>
+              }
+              testId="account-locale"
+            />
+            {lockedAt != null && (
+              <ResultTableRow
+                label="Locked At"
+                className="bg-yellow-100"
+                value={
+                  <>
+                    {lockedAtDate} ({lockedAt})
+                  </>
+                }
+                testId="account-locked-at"
               />
-              {emailBounces.map((emailBounce: EmailBounceType) => (
-                <EmailBounce key={emailBounce.createdAt} {...emailBounce} />
-              ))}
-            </>
-          ) : (
-            <li
-              data-testid="no-bounces-message"
-              className="account-li account-border-info"
-            >
-              This account doesn't have any bounced emails.
-            </li>
-          )}
-
-          <li className="account-li">
-            <h3 className="account-header">
-              TOTP (Time-Based One-Time Passwords)
-            </h3>
-          </li>
-          {totp && totp.length > 0 ? (
-            <>
-              {totp.map((totpIndex: TotpType) => (
-                <TotpEnabled key={totpIndex.createdAt} {...totpIndex} />
-              ))}
-            </>
-          ) : (
-            <li className="account-li account-border-info">
-              This account doesn't have TOTP enabled.
-            </li>
-          )}
-
-          <li className="account-li">
-            <h3 className="account-header">Account Recovery Key</h3>
-          </li>
-          {recoveryKeys && recoveryKeys.length > 0 ? (
-            <>
-              {recoveryKeys.map((recoveryKeysIndex: RecoveryKeysType) => (
-                <RecoveryKeys
-                  key={recoveryKeysIndex.createdAt}
-                  {...recoveryKeysIndex}
-                />
-              ))}
-            </>
-          ) : (
-            <li className="account-li account-border-info">
-              This account doesn't have an account recovery key enabled.
-            </li>
-          )}
-
-          <>
-            <li className="account-li">
-              <h3 className="account-header">Subscriptions</h3>
-            </li>
-            {subscriptions && subscriptions.length > 0 ? (
-              <>
-                {subscriptions.map((subscription) => (
-                  <Subscription
-                    key={subscription.subscriptionId}
-                    {...subscription}
-                  />
-                ))}
-              </>
-            ) : (
-              <li className="account-li account-border-info">
-                This account doesn't have any subscriptions.
-              </li>
             )}
+            {disabledAt != null && (
+              <ResultTableRow
+                label="Disabled At"
+                className="bg-yellow-100"
+                value={
+                  <>
+                    {disabledAtDate} ({disabledAt})
+                  </>
+                }
+                testId="account-disabled-at"
+              />
+            )}
+          </tbody>
+        </table>
+
+        <h3 className="result-header">Primary Email</h3>
+        <table className="result-table" data-testid="primary-section">
+          <tbody>
+            <ResultTableRow
+              label="Email"
+              value={
+                <span
+                  data-testid="primary-email"
+                  className={highlight(primaryEmail.email)}
+                >
+                  {primaryEmail.email}
+                </span>
+              }
+            />
+            <ResultTableRow
+              label="Status"
+              value={
+                primaryEmail.isVerified ? (
+                  <span className="confirmed">confirmed</span>
+                ) : (
+                  <span className="unconfirmed">unconfirmed</span>
+                )
+              }
+            />
+          </tbody>
+        </table>
+
+        <h3 className="result-header">Secondary Emails</h3>
+        {secondaryEmails.length > 0 ? (
+          <>
+            {secondaryEmails.map((secondaryEmail) => (
+              <table
+                className="result-table"
+                data-testid="secondary-section"
+                key={secondaryEmail.createdAt}
+              >
+                <tbody>
+                  <ResultTableRow
+                    label="Email"
+                    value={
+                      <span
+                        data-testid="secondary-email"
+                        className={highlight(secondaryEmail.email)}
+                      >
+                        {secondaryEmail.email}
+                      </span>
+                    }
+                  />
+                  <ResultTableRow
+                    label="Status"
+                    value={
+                      secondaryEmail.isVerified ? (
+                        <span className="confirmed">confirmed</span>
+                      ) : (
+                        <span className="unconfirmed">unconfirmed</span>
+                      )
+                    }
+                  />
+                </tbody>
+              </table>
+            ))}
           </>
+        ) : (
+          <p>This account doesn't have any secondary emails.</p>
+        )}
 
-          <Guard features={[AdminPanelFeature.ConnectedServices]}>
-            <li className="account-li">
-              <h3 className="account-header">Connected Services</h3>
-            </li>
-            <ConnectedServices services={attachedClients} />
-          </Guard>
-        </ul>
-
-        <hr />
-        <h3 className="account-header">Account History</h3>
-        <div className="account-li account-border-info">
-          {securityEvents && securityEvents.length > 0 ? (
-            <>
-              <table className="pt-1" aria-label="simple table">
-                <thead>
-                  <tr>
-                    <th className="text-left">Event</th>
-                    <th className="text-left">Timestamp</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {securityEvents.map((securityEvents: SecurityEventsType) => (
-                    <tr key={securityEvents.createdAt}>
-                      <td className="pr-4">{securityEvents.name}</td>
-                      <td>
-                        {dateFormat(
-                          new Date(securityEvents.createdAt!),
-                          DATE_FORMAT
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          ) : (
-            <div data-testid="account-security-events">
-              No account history to display.
-            </div>
-          )}
-        </div>
-        <h3 className="account-header">Linked Accounts</h3>
-        <div className="account-border-info">
-          {linkedAccounts && linkedAccounts.length > 0 ? (
-            <>
-              <table className="pt-1" aria-label="simple table">
-                <thead>
-                  <tr>
-                    <th className="text-left">Event</th>
-                    <th className="text-left">Timestamp</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {linkedAccounts.map((linkedAccount: LinkedAccountType) => (
-                    <LinkedAccount
-                      {...{
-                        uid,
-                        providerId: linkedAccount.providerId,
-                        authAt: linkedAccount.authAt,
-                        onCleared: onCleared,
-                      }}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </>
-          ) : (
-            <div data-testid="account-security-events">No linked accounts.</div>
-          )}
-        </div>
+        <h3 className="result-header">Email Bounces</h3>
+        {emailBounces && emailBounces.length > 0 ? (
+          <>
+            <ClearButton
+              {...{
+                uid,
+                emails: emails!.map((emails) => emails.email),
+                onCleared,
+              }}
+            />
+            {emailBounces.map((emailBounce: EmailBounceType) => (
+              <EmailBounce key={emailBounce.createdAt} {...emailBounce} />
+            ))}
+          </>
+        ) : (
+          <p
+            data-testid="no-bounces-message"
+            className="account-li account-border-info"
+          >
+            This account doesn't have any bounced emails.
+          </p>
+        )}
       </section>
       <hr />
 
@@ -724,13 +588,11 @@ const getEmailBounceDescription = (
   bounceType: string,
   bounceSubType: string
 ) => {
-  let description;
+  let description: string[] = ['N/A'];
   switch (bounceType) {
     case BounceType.Undetermined: {
       if (bounceSubType === BounceSubType.Undetermined) {
         description = BOUNCE_DESCRIPTIONS.undetermined;
-      } else {
-        description = ['N/A'];
       }
       break;
     }
@@ -790,6 +652,7 @@ const getEmailBounceDescription = (
       description = ['N/A'];
     }
   }
+
   return description.map((paragraph, index) => <p key={index}>{paragraph}</p>);
 };
 
@@ -807,47 +670,41 @@ const EmailBounce = ({
     bounceSubType
   );
   return (
-    <div className="account-li account-border-info">
-      <table
-        className="pt-1"
-        aria-label="simple table"
-        data-testid={'bounce-group'}
-      >
-        <tbody>
-          <ResultTableRow label="email" value={email} testId={'bounce-email'} />
-          <ResultTableRow
-            label="template"
-            value={templateName}
-            testId={'bounce-template'}
-          />
-          <ResultTableRow
-            label="created at"
-            value={`${createdAt} (${date})`}
-            testId={'bounce-createdAt'}
-          />
-          <ResultTableRow
-            label="bounce type"
-            value={bounceType}
-            testId={'bounce-type'}
-          />
-          <ResultTableRow
-            label="bounce subtype"
-            value={bounceSubType}
-            testId={'bounce-subtype'}
-          />
-          <ResultTableRow
-            label="bounce description"
-            value={bounceDescription}
-            testId={'bounce-description'}
-          />
-          <ResultTableRow
-            label="diagnostic code"
-            value={diagnosticCode?.length ? diagnosticCode : 'none'}
-            testId={'bounce-diagnostic-code'}
-          />
-        </tbody>
-      </table>
-    </div>
+    <table className="result-table" data-testid={'bounce-group'}>
+      <tbody>
+        <ResultTableRow label="email" value={email} testId={'bounce-email'} />
+        <ResultTableRow
+          label="template"
+          value={templateName}
+          testId={'bounce-template'}
+        />
+        <ResultTableRow
+          label="created at"
+          value={`${createdAt} (${date})`}
+          testId={'bounce-createdAt'}
+        />
+        <ResultTableRow
+          label="bounce type"
+          value={bounceType}
+          testId={'bounce-type'}
+        />
+        <ResultTableRow
+          label="bounce subtype"
+          value={bounceSubType}
+          testId={'bounce-subtype'}
+        />
+        <ResultTableRow
+          label="bounce description"
+          value={bounceDescription}
+          testId={'bounce-description'}
+        />
+        <ResultTableRow
+          label="diagnostic code"
+          value={diagnosticCode?.length ? diagnosticCode : 'none'}
+          testId={'bounce-diagnostic-code'}
+        />
+      </tbody>
+    </table>
   );
 };
 
@@ -864,12 +721,10 @@ const TotpEnabled = ({ verified, createdAt, enabled }: TotpType) => {
           <span
             data-testid="totp-verified"
             className={`ml-3 text-base ${
-              verified
-                ? 'account-enabled-verified'
-                : 'account-disabled-unverified'
+              verified ? 'confirmed' : 'unconfirmed'
             }`}
           >
-            {verified ? 'confirmed' : 'not confirmed'}
+            {verified ? 'confirmed' : 'unconfirmed'}
           </span>
         </li>
         <li className="account-li">
@@ -877,9 +732,7 @@ const TotpEnabled = ({ verified, createdAt, enabled }: TotpType) => {
           <span
             data-testid="totp-enabled"
             className={`ml-3 text-base ${
-              enabled
-                ? 'account-enabled-verified'
-                : 'account-disabled-unverified'
+              enabled ? 'confirmed' : 'unconfirmed'
             }`}
           >
             {enabled ? 'enabled' : 'not-enabled'}
@@ -910,12 +763,10 @@ const RecoveryKeys = ({ verifiedAt, createdAt, enabled }: RecoveryKeysType) => {
           <span
             data-testid="recovery-keys-verified"
             className={`ml-3 text-base ${
-              verifiedAt
-                ? 'account-enabled-verified'
-                : 'account-disabled-unverified'
+              verifiedAt ? 'confirmed' : 'unconfirmed'
             }`}
           >
-            {verifiedAt ? recoveryKeyVerifiedDate : 'not confirmed'}
+            {verifiedAt ? recoveryKeyVerifiedDate : 'unconfirmed'}
           </span>
         </li>
         <li className="account-li">
@@ -923,9 +774,7 @@ const RecoveryKeys = ({ verifiedAt, createdAt, enabled }: RecoveryKeysType) => {
           <span
             data-testid="recovery-keys-enabled"
             className={`ml-3 text-base ${
-              enabled
-                ? 'account-enabled-verified'
-                : 'account-disabled-unverified'
+              enabled ? 'confirmed' : 'unconfirmed'
             }`}
           >
             {enabled ? 'enabled' : 'not-enabled'}
@@ -942,21 +791,22 @@ export const ResultTableRow = ({
   testId,
   className,
 }: {
-  label: string;
-  value: any;
-  testId: string;
+  label: string | ReactElement;
+  value?: null | string | ReactElement | ReactElement[];
+  testId?: string;
   className?: string;
 }) => {
+  console.log('value', value);
   if (!value || value === 'Unknown' || value === 'N/A') {
     return null;
   }
 
   return (
-    <tr className={className || ''}>
-      <td className="account-label">
-        <span>{label}</span>
+    <tr {...{ className }}>
+      <th>{label}</th>
+      <td data-testid={testId} className="px-2 py-1 border-b border-grey-10">
+        {value}
       </td>
-      <td data-testid={testId}>{value}</td>
     </tr>
   );
 };

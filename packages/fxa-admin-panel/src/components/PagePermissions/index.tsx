@@ -68,7 +68,7 @@ export const PermissionsTable = ({
   );
 };
 
-export const Permissions = () => {
+export const PagePermissions = () => {
   const { user } = useUserContext();
   const { guard } = useGuardContext();
 
