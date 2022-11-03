@@ -39,7 +39,7 @@ export const ConnectedServices = ({
     return connectedServicesTables;
   }
 
-  return <p>This account has no connected services.</p>;
+  return <p className="result-none">This account has no connected services.</p>;
 };
 
 const ConnectedService = ({

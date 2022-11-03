@@ -22,6 +22,10 @@ hr {
   @apply mb-5 border border-grey-50 border-separate rounded border-l-2 border-l-grey-300;
 }
 
+.result-none {
+  @apply border-l border-l-grey-300 border-dotted pl-2;
+}
+
 .table-th {
   @apply font-medium text-violet-900 align-top p-1 pr-4 bg-grey-10;
 }

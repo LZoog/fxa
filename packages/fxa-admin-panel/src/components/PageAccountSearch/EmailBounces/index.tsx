@@ -139,7 +139,7 @@ export const EmailBounces = ({
         ))}
       </>
     ) : (
-      <p data-testid="no-bounces-message">
+      <p data-testid="no-bounces-message" className="result-none">
         This account doesn't have any bounced emails.
       </p>
     )}

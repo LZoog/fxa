@@ -250,7 +250,9 @@ export const Account = ({
             ))}
           </TableXHeaders>
         ) : (
-          <p>This account doesn't have any secondary emails.</p>
+          <p className="result-none">
+            This account doesn't have any secondary emails.
+          </p>
         )}
 
         <EmailBounces {...{ emailBounces, uid, emails, onCleared }} />
@@ -275,7 +277,9 @@ export const Account = ({
             ))}
           </TableXHeaders>
         ) : (
-          <p>This account doesn't have 2FA / TOTP created.</p>
+          <p className="result-none">
+            This account doesn't have 2FA / TOTP created.
+          </p>
         )}
 
         <h3 className="header-lg">Account Recovery Key</h3>
@@ -298,7 +302,9 @@ export const Account = ({
             ))}
           </TableXHeaders>
         ) : (
-          <p>This account doesn't have an account recovery key created.</p>
+          <p className="result-none">
+            This account doesn't have an account recovery key created.
+          </p>
         )}
 
         <h3 className="header-lg">Subscriptions</h3>
@@ -312,7 +318,9 @@ export const Account = ({
             ))}
           </>
         ) : (
-          <p>This account doesn't have any subscriptions.</p>
+          <p className="result-none">
+            This account doesn't have any subscriptions.
+          </p>
         )}
 
         <Guard features={[AdminPanelFeature.ConnectedServices]}>
@@ -331,7 +339,7 @@ export const Account = ({
             ))}
           </TableXHeaders>
         ) : (
-          <p data-testid="account-security-events">
+          <p data-testid="account-security-events" className="result-none">
             This account doesn't have any linked accounts.
           </p>
         )}
@@ -351,7 +359,7 @@ export const Account = ({
             ))}
           </TableXHeaders>
         ) : (
-          <p data-testid="account-security-events">
+          <p data-testid="account-security-events" className="result-none">
             This account doesn't have any linked accounts.
           </p>
         )}
