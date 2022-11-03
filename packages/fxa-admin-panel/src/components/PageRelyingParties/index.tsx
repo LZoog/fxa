@@ -10,6 +10,7 @@ import ErrorAlert from '../ErrorAlert';
 import { AdminPanelFeature } from '../../../../fxa-shared/guards';
 import { Guard } from '../Guard';
 import { getFormattedDate } from '../../lib/utils';
+import { TableRowYHeader, TableYHeaders } from '../TableYHeaders';
 
 const RELYING_PARTIES_SCHEMA = `
   relyingParties {
@@ -90,7 +91,7 @@ const Notes = ({ id, notes }: { id: string; notes: string }) => {
 
   const saveButtonClass = () => {
     const base =
-      'bg-grey-10 border-2 p-1 border-grey-100 font-small leading-6 ml-2 rounded  mt';
+      'bg-grey-10 border-2 p-1 border-grey-100 font-small leading-6 rounded';
     const active =
       'text-red-700 hover:text-red-700 hover:border-2 hover:border-grey-10 hover:bg-grey-50';
     const inactive = 'text-grey-700 cursor-not-allowed';
@@ -101,10 +102,10 @@ const Notes = ({ id, notes }: { id: string; notes: string }) => {
   };
   const statusClass = () => {
     if (error) {
-      return `p-2  text-red-700 visible`;
+      return `text-red-700 visible`;
     }
     if (status) {
-      return `p-2 text-gray-800 visible`;
+      return `text-gray-800 visible`;
     }
     return `collapsed`;
   };
@@ -117,10 +118,10 @@ const Notes = ({ id, notes }: { id: string; notes: string }) => {
   };
 
   return (
-    <div className="w-96">
+    <>
       <textarea
         data-testid={`notes-${id}`}
-        className="w-full mt-4 mb-2 border border-grey-100"
+        className="w-96 mb-2 border border-grey-100 block"
         onChange={handleNotesChange}
         defaultValue={notes}
       />
@@ -133,11 +134,14 @@ const Notes = ({ id, notes }: { id: string; notes: string }) => {
         >
           Save
         </button>
-        <div className={statusClass()} data-testid={`notes-status-${id}`}>
+        <p
+          className={`pl-3 inline-block ${statusClass()}`}
+          data-testid={`notes-status-${id}`}
+        >
           {statusText()}
-        </div>
+        </p>
       </Guard>
-    </div>
+    </>
   );
 };
 
@@ -172,65 +176,47 @@ const Result = ({
             allowedScopes,
             notes,
           }) => (
-            <div key={id}>
-              <h3 className="header-lg">{name}</h3>
-              <table className="account-border-info">
-                <tbody>
-                  <tr>
-                    <th>ID</th>
-                    <td>{id}</td>
-                  </tr>
-                  <tr>
-                    <th>Created At</th>
-                    <td>{getFormattedDate(createdAt)}</td>
-                  </tr>
-                  <tr>
-                    <th>Redirect URI</th>
-                    <td>
-                      {redirectUri ? (
-                        redirectUri
-                      ) : (
-                        <span className="result-grey">(empty string)</span>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th className="align-top">Allowed Scopes</th>
-                    <td>
-                      <AllowedScopes {...{ allowedScopes }} />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Trusted?</th>
-                    <td>{trusted ? 'Yes' : 'No'}</td>
-                  </tr>
-                  <tr>
-                    <th>Can Grant?</th>
-                    <td>{canGrant ? 'Yes' : 'No'}</td>
-                  </tr>
-                  <tr>
-                    <th>Public Client?</th>
-                    <td>{publicClient ? 'Yes' : 'No'}</td>
-                  </tr>
-                  <tr>
-                    <th>Image URI</th>
-                    <td>
-                      {imageUri ? (
-                        imageUri
-                      ) : (
-                        <span className="result-grey">(empty string)</span>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Notes</th>
-                    <td>
-                      <Notes {...{ id, notes: notes || '' }} />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <TableYHeaders key={id} header={name}>
+              <TableRowYHeader header="ID" value={id} />
+              <TableRowYHeader
+                header="Created At"
+                value={getFormattedDate(createdAt)}
+              />
+              <TableRowYHeader
+                header="Redirect URI"
+                value={
+                  redirectUri ? (
+                    redirectUri
+                  ) : (
+                    <span className="result-grey">(empty string)</span>
+                  )
+                }
+              />
+              <TableRowYHeader
+                header="Allowed Scopes"
+                value={<AllowedScopes {...{ allowedScopes }} />}
+              />
+              <TableRowYHeader header="Trusted" value={trusted.toString()} />
+              <TableRowYHeader header="Can Grant" value={canGrant.toString()} />
+              <TableRowYHeader
+                header="Public Client"
+                value={publicClient.toString()}
+              />
+              <TableRowYHeader
+                header="Image URI"
+                value={
+                  imageUri ? (
+                    imageUri
+                  ) : (
+                    <span className="result-grey">(empty string)</span>
+                  )
+                }
+              />
+              <TableRowYHeader
+                header="Notes"
+                value={<Notes {...{ id, notes: notes || '' }} />}
+              />
+            </TableYHeaders>
           )
         )}
       </section>
