@@ -6,43 +6,8 @@ import React from 'react';
 import { IFeatureFlag } from 'fxa-shared/guards';
 import { useUserContext } from '../../hooks/UserContext';
 import { useGuardContext } from '../../hooks/GuardContext';
-
-const styleClasses = {
-  label: 'px-4 py-2',
-  val: 'font-medium text-violet-900 px-4 py-2',
-};
-
-export const LabelValRow = ({
-  label,
-  val,
-  testId,
-}: {
-  label: string;
-  val: string;
-  testId: string;
-}) => (
-  <tr key={testId}>
-    <td className={styleClasses.label} data-testid={`${testId}-label`}>
-      {label}
-    </td>
-    <td className={styleClasses.val} data-testid={`${testId}-val`}>
-      {val}
-    </td>
-  </tr>
-);
-
-export const PermissionRow = ({ flag }: { flag: IFeatureFlag }) => {
-  const testId = `permissions-row-${flag.id}`;
-  return (
-    <LabelValRow
-      {...{
-        testId,
-        label: flag.name,
-        val: flag.enabled ? '✅' : '❌',
-      }}
-    ></LabelValRow>
-  );
-};
+import { TableRowYHeader, TableYHeaders } from '../TableYHeaders';
+import { TableRowXHeader, TableXHeaders } from '../TableXHeaders';
 
 export const PermissionsTable = ({
   featureFlags,
@@ -52,19 +17,21 @@ export const PermissionsTable = ({
   return featureFlags.length === 0 ? (
     <></>
   ) : (
-    <table className="table-auto" aria-label="permissions table">
-      <thead>
-        <tr>
-          <th className="text-left pl-4">Feature</th>
-          <th>Enabled</th>
-        </tr>
-      </thead>
-      <tbody>
+    <TableXHeaders rowHeaders={['Feature', 'Enabled']}>
+      <>
         {featureFlags.map((flag) => {
-          return <PermissionRow key={flag.id} {...{ flag }} />;
+          const testId = `permissions-row-${flag.id}`;
+          return (
+            <TableRowXHeader key={flag.id} {...{ testId }}>
+              <span data-testid={`${testId}-label`}>{flag.name}</span>
+              <p data-testid={`${testId}-value`} className="text-center">
+                {flag.enabled ? '✅' : '❌'}
+              </p>
+            </TableRowXHeader>
+          );
         })}
-      </tbody>
-    </table>
+      </>
+    </TableXHeaders>
   );
 };
 
@@ -77,28 +44,25 @@ export const PagePermissions = () => {
   return (
     <div className="text-grey-900">
       <h2 className="header-page">Permissions</h2>
-      <p className="mb-2">
+      <p>
         This page displays your current user, group, and associated permissions.
       </p>
-      <table className="table-auto">
-        <tbody>
-          <LabelValRow
-            {...{
-              testId: 'permissions-user-email',
-              label: 'Signed In As:',
-              val: user.email,
-            }}
-          />
-          <LabelValRow
-            {...{
-              testId: 'permissions-user-group',
-              label: 'Your Group:',
-              val: user.group.name,
-            }}
-          />
-        </tbody>
-      </table>
-      <br />
+
+      <hr />
+
+      <TableYHeaders>
+        <TableRowYHeader
+          header="Signed In As"
+          value={user.email}
+          testId="permissions-user-email"
+        />
+        <TableRowYHeader
+          header="Your Group"
+          value={user.group.name}
+          testId="permissions-user-group"
+        />
+      </TableYHeaders>
+
       <PermissionsTable {...{ featureFlags }} />
     </div>
   );

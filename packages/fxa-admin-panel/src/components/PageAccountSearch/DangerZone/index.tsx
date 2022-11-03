@@ -125,7 +125,7 @@ export const DangerZone = ({
   if (unverifyLoading) unverifyMessage = loadingMessage;
 
   return (
-    <section>
+    <section className="mt-8">
       <Guard
         features={[
           AdminPanelFeature.UnverifyEmail,

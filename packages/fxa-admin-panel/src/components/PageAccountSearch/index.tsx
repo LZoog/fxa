@@ -309,7 +309,7 @@ const AccountSearchResult = ({
   if (loading)
     return (
       <>
-        <hr className="mt-4" />
+        <hr />
         <p data-testid="loading-message" className="mt-2">
           Loading...
         </p>
@@ -328,7 +328,7 @@ const AccountSearchResult = ({
   }
   return (
     <>
-      <hr className="mt-4" />
+      <hr />
       <p data-testid="no-account-message">Account not found.</p>
     </>
   );

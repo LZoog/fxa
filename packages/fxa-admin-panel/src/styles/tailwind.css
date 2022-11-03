@@ -7,7 +7,7 @@
 }
 
 hr {
-  @apply border-grey-50 mb-4;
+  @apply border-grey-50 my-6;
 }
 
 .header-page {

@@ -15,12 +15,13 @@ interface TableXHeadersProps {
 
 interface TableRowXHeaderProps {
   children: ReactElement | ReactElement[];
+  testId?: string;
 }
 
-export const TableRowXHeader = ({ children }: TableRowXHeaderProps) => {
+export const TableRowXHeader = ({ children, testId }: TableRowXHeaderProps) => {
   const arrayElements = Children.toArray(children);
   return (
-    <tr>
+    <tr data-testid={testId}>
       {arrayElements.map((element) => (
         <td className="table-td border-r">{element}</td>
       ))}

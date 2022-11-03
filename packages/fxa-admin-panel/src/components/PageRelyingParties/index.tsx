@@ -266,7 +266,7 @@ export const PageRelyingParties = () => {
         This page displays all FxA and SubPlat relying parties (RPs).
       </p>
 
-      <p className="mb-6">
+      <p>
         Firefox accounts integrates with Mozilla groups on request via OAuth,
         OpenID, and webhooks, allowing them to offer users authentication and/or
         authorization with their Firefox account. These groups assume an RP

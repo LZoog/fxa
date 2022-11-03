@@ -143,7 +143,7 @@ export const Account = ({
 
   return (
     <>
-      <hr className="mt-4" />
+      <hr />
       <section data-testid="account-data">
         <TableYHeaders header="Account Details">
           <TableRowYHeader
@@ -356,18 +356,15 @@ export const Account = ({
           </p>
         )}
       </section>
-      <hr />
 
-      <section>
-        <DangerZone
-          {...{
-            uid,
-            disabledAt: disabledAt!,
-            email: primaryEmail, // only the primary for now
-            onCleared: onCleared,
-          }}
-        />
-      </section>
+      <DangerZone
+        {...{
+          uid,
+          disabledAt: disabledAt!,
+          email: primaryEmail, // only the primary for now
+          onCleared: onCleared,
+        }}
+      />
     </>
   );
 };
