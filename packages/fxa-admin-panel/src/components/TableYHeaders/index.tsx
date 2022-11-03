@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { ReactElement } from 'react';
-import { HIDE_ROW } from '../PageAccountSearch/Account';
+import { HIDE_ROW } from '../../lib/utils';
 
 interface TableYHeadersProps {
   header?: string;

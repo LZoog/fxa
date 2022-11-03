@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { BounceType, BounceSubType } from 'fxa-admin-server/src/graphql';
-import { HIDE_ROW } from '../Account';
+import { HIDE_ROW } from '../../../lib/utils';
 
 const undetermined = [
   `The recipient's email provider sent a bounce message. The bounce message didn't contain enough information for Amazon SES to determine the reason for the bounce. The bounce email, which was sent to the address in the Return-Path header of the email that resulted in the bounce, might contain additional information about the issue that caused the email to bounce.`,
