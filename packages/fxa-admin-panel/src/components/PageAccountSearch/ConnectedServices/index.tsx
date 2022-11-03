@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import React from 'react';
 import dateFormat from 'dateformat';
 import { AttachedClient, Location } from 'fxa-admin-server/src/graphql';
-import React from 'react';
-import { DATE_FORMAT, HIDE_ROW, ResultTableRow } from '../Account';
+import { DATE_FORMAT, HIDE_ROW, TableRowYHeader } from '../Account';
 
 type Nullable<T> = T | null;
 
@@ -69,60 +69,60 @@ const ConnectedService = ({
   const testId = (id: string) => `connected-service-${id}`;
   return (
     <div className="account-li account-border-info">
-      <table className="pt-1" aria-label="simple table">
+      <table className="pt-1">
         <tbody>
-          <ResultTableRow
-            label="Client"
+          <TableRowYHeader
+            header="Client"
             value={format.client(name, clientId)}
             testId={testId('client')}
           />
-          <ResultTableRow
-            label="Device Type"
+          <TableRowYHeader
+            header="Device Type"
             value={deviceType}
             testId={testId('device-type')}
           />
-          <ResultTableRow
-            label="User Agent"
+          <TableRowYHeader
+            header="User Agent"
             value={userAgent}
             testId={testId('user-agent')}
           />
-          <ResultTableRow
-            label="Operating System"
+          <TableRowYHeader
+            header="Operating System"
             value={os}
             testId={testId('os')}
           />
-          <ResultTableRow
-            label="Created At"
+          <TableRowYHeader
+            header="Created At"
             value={format.time(createdTime, createdTimeFormatted)}
             testId={testId('created-at')}
           />
-          <ResultTableRow
-            label="Last Used"
+          <TableRowYHeader
+            header="Last Used"
             value={format.time(lastAccessTime, lastAccessTimeFormatted)}
             testId={testId('last-accessed-at')}
           />
-          <ResultTableRow
-            label="Location"
+          <TableRowYHeader
+            header="Location"
             value={format.location(location)}
             testId={testId('location')}
           />
-          <ResultTableRow
-            label="Client ID"
+          <TableRowYHeader
+            header="Client ID"
             value={clientId || HIDE_ROW}
             testId={testId('client-id')}
           />
-          <ResultTableRow
-            label="Device ID"
+          <TableRowYHeader
+            header="Device ID"
             value={deviceId || HIDE_ROW}
             testId={testId('device-id')}
           />
-          <ResultTableRow
-            label="Session Token ID"
+          <TableRowYHeader
+            header="Session Token ID"
             value={sessionTokenId || HIDE_ROW}
             testId={testId('session-token-id')}
           />
-          <ResultTableRow
-            label="Refresh Token ID"
+          <TableRowYHeader
+            header="Refresh Token ID"
             value={refreshTokenId || HIDE_ROW}
             testId={testId('refresh-token-id')}
           />

@@ -174,7 +174,7 @@ const Result = ({
             notes,
           }) => (
             <div key={id}>
-              <h3 className="result-header">{name}</h3>
+              <h3 className="header-lg">{name}</h3>
               <table className="account-border-info">
                 <tbody>
                   <tr>
@@ -275,7 +275,7 @@ export const PageRelyingParties = () => {
 
   return (
     <>
-      <h2 className="text-lg font-semibold mb-2">Relying Parties</h2>
+      <h2 className="header-page">Relying Parties</h2>
 
       <p className="mb-2">
         This page displays all FxA and SubPlat relying parties (RPs).

@@ -76,7 +76,7 @@ export const PagePermissions = () => {
 
   return (
     <div className="text-grey-900">
-      <h2 className="text-lg font-semibold mb-2">Permissions</h2>
+      <h2 className="header-page">Permissions</h2>
       <p className="mb-2">
         This page displays your current user, group, and associated permissions.
       </p>

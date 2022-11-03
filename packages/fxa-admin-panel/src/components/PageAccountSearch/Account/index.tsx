@@ -17,7 +17,9 @@ import Guard from '../../Guard';
 import Subscription from '../Subscription';
 import { ConnectedServices } from '../ConnectedServices';
 import { ReactElement } from 'react';
-import getEmailBounceDescription from './bounce-descriptions';
+import getEmailBounceDescription from './getBounceDescription';
+import { TableRowYHeader, TableYHeaders } from '../../TableYHeaders';
+import { TableRowXHeader, TableXHeaders } from '../../TableXHeaders';
 
 export type AccountProps = AccountType & {
   onCleared: () => void;
@@ -105,22 +107,36 @@ export const LinkedAccount = ({
   };
 
   return (
-    <tr key={`${authAt}-${providerId}`}>
-      <td>{providerId}</td>
-      <td className="text-left pl-8">
-        {dateFormat(new Date(authAt!), DATE_FORMAT)}
-      </td>
-      <td className="pl-4 align-middle">
-        <button
-          className="p-1 text-red-700 border-2 rounded border-grey-100 bg-grey-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
-          type="button"
-          onClick={handleUnlinkAccount}
-        >
-          Unlink
-        </button>
-      </td>
-    </tr>
+    <TableRowXHeader>
+      <>{providerId}</>
+      <>{dateFormat(new Date(authAt!), DATE_FORMAT)}</>
+      <button
+        className="p-1 text-red-700 border-2 rounded border-grey-100 bg-grey-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
+        type="button"
+        onClick={handleUnlinkAccount}
+      >
+        Unlink
+      </button>
+    </TableRowXHeader>
   );
+
+  // return (
+  //   <tr key={`${authAt}-${providerId}`}>
+  //     <td>{providerId}</td>
+  //     <td className="text-left pl-8">
+  //       {dateFormat(new Date(authAt!), DATE_FORMAT)}
+  //     </td>
+  //     <td className="pl-4 align-middle">
+  //       <button
+  //         className="p-1 text-red-700 border-2 rounded border-grey-100 bg-grey-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
+  //         type="button"
+  //         onClick={handleUnlinkAccount}
+  //       >
+  //         Unlink
+  //       </button>
+  //     </td>
+  //   </tr>
+  // );
 };
 
 export const ClearButton = ({
@@ -274,7 +290,7 @@ export const DangerZone = ({
         </p>
       </Guard>
       <Guard features={[AdminPanelFeature.UnverifyEmail]}>
-        <h2 className="result-header">Email Confirmation</h2>
+        <h2 className="header-lg">Email Confirmation</h2>
         <div className="border-l-2 border-red-600 mb-4 pl-4">
           <p className="text-base leading-6">
             Reset email confirmation. User needs to re-confirm on next login.
@@ -291,7 +307,7 @@ export const DangerZone = ({
         </div>
       </Guard>
       <Guard features={[AdminPanelFeature.DisableAccount]}>
-        <h2 className="result-header">Disable Login</h2>
+        <h2 className="header-lg">Disable Login</h2>
         <div className="border-l-2 border-red-600 mb-4 pl-4">
           <p className="text-base leading-6 ">
             Stops this account from logging in.
@@ -312,7 +328,7 @@ export const DangerZone = ({
         </div>
       </Guard>
       <Guard features={[AdminPanelFeature.SendPasswordResetEmail]}>
-        <h2 className="result-header">Send Password Reset Email</h2>
+        <h2 className="header-lg">Send Password Reset Email</h2>
         <div className="border-l-2 border-red-600 mb-4 pl-4">
           <p className="text-base leading-6 ">
             Send the user a password reset email to all verified emails. For
@@ -331,7 +347,7 @@ export const DangerZone = ({
       </Guard>
       {disabledAt && (
         <Guard features={[AdminPanelFeature.EnableAccount]}>
-          <h2 className="result-header">Enable Login</h2>
+          <h2 className="header-lg">Enable Login</h2>
           <div className="border-l-2 border-red-600 mb-4 pl-4">
             <p className="text-base leading-6">
               Allows this account to log in.
@@ -407,51 +423,50 @@ export const Account = ({
     <>
       <hr className="mt-4" />
       <section data-testid="account-data">
-        <h3 className="result-header">Account Details</h3>
-        <table className="result-table">
-          <tbody>
-            <ResultTableRow
-              label="Sign-up Email"
-              value={<span className={highlight(email)}>{email}</span>}
-              testId="sign-up-email"
-            />
-            <ResultTableRow
-              label="uid"
-              value={<span className={highlight(uid)}>{uid}</span>}
-              testId="account-uid"
-            />
-            <ResultTableRow
-              label="Created At"
-              value={
-                <>
-                  {createdAtDate} ({createdAt})
-                </>
-              }
-              testId="account-created-at"
-            />
-            <ResultTableRow
-              label="Locale"
-              value={
-                <>
-                  {locale}
+        <TableYHeaders header="Account Details">
+          <TableRowYHeader
+            header="Sign-up Email"
+            value={<span className={highlight(email)}>{email}</span>}
+            testId="sign-up-email"
+          />
+          <TableRowYHeader
+            header="uid"
+            value={<span className={highlight(uid)}>{uid}</span>}
+            testId="account-uid"
+          />
+          <TableRowYHeader
+            header="Created At"
+            value={
+              <>
+                {createdAtDate} ({createdAt})
+              </>
+            }
+            testId="account-created-at"
+          />
+          <TableRowYHeader
+            header="Locale"
+            value={
+              <>
+                {locale}
 
-                  <Guard features={[AdminPanelFeature.EditLocale]}>
-                    <button
-                      className="bg-grey-10 border-2 border-grey-100 font-small leading-6 ml-2 rounded text-red-700 w-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
-                      type="button"
-                      onClick={handleEditLocale}
-                      data-testid="edit-account-locale"
-                    >
-                      Edit
-                    </button>
-                  </Guard>
-                </>
-              }
-              testId="account-locale"
-            />
+                <Guard features={[AdminPanelFeature.EditLocale]}>
+                  <button
+                    className="bg-grey-10 border-2 border-grey-100 font-small leading-6 ml-2 rounded text-red-700 w-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
+                    type="button"
+                    onClick={handleEditLocale}
+                    data-testid="edit-account-locale"
+                  >
+                    Edit
+                  </button>
+                </Guard>
+              </>
+            }
+            testId="account-locale"
+          />
+          <>
             {lockedAt != null && (
-              <ResultTableRow
-                label="Locked At"
+              <TableRowYHeader
+                header="Locked At"
                 className="bg-yellow-100"
                 value={
                   <>
@@ -461,9 +476,11 @@ export const Account = ({
                 testId="account-locked-at"
               />
             )}
+          </>
+          <>
             {disabledAt != null && (
-              <ResultTableRow
-                label="Disabled At"
+              <TableRowYHeader
+                header="Disabled At"
                 className="bg-yellow-100"
                 value={
                   <>
@@ -473,14 +490,14 @@ export const Account = ({
                 testId="account-disabled-at"
               />
             )}
-          </tbody>
-        </table>
+          </>
+        </TableYHeaders>
 
-        <h3 className="result-header">Primary Email</h3>
-        <table className="result-table" data-testid="primary-section">
+        <h3 className="header-lg">Primary Email</h3>
+        <table className="table-y-headers" data-testid="primary-section">
           <tbody>
-            <ResultTableRow
-              label="Email"
+            <TableRowYHeader
+              header="Email"
               value={
                 <span
                   data-testid="primary-email"
@@ -490,8 +507,8 @@ export const Account = ({
                 </span>
               }
             />
-            <ResultTableRow
-              label="Status"
+            <TableRowYHeader
+              header="Status"
               value={
                 primaryEmail.isVerified ? (
                   <span className="confirmed">confirmed</span>
@@ -503,18 +520,18 @@ export const Account = ({
           </tbody>
         </table>
 
-        <h3 className="result-header">Secondary Emails</h3>
+        <h3 className="header-lg">Secondary Emails</h3>
         {secondaryEmails.length > 0 ? (
           <>
             {secondaryEmails.map((secondaryEmail) => (
               <table
-                className="result-table"
+                className="table-y-headers"
                 data-testid="secondary-section"
                 key={secondaryEmail.createdAt}
               >
                 <tbody>
-                  <ResultTableRow
-                    label="Email"
+                  <TableRowYHeader
+                    header="Email"
                     value={
                       <span
                         data-testid="secondary-email"
@@ -524,8 +541,8 @@ export const Account = ({
                       </span>
                     }
                   />
-                  <ResultTableRow
-                    label="Status"
+                  <TableRowYHeader
+                    header="Status"
                     value={
                       secondaryEmail.isVerified ? (
                         <span className="confirmed">confirmed</span>
@@ -542,7 +559,7 @@ export const Account = ({
           <p>This account doesn't have any secondary emails.</p>
         )}
 
-        <h3 className="result-header">Email Bounces</h3>
+        <h3 className="header-lg">Email Bounces</h3>
         {emailBounces && emailBounces.length > 0 ? (
           <>
             <ClearButton
@@ -563,6 +580,24 @@ export const Account = ({
           >
             This account doesn't have any bounced emails.
           </p>
+        )}
+
+        <h3 className="header-lg">Linked Accounts</h3>
+        {linkedAccounts && linkedAccounts.length > 0 ? (
+          <TableXHeaders rowHeaders={['Event', 'Timestamp', 'Action']}>
+            {linkedAccounts.map((linkedAccount: LinkedAccountType) => (
+              <LinkedAccount
+                {...{
+                  uid,
+                  providerId: linkedAccount.providerId,
+                  authAt: linkedAccount.authAt,
+                  onCleared: onCleared,
+                }}
+              />
+            ))}
+          </TableXHeaders>
+        ) : (
+          <p data-testid="account-security-events">No linked accounts.</p>
         )}
       </section>
       <hr />
@@ -597,36 +632,36 @@ const EmailBounce = ({
     bounceSubType
   );
   return (
-    <table className="result-table" data-testid={'bounce-group'}>
+    <table className="table-y-headers" data-testid={'bounce-group'}>
       <tbody>
-        <ResultTableRow label="email" value={email} testId={'bounce-email'} />
-        <ResultTableRow
-          label="template"
+        <TableRowYHeader header="email" value={email} testId={'bounce-email'} />
+        <TableRowYHeader
+          header="template"
           value={templateName}
           testId={'bounce-template'}
         />
-        <ResultTableRow
-          label="created at"
+        <TableRowYHeader
+          header="created at"
           value={`${createdAt} (${date})`}
           testId={'bounce-createdAt'}
         />
-        <ResultTableRow
-          label="bounce type"
+        <TableRowYHeader
+          header="bounce type"
           value={bounceType}
           testId={'bounce-type'}
         />
-        <ResultTableRow
-          label="bounce subtype"
+        <TableRowYHeader
+          header="bounce subtype"
           value={bounceSubType}
           testId={'bounce-subtype'}
         />
-        <ResultTableRow
-          label="bounce description"
+        <TableRowYHeader
+          header="bounce description"
           value={bounceDescription}
           testId={'bounce-description'}
         />
-        <ResultTableRow
-          label="diagnostic code"
+        <TableRowYHeader
+          header="diagnostic code"
           value={diagnosticCode?.length ? diagnosticCode : HIDE_ROW}
           testId={'bounce-diagnostic-code'}
         />
@@ -709,31 +744,6 @@ const RecoveryKeys = ({ verifiedAt, createdAt, enabled }: RecoveryKeysType) => {
         </li>
       </ul>
     </li>
-  );
-};
-
-export const ResultTableRow = ({
-  label,
-  value,
-  testId,
-  className,
-}: {
-  label: string | ReactElement;
-  value?: null | string | ReactElement | ReactElement[];
-  testId?: string;
-  className?: string;
-}) => {
-  if (!value || value === 'Unknown' || value === HIDE_ROW) {
-    return null;
-  }
-
-  return (
-    <tr {...{ className }}>
-      <th>{label}</th>
-      <td data-testid={testId} className="px-2 py-1 border-b border-grey-10">
-        {value}
-      </td>
-    </tr>
   );
 };
 
