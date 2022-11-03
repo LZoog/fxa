@@ -145,3 +145,5 @@ export const EmailBounces = ({
     )}
   </>
 );
+
+export default EmailBounces;
