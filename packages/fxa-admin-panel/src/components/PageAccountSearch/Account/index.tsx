@@ -584,11 +584,13 @@ export const Account = ({
   );
 };
 
+export const HIDE_ROW = 'N/A';
+
 const getEmailBounceDescription = (
   bounceType: string,
   bounceSubType: string
 ) => {
-  let description: string[] = ['N/A'];
+  let description: string[] | string = HIDE_ROW;
   switch (bounceType) {
     case BounceType.Undetermined: {
       if (bounceSubType === BounceSubType.Undetermined) {
@@ -606,8 +608,6 @@ const getEmailBounceDescription = (
         description = BOUNCE_DESCRIPTIONS.permanentSuppressed;
       } else if (bounceSubType === BounceSubType.OnAccountSuppressionList) {
         description = BOUNCE_DESCRIPTIONS.permanentOnAccountSuppressionList;
-      } else {
-        description = ['N/A'];
       }
       break;
     }
@@ -623,8 +623,6 @@ const getEmailBounceDescription = (
         description = BOUNCE_DESCRIPTIONS.transientContentRejected;
       } else if (bounceSubType === BounceSubType.AttachmentRejected) {
         description = BOUNCE_DESCRIPTIONS.transientAttachmentRejected;
-      } else {
-        description = ['N/A'];
       }
       break;
     }
@@ -642,18 +640,19 @@ const getEmailBounceDescription = (
         description = BOUNCE_DESCRIPTIONS.complaintOther;
       } else if (bounceSubType === BounceSubType.Virus) {
         description = BOUNCE_DESCRIPTIONS.complaintVirus;
-      } else {
-        description = ['N/A'];
       }
       break;
     }
 
     default: {
-      description = ['N/A'];
     }
   }
 
-  return description.map((paragraph, index) => <p key={index}>{paragraph}</p>);
+  if (Array.isArray(description))
+    return description.map((paragraph, index) => (
+      <p key={index}>{paragraph}</p>
+    ));
+  return description;
 };
 
 const EmailBounce = ({
@@ -700,7 +699,7 @@ const EmailBounce = ({
         />
         <ResultTableRow
           label="diagnostic code"
-          value={diagnosticCode?.length ? diagnosticCode : 'none'}
+          value={diagnosticCode?.length ? diagnosticCode : HIDE_ROW}
           testId={'bounce-diagnostic-code'}
         />
       </tbody>
@@ -797,7 +796,7 @@ export const ResultTableRow = ({
   className?: string;
 }) => {
   console.log('value', value);
-  if (!value || value === 'Unknown' || value === 'N/A') {
+  if (!value || value === 'Unknown' || value === HIDE_ROW) {
     return null;
   }
 

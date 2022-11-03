@@ -5,7 +5,7 @@
 import dateFormat from 'dateformat';
 import { AttachedClient, Location } from 'fxa-admin-server/src/graphql';
 import React from 'react';
-import { DATE_FORMAT, ResultTableRow } from '../Account';
+import { DATE_FORMAT, HIDE_ROW, ResultTableRow } from '../Account';
 
 type Nullable<T> = T | null;
 
@@ -108,22 +108,22 @@ const ConnectedService = ({
           />
           <ResultTableRow
             label="Client ID"
-            value={clientId || 'N/A'}
+            value={clientId || HIDE_ROW}
             testId={testId('client-id')}
           />
           <ResultTableRow
             label="Device ID"
-            value={deviceId || 'N/A'}
+            value={deviceId || HIDE_ROW}
             testId={testId('device-id')}
           />
           <ResultTableRow
             label="Session Token ID"
-            value={sessionTokenId || 'N/A'}
+            value={sessionTokenId || HIDE_ROW}
             testId={testId('session-token-id')}
           />
           <ResultTableRow
             label="Refresh Token ID"
-            value={refreshTokenId || 'N/A'}
+            value={refreshTokenId || HIDE_ROW}
             testId={testId('refresh-token-id')}
           />
         </tbody>

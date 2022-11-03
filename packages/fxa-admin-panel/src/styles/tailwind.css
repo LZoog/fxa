@@ -6,7 +6,7 @@
   fill: #0c0c0d;
 }
 
-. hr {
+hr {
   @apply border-grey-50 mb-4;
 }
 
