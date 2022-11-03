@@ -428,66 +428,49 @@ export const Account = ({
           </>
         </TableYHeaders>
 
-        <h3 className="header-lg">Primary Email</h3>
-        <table className="table-y-headers" data-testid="primary-section">
-          <tbody>
-            <TableRowYHeader
-              header="Email"
-              value={
-                <span
-                  data-testid="primary-email"
-                  className={highlight(primaryEmail.email)}
-                >
-                  {primaryEmail.email}
-                </span>
-              }
-            />
-            <TableRowYHeader
-              header="Status"
-              value={
-                primaryEmail.isVerified ? (
-                  <span className="confirmed">confirmed</span>
-                ) : (
-                  <span className="unconfirmed">unconfirmed</span>
-                )
-              }
-            />
-          </tbody>
-        </table>
+        <TableXHeaders header="Primary Email" rowHeaders={['Email', 'Status']}>
+          <TableRowXHeader>
+            <span
+              data-testid="primary-email"
+              className={highlight(primaryEmail.email)}
+            >
+              {primaryEmail.email}
+            </span>
+            <>
+              {primaryEmail.isVerified ? (
+                <span className="confirmed">confirmed</span>
+              ) : (
+                <span className="unconfirmed">unconfirmed</span>
+              )}
+            </>
+          </TableRowXHeader>
+        </TableXHeaders>
 
         <h3 className="header-lg">Secondary Emails</h3>
         {secondaryEmails.length > 0 ? (
           <>
             {secondaryEmails.map((secondaryEmail) => (
-              <table
-                className="table-y-headers"
-                data-testid="secondary-section"
+              <TableXHeaders
+                rowHeaders={['Email', 'Status']}
+                testId="secondary-section"
                 key={secondaryEmail.createdAt}
               >
-                <tbody>
-                  <TableRowYHeader
-                    header="Email"
-                    value={
-                      <span
-                        data-testid="secondary-email"
-                        className={highlight(secondaryEmail.email)}
-                      >
-                        {secondaryEmail.email}
-                      </span>
-                    }
-                  />
-                  <TableRowYHeader
-                    header="Status"
-                    value={
-                      secondaryEmail.isVerified ? (
-                        <span className="confirmed">confirmed</span>
-                      ) : (
-                        <span className="unconfirmed">unconfirmed</span>
-                      )
-                    }
-                  />
-                </tbody>
-              </table>
+                <TableRowXHeader>
+                  <span
+                    data-testid="secondary-email"
+                    className={highlight(secondaryEmail.email)}
+                  >
+                    {secondaryEmail.email}
+                  </span>
+                  <>
+                    {secondaryEmail.isVerified ? (
+                      <span className="confirmed">confirmed</span>
+                    ) : (
+                      <span className="unconfirmed">unconfirmed</span>
+                    )}
+                  </>
+                </TableRowXHeader>
+              </TableXHeaders>
             ))}
           </>
         ) : (

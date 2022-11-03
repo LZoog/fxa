@@ -7,6 +7,7 @@ import React, { Children, ReactElement } from 'react';
 interface TableXHeadersProps {
   header?: string;
   rowHeaders: string[];
+  testId?: string;
   children:
     | ReactElement<TableRowXHeaderProps>
     | ReactElement<TableRowXHeaderProps>[];
@@ -31,10 +32,11 @@ export const TableXHeaders = ({
   header,
   rowHeaders,
   children,
+  testId,
 }: TableXHeadersProps) => (
   <>
     {header && <h3 className="header-lg">{header}</h3>}
-    <table className="table-x-headers">
+    <table className="table-x-headers" data-testid={testId}>
       <thead>
         <tr>
           {rowHeaders.map((rowHeader) => (
