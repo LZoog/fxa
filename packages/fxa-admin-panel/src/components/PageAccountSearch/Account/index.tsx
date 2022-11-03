@@ -21,6 +21,7 @@ import getEmailBounceDescription from '../EmailBounces/getBounceDescription';
 import { TableRowYHeader, TableYHeaders } from '../../TableYHeaders';
 import { TableRowXHeader, TableXHeaders } from '../../TableXHeaders';
 import { EmailBounces } from '../EmailBounces';
+import { getFormattedDate } from '../../../lib/utils';
 
 export type AccountProps = AccountType & {
   onCleared: () => void;
@@ -33,8 +34,6 @@ type DangerZoneProps = {
   disabledAt: number | null;
   onCleared: Function;
 };
-
-export const DATE_FORMAT = 'yyyy-mm-dd @ HH:MM:ss Z';
 
 export const RECORD_ADMIN_SECURITY_EVENT = gql`
   mutation recordAdminSecurityEvent($uid: String!, $name: String!) {
@@ -104,7 +103,7 @@ export const LinkedAccount = ({
   return (
     <TableRowXHeader>
       <>{providerId}</>
-      <>{dateFormat(new Date(authAt!), DATE_FORMAT)}</>
+      <>{getFormattedDate(authAt)}</>
       <button
         className="p-1 text-red-700 border-2 rounded border-grey-100 bg-grey-10 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
         type="button"
@@ -248,9 +247,7 @@ export const DangerZone = ({
             Stops this account from logging in.
           </p>
           {disabledAt ? (
-            <div>
-              Disabled at: {dateFormat(new Date(disabledAt), DATE_FORMAT)}
-            </div>
+            <div>{getFormattedDate(disabledAt)}</div>
           ) : (
             <button
               className="bg-grey-10 border-2 border-grey-100 font-medium h-12 leading-6 mt-4 mr-4 rounded text-red-700 w-40 hover:border-2 hover:border-grey-10 hover:bg-grey-50 hover:text-red-700"
@@ -319,9 +316,9 @@ export const Account = ({
   securityEvents,
   linkedAccounts,
 }: AccountProps) => {
-  const createdAtDate = dateFormat(new Date(createdAt), DATE_FORMAT);
-  const disabledAtDate = dateFormat(new Date(disabledAt || 0), DATE_FORMAT);
-  const lockedAtDate = dateFormat(new Date(lockedAt || 0), DATE_FORMAT);
+  const createdAtDate = getFormattedDate(createdAt);
+  const disabledAtDate = getFormattedDate(disabledAt);
+  const lockedAtDate = getFormattedDate(lockedAt);
   const primaryEmail = emails!.find((email) => email.isPrimary)!;
   const secondaryEmails = emails!.filter((email) => !email.isPrimary);
 
@@ -403,11 +400,7 @@ export const Account = ({
               <TableRowYHeader
                 header="Locked At"
                 className="bg-yellow-100"
-                value={
-                  <>
-                    {lockedAtDate} ({lockedAt})
-                  </>
-                }
+                value={`${lockedAtDate} (${lockedAt})`}
                 testId="account-locked-at"
               />
             )}
@@ -417,11 +410,7 @@ export const Account = ({
               <TableRowYHeader
                 header="Disabled At"
                 className="bg-yellow-100"
-                value={
-                  <>
-                    {disabledAtDate} ({disabledAt})
-                  </>
-                }
+                value={`${disabledAtDate} (${disabledAt})`}
                 testId="account-disabled-at"
               />
             )}
@@ -513,10 +502,8 @@ export const Account = ({
   );
 };
 
-export const HIDE_ROW = 'N/A';
-
 const TotpEnabled = ({ verified, createdAt, enabled }: TotpType) => {
-  const totpDate = dateFormat(new Date(createdAt), DATE_FORMAT);
+  const totpDate = getFormattedDate(createdAt);
   return (
     <li className="account-li">
       <ul className="account-border-info">
@@ -551,11 +538,8 @@ const TotpEnabled = ({ verified, createdAt, enabled }: TotpType) => {
 };
 
 const RecoveryKeys = ({ verifiedAt, createdAt, enabled }: RecoveryKeysType) => {
-  const recoveryKeyCreatedDate = dateFormat(new Date(createdAt!), DATE_FORMAT);
-  const recoveryKeyVerifiedDate = dateFormat(
-    new Date(verifiedAt!),
-    DATE_FORMAT
-  );
+  const recoveryKeyCreatedDate = getFormattedDate(createdAt);
+  const recoveryKeyVerifiedDate = getFormattedDate(verifiedAt);
   return (
     <li className="account-li">
       <ul className="account-border-info">

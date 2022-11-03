@@ -5,14 +5,14 @@
 import { AdminPanelFeature } from 'fxa-shared/guards';
 import Guard from '../../Guard';
 import { gql, useMutation } from '@apollo/client';
-import { DATE_FORMAT, HIDE_ROW, RECORD_ADMIN_SECURITY_EVENT } from '../Account';
+import { RECORD_ADMIN_SECURITY_EVENT } from '../Account';
 import {
   EmailBounce as EmailBounceType,
   Email as EmailType,
 } from 'fxa-admin-server/src/graphql';
 import { TableRowYHeader, TableYHeaders } from '../../TableYHeaders';
-import dateFormat from 'dateformat';
 import getEmailBounceDescription from './getBounceDescription';
+import { getFormattedDate, HIDE_ROW } from '../../../lib/utils';
 
 export const CLEAR_BOUNCES_BY_EMAIL = gql`
   mutation clearBouncesByEmail($email: String!) {
@@ -70,7 +70,7 @@ const EmailBounce = ({
   bounceSubType,
   diagnosticCode,
 }: EmailBounceType) => {
-  const date = dateFormat(new Date(createdAt), DATE_FORMAT);
+  const date = getFormattedDate(createdAt);
   const bounceDescription = getEmailBounceDescription(
     bounceType,
     bounceSubType

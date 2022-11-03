@@ -2,11 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import dateFormat from 'dateformat';
 import { MozSubscription } from 'fxa-admin-server/src/graphql';
 import LinkExternal from 'fxa-react/components/LinkExternal';
 import { ReactComponent as IconExternalLink } from '../../../images/icon-external-link.svg';
-import { DATE_FORMAT } from '../Account';
+import { getFormattedDate } from '../../../lib/utils';
 
 const Subscription = ({
   created,
@@ -31,20 +30,19 @@ const Subscription = ({
         Status: <span>{status}</span>
       </li>
       <li className="account-li">
-        Created at: <span>{dateFormat(new Date(created), DATE_FORMAT)}</span>
+        Created at: <span>{getFormattedDate(created)}</span>
       </li>
       {endedAt != null && (
         <li className="account-li">
-          Ended at: <span>{dateFormat(new Date(endedAt), DATE_FORMAT)}</span>
+          Ended at: <span>{getFormattedDate(endedAt)}</span>
         </li>
       )}
       <li className="account-li">
         Current period start:{' '}
-        <span>{dateFormat(new Date(currentPeriodStart), DATE_FORMAT)}</span>
+        <span>{getFormattedDate(currentPeriodStart)}</span>
       </li>
       <li className="account-li">
-        Current period end:{' '}
-        <span>{dateFormat(new Date(currentPeriodEnd), DATE_FORMAT)}</span>
+        Current period end: <span>{getFormattedDate(currentPeriodEnd)}</span>
       </li>
       <li className="account-li">
         Cancel at period end? <span>{cancelAtPeriodEnd ? 'Yes' : 'No'}</span>

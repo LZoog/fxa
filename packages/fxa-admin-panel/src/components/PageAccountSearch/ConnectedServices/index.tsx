@@ -3,10 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from 'react';
-import dateFormat from 'dateformat';
 import { AttachedClient, Location } from 'fxa-admin-server/src/graphql';
-import { DATE_FORMAT, HIDE_ROW } from '../Account';
 import { TableRowYHeader } from '../../TableYHeaders';
+import { getFormattedDate, HIDE_ROW } from '../../../lib/utils';
 
 export const NUMBER_OF_SERVICES_TO_SHOW = 3;
 
@@ -159,7 +158,7 @@ const format = {
 
     return (
       <>
-        {dateFormat(new Date(raw), DATE_FORMAT)}
+        {getFormattedDate(raw)}
         {formatted ? <i> ({formatted})</i> : <></>}
       </>
     );

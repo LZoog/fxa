@@ -6,11 +6,10 @@ import React, { useState } from 'react';
 import { ApolloError, gql, useMutation, useQuery } from '@apollo/client';
 import LinkExternal from 'fxa-react/components/LinkExternal';
 import { RelyingParty } from 'fxa-admin-server/src/graphql';
-import { DATE_FORMAT } from '../PageAccountSearch/Account';
-import dateFormat from 'dateformat';
 import ErrorAlert from '../ErrorAlert';
 import { AdminPanelFeature } from '../../../../fxa-shared/guards';
 import { Guard } from '../Guard';
+import { getFormattedDate } from '../../lib/utils';
 
 const RELYING_PARTIES_SCHEMA = `
   relyingParties {
@@ -183,7 +182,7 @@ const Result = ({
                   </tr>
                   <tr>
                     <th>Created At</th>
-                    <td>{dateFormat(new Date(createdAt), DATE_FORMAT)}</td>
+                    <td>{getFormattedDate(createdAt)}</td>
                   </tr>
                   <tr>
                     <th>Redirect URI</th>
