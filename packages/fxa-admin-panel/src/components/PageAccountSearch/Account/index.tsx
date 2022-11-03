@@ -301,6 +301,20 @@ export const Account = ({
           <p>This account doesn't have an account recovery key created.</p>
         )}
 
+        <h3 className="header-lg">Subscriptions</h3>
+        {subscriptions && subscriptions.length > 0 ? (
+          <>
+            {subscriptions.map((subscription) => (
+              <Subscription
+                key={subscription.subscriptionId}
+                {...subscription}
+              />
+            ))}
+          </>
+        ) : (
+          <p>This account doesn't have any subscriptions.</p>
+        )}
+
         <h3 className="header-lg">Linked Accounts</h3>
         {linkedAccounts && linkedAccounts.length > 0 ? (
           <TableXHeaders rowHeaders={['Event', 'Timestamp', 'Action']}>
