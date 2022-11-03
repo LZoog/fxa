@@ -1,7 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-import dateFormat from 'dateformat';
 import { gql, useMutation } from '@apollo/client';
 import {
   Account as AccountType,
@@ -437,31 +436,28 @@ export const Account = ({
 
         <h3 className="header-lg">Secondary Emails</h3>
         {secondaryEmails.length > 0 ? (
-          <>
+          <TableXHeaders
+            rowHeaders={['Email', 'Status']}
+            testId="secondary-section"
+          >
             {secondaryEmails.map((secondaryEmail) => (
-              <TableXHeaders
-                rowHeaders={['Email', 'Status']}
-                testId="secondary-section"
-                key={secondaryEmail.createdAt}
-              >
-                <TableRowXHeader>
-                  <span
-                    data-testid="secondary-email"
-                    className={highlight(secondaryEmail.email)}
-                  >
-                    {secondaryEmail.email}
-                  </span>
-                  <>
-                    {secondaryEmail.isVerified ? (
-                      <span className="confirmed">confirmed</span>
-                    ) : (
-                      <span className="unconfirmed">unconfirmed</span>
-                    )}
-                  </>
-                </TableRowXHeader>
-              </TableXHeaders>
+              <TableRowXHeader key={secondaryEmail.createdAt}>
+                <span
+                  data-testid="secondary-email"
+                  className={highlight(secondaryEmail.email)}
+                >
+                  {secondaryEmail.email}
+                </span>
+                <>
+                  {secondaryEmail.isVerified ? (
+                    <span className="confirmed">confirmed</span>
+                  ) : (
+                    <span className="unconfirmed">unconfirmed</span>
+                  )}
+                </>
+              </TableRowXHeader>
             ))}
-          </>
+          </TableXHeaders>
         ) : (
           <p>This account doesn't have any secondary emails.</p>
         )}
