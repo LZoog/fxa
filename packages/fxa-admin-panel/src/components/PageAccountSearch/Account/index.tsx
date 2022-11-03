@@ -315,6 +315,11 @@ export const Account = ({
           <p>This account doesn't have any subscriptions.</p>
         )}
 
+        <Guard features={[AdminPanelFeature.ConnectedServices]}>
+          <h3 className="header-lg">Connected Services</h3>
+          <ConnectedServices services={attachedClients} />
+        </Guard>
+
         <h3 className="header-lg">Linked Accounts</h3>
         {linkedAccounts && linkedAccounts.length > 0 ? (
           <TableXHeaders rowHeaders={['Event', 'Timestamp', 'Action']}>
@@ -330,7 +335,9 @@ export const Account = ({
             ))}
           </TableXHeaders>
         ) : (
-          <p data-testid="account-security-events">No linked accounts.</p>
+          <p data-testid="account-security-events">
+            This account doesn't have any linked accounts.
+          </p>
         )}
       </section>
       <hr />
