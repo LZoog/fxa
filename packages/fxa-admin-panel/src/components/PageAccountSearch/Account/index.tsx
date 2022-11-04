@@ -86,12 +86,20 @@ export const LinkedAccount = ({
   );
 };
 
-const getResultSpan = (value: any) => {
+const YesNo = ({ value, testId }: { value: any; testId?: string }) => {
   if (!value) {
-    return <span className="font-semibold text-red-600">No</span>;
+    return (
+      <span className="font-semibold text-red-600" data-testid={testId}>
+        No
+      </span>
+    );
   }
 
-  return <span className="font-semibold text-green-600">Yes</span>;
+  return (
+    <span className="font-semibold text-green-900" data-testid={testId}>
+      Yes
+    </span>
+  );
 };
 
 export const Account = ({
@@ -213,7 +221,10 @@ export const Account = ({
           </>
         </TableYHeaders>
 
-        <TableXHeaders header="Primary Email" rowHeaders={['Email', 'Status']}>
+        <TableXHeaders
+          header="Primary Email"
+          rowHeaders={['Email', 'Confirmed']}
+        >
           <TableRowXHeader>
             <span
               data-testid="primary-email"
@@ -221,20 +232,15 @@ export const Account = ({
             >
               {primaryEmail.email}
             </span>
-            <>
-              {primaryEmail.isVerified ? (
-                <span className="confirmed">confirmed</span>
-              ) : (
-                <span className="unconfirmed">unconfirmed</span>
-              )}
-            </>
+
+            <YesNo value={primaryEmail.isVerified} />
           </TableRowXHeader>
         </TableXHeaders>
 
         <h3 className="header-lg">Secondary Emails</h3>
         {secondaryEmails.length > 0 ? (
           <TableXHeaders
-            rowHeaders={['Email', 'Status']}
+            rowHeaders={['Email', 'Confirmed']}
             testId="secondary-section"
           >
             {secondaryEmails.map((secondaryEmail) => (
@@ -245,13 +251,7 @@ export const Account = ({
                 >
                   {secondaryEmail.email}
                 </span>
-                <>
-                  {secondaryEmail.isVerified ? (
-                    <span className="confirmed">confirmed</span>
-                  ) : (
-                    <span className="unconfirmed">unconfirmed</span>
-                  )}
-                </>
+                <YesNo value={secondaryEmail.isVerified} />
               </TableRowXHeader>
             ))}
           </TableXHeaders>
@@ -273,12 +273,8 @@ export const Account = ({
                 <span data-testid="totp-created-at">
                   {getFormattedDate(totp.createdAt)}
                 </span>
-                <span data-testid="totp-enabled">
-                  {totp.enabled ? 'enabled' : 'not enabled'}
-                </span>
-                <span data-testid="totp-verified">
-                  {totp.verified ? 'confirmed' : 'unconfirmed'}
-                </span>
+                <YesNo value={totp.enabled} testId="totp-enabled" />
+                <YesNo value={totp.verified} testId="totp-verified" />
               </TableRowXHeader>
             ))}
           </TableXHeaders>
@@ -300,12 +296,12 @@ export const Account = ({
                 />
                 <TableRowYHeader
                   header="Enabled"
-                  value={getResultSpan(recoveryKey.enabled)}
+                  value={<YesNo value={recoveryKey.enabled} />}
                   testId="recovery-keys-enabled"
                 />
                 <TableRowYHeader
                   header="Confirmed"
-                  value={getResultSpan(recoveryKey.verifiedAt)}
+                  value={<YesNo value={recoveryKey.verifiedAt} />}
                   testId="recovery-keys-verified"
                 />
                 <TableRowYHeader

@@ -53,18 +53,11 @@ hr {
 .table-x-headers {
   @apply table-xy-headers;
 
-  tr:last-of-type td {
-    @apply border-none;
-  }
   td:last-of-type {
     @apply border-r-0;
   }
-}
 
-.text-green {
-  @apply font-semibold text-green-900;
-}
-
-.text-red {
-  @apply font-semibold text-red-600;
+  tr:last-of-type td {
+    @apply border-b-0;
+  }
 }
