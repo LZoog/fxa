@@ -8,6 +8,7 @@ interface TableXHeadersProps {
   header?: string;
   rowHeaders: string[];
   testId?: string;
+  borderL?: boolean;
   children:
     | ReactElement<TableRowXHeaderProps>
     | ReactElement<TableRowXHeaderProps>[];
@@ -23,7 +24,7 @@ export const TableRowXHeader = ({ children, testId }: TableRowXHeaderProps) => {
   return (
     <tr data-testid={testId}>
       {arrayElements.map((element) => (
-        <td className="table-td border-r">{element}</td>
+        <td className="table-td border-r border-b">{element}</td>
       ))}
     </tr>
   );
@@ -34,10 +35,14 @@ export const TableXHeaders = ({
   rowHeaders,
   children,
   testId,
+  borderL = true,
 }: TableXHeadersProps) => (
   <>
     {header && <h3 className="header-lg">{header}</h3>}
-    <table className="table-x-headers" data-testid={testId}>
+    <table
+      className={`table-x-headers ${borderL && 'border-l-thick'}`}
+      data-testid={testId}
+    >
       <thead>
         <tr>
           {rowHeaders.map((rowHeader) => (

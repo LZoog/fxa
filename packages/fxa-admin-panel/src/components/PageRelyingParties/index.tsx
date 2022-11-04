@@ -176,7 +176,7 @@ const Result = ({
             allowedScopes,
             notes,
           }) => (
-            <TableYHeaders key={id} header={name}>
+            <TableYHeaders key={id} header={name} borderL={false}>
               <TableRowYHeader header="ID" value={id} />
               <TableRowYHeader
                 header="Created At"

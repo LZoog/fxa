@@ -17,7 +17,7 @@ export const PermissionsTable = ({
   return featureFlags.length === 0 ? (
     <></>
   ) : (
-    <TableXHeaders rowHeaders={['Feature', 'Enabled']}>
+    <TableXHeaders rowHeaders={['Feature', 'Enabled']} borderL={false}>
       <>
         {featureFlags.map((flag) => {
           const testId = `permissions-row-${flag.id}`;
@@ -50,7 +50,7 @@ export const PagePermissions = () => {
 
       <hr />
 
-      <TableYHeaders>
+      <TableYHeaders borderL={false}>
         <TableRowYHeader
           header="Signed In As"
           value={user.email}

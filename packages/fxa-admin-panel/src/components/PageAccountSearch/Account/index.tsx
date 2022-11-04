@@ -4,8 +4,6 @@
 import { gql, useMutation } from '@apollo/client';
 import {
   Account as AccountType,
-  EmailBounce as EmailBounceType,
-  Email as EmailType,
   SecurityEvents as SecurityEventsType,
   Totp as TotpType,
   RecoveryKeys as RecoveryKeysType,
@@ -18,7 +16,7 @@ import { ConnectedServices } from '../ConnectedServices';
 import { TableRowYHeader, TableYHeaders } from '../../TableYHeaders';
 import { TableRowXHeader, TableXHeaders } from '../../TableXHeaders';
 import EmailBounces from '../EmailBounces';
-import { getFormattedDate } from '../../../lib/utils';
+import { getFormattedDate, HIDE_ROW } from '../../../lib/utils';
 import DangerZone from '../DangerZone';
 
 export type AccountProps = AccountType & {
@@ -284,23 +282,35 @@ export const Account = ({
 
         <h3 className="header-lg">Account Recovery Key</h3>
         {recoveryKeys && recoveryKeys.length > 0 ? (
-          <TableXHeaders rowHeaders={['Created At', 'Enabled', 'Confirmed At']}>
+          <>
             {recoveryKeys.map((recoveryKey: RecoveryKeysType) => (
-              <TableRowXHeader key={recoveryKey.createdAt}>
-                <span data-testid="recovery-keys-created-at">
-                  {getFormattedDate(recoveryKey.createdAt)}
-                </span>
-                <span data-testid="recovery-keys-enabled">
-                  {recoveryKey.enabled ? 'enabled' : 'not enabled'}
-                </span>
-                <span data-testid="recovery-keys-verified">
-                  {recoveryKey.verifiedAt
-                    ? getFormattedDate(recoveryKey.verifiedAt)
-                    : 'unconfirmed'}
-                </span>
-              </TableRowXHeader>
+              <TableYHeaders key={createdAt}>
+                <TableRowYHeader
+                  header="Created At"
+                  value={getFormattedDate(recoveryKey.createdAt)}
+                  testId="recovery-keys-created-at"
+                />
+                <TableRowYHeader
+                  header="Enabled"
+                  value={recoveryKey.enabled ? 'Yes' : 'No'}
+                  testId="recovery-keys-enabled"
+                />
+                <TableRowYHeader
+                  header="Confirmed"
+                  value={recoveryKey.verifiedAt ? 'Yes' : 'No'}
+                  testId="recovery-keys-verified"
+                />
+                <TableRowYHeader
+                  header="Confirmed At"
+                  value={
+                    recoveryKey.verifiedAt
+                      ? getFormattedDate(recoveryKey.verifiedAt)
+                      : HIDE_ROW
+                  }
+                />
+              </TableYHeaders>
             ))}
-          </TableXHeaders>
+          </>
         ) : (
           <p className="result-none">
             This account doesn't have an account recovery key created.

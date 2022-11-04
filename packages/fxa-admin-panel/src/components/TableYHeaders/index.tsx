@@ -8,6 +8,7 @@ import { HIDE_ROW } from '../../lib/utils';
 interface TableYHeadersProps {
   header?: string;
   testId?: string;
+  borderL?: boolean;
   children:
     | ReactElement<TableRowYHeaderProps>
     | ReactElement<TableRowYHeaderProps>[];
@@ -44,10 +45,14 @@ export const TableYHeaders = ({
   header,
   children,
   testId,
+  borderL = true,
 }: TableYHeadersProps) => (
   <>
     {header && <h3 className="header-lg">{header}</h3>}
-    <table className="table-y-headers" data-testid={testId}>
+    <table
+      className={`table-y-headers ${borderL && 'border-l-thick'}`}
+      data-testid={testId}
+    >
       <tbody>{children}</tbody>
     </table>
   </>
