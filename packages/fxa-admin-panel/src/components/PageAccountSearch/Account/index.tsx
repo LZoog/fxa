@@ -86,7 +86,7 @@ export const LinkedAccount = ({
   );
 };
 
-const YesNo = ({ value, testId }: { value: any; testId?: string }) => {
+const ResultBoolean = ({ value, testId }: { value: any; testId?: string }) => {
   if (!value) {
     return (
       <span className="font-semibold text-red-600" data-testid={testId}>
@@ -233,7 +233,7 @@ export const Account = ({
               {primaryEmail.email}
             </span>
 
-            <YesNo value={primaryEmail.isVerified} />
+            <ResultBoolean value={primaryEmail.isVerified} />
           </TableRowXHeader>
         </TableXHeaders>
 
@@ -251,7 +251,7 @@ export const Account = ({
                 >
                   {secondaryEmail.email}
                 </span>
-                <YesNo value={secondaryEmail.isVerified} />
+                <ResultBoolean value={secondaryEmail.isVerified} />
               </TableRowXHeader>
             ))}
           </TableXHeaders>
@@ -273,8 +273,8 @@ export const Account = ({
                 <span data-testid="totp-created-at">
                   {getFormattedDate(totp.createdAt)}
                 </span>
-                <YesNo value={totp.enabled} testId="totp-enabled" />
-                <YesNo value={totp.verified} testId="totp-verified" />
+                <ResultBoolean value={totp.enabled} testId="totp-enabled" />
+                <ResultBoolean value={totp.verified} testId="totp-verified" />
               </TableRowXHeader>
             ))}
           </TableXHeaders>
@@ -296,12 +296,12 @@ export const Account = ({
                 />
                 <TableRowYHeader
                   header="Enabled"
-                  value={<YesNo value={recoveryKey.enabled} />}
+                  value={<ResultBoolean value={recoveryKey.enabled} />}
                   testId="recovery-keys-enabled"
                 />
                 <TableRowYHeader
                   header="Confirmed"
-                  value={<YesNo value={recoveryKey.verifiedAt} />}
+                  value={<ResultBoolean value={recoveryKey.verifiedAt} />}
                   testId="recovery-keys-verified"
                 />
                 <TableRowYHeader
