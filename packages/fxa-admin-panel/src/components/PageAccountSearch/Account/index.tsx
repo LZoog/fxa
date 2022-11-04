@@ -86,6 +86,14 @@ export const LinkedAccount = ({
   );
 };
 
+const getResultSpan = (value: any) => {
+  if (!value) {
+    return <span className="font-semibold text-red-600">No</span>;
+  }
+
+  return <span className="font-semibold text-green-600">Yes</span>;
+};
+
 export const Account = ({
   uid,
   email,
@@ -113,7 +121,7 @@ export const Account = ({
   const [editLocale] = useMutation(EDIT_LOCALE, {});
   const handleEditLocale = async () => {
     try {
-      const newLocale = window.prompt('Enter a new local.');
+      const newLocale = window.prompt('Enter a new locale.');
       if (!newLocale) {
         return;
       }
@@ -276,7 +284,7 @@ export const Account = ({
           </TableXHeaders>
         ) : (
           <p className="result-none">
-            This account doesn't have 2FA / TOTP created.
+            This account hasn't started 2FA / TOTP setup.
           </p>
         )}
 
@@ -292,12 +300,12 @@ export const Account = ({
                 />
                 <TableRowYHeader
                   header="Enabled"
-                  value={recoveryKey.enabled ? 'Yes' : 'No'}
+                  value={getResultSpan(recoveryKey.enabled)}
                   testId="recovery-keys-enabled"
                 />
                 <TableRowYHeader
                   header="Confirmed"
-                  value={recoveryKey.verifiedAt ? 'Yes' : 'No'}
+                  value={getResultSpan(recoveryKey.verifiedAt)}
                   testId="recovery-keys-verified"
                 />
                 <TableRowYHeader
