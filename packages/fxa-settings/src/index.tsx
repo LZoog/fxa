@@ -36,8 +36,6 @@ export interface QueryParams extends FlowQueryParams {
 try {
   const flowQueryParams = searchParams(window.location.search) as QueryParams;
 
-  const { showNewReactApp } = flowQueryParams;
-
   // Populate config
   readConfigMeta((name: string) => {
     return document.head.querySelector(name);
@@ -64,11 +62,7 @@ try {
             bundles={['settings', 'react']}
             userLocales={navigator.languages}
           >
-            {showNewReactApp ? (
-              <App {...{ flowQueryParams }} />
-            ) : (
-              <Settings {...{ flowQueryParams }} />
-            )}
+            <App {...{ flowQueryParams }} />
           </AppLocalizationProvider>
         </AppContext.Provider>
       </AppErrorBoundary>

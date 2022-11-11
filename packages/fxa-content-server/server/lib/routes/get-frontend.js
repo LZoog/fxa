@@ -3,6 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 'use strict';
+
+const config = require('../../lib/configuration');
+const { simpleRoutes } = require('./react-app');
+
 module.exports = function () {
   // The array is converted into a RegExp
   const FRONTEND_ROUTES = [
@@ -81,11 +85,18 @@ module.exports = function () {
     'verify_primary_email',
     'verify_secondary_email',
     'would_you_like_to_sync',
-  ].join('|'); // prepare for use in a RegExp
+  ];
+
+  // remove route from list if feature flag is on and route is in list
+  const FRONTEND_ROUTES_EXCLUDE_REACT = (
+    config.get('showReactApp.simpleRoutes') === true
+      ? FRONTEND_ROUTES.filter((route) => !simpleRoutes.includes(route))
+      : FRONTEND_ROUTES
+  ).join('|'); // prepare for use in a RegExp
 
   return {
     method: 'get',
-    path: new RegExp('^/(' + FRONTEND_ROUTES + ')/?$'),
+    path: new RegExp('^/(' + FRONTEND_ROUTES_EXCLUDE_REACT + ')/?$'),
     process: function (req, res, next) {
       // setting the url to / will use the correct
       // index.html for either dev or prod mode.

@@ -8,15 +8,22 @@ import Head from 'fxa-react/components/Head';
 import { ScrollToTop } from '../Settings/ScrollToTop';
 import Settings from '../Settings';
 import { QueryParams } from '../..';
+import PageCannotCreateAccount from '../PageCannotCreateAccount';
 
 export const App = ({
   flowQueryParams,
 }: { flowQueryParams: QueryParams } & RouteComponentProps) => {
+  // const { showNewReactApp } = flowQueryParams;
+
   return (
     <>
       <Head />
       <Router basepath={'/'}>
         <ScrollToTop default>
+          {/* TODO: setup guard around simpleRoutes, checking for `showNewReactApp`
+           * and if config flag is on  */}
+          <PageCannotCreateAccount path="/cannot_create_account/*" />
+
           <Settings path="/settings/*" {...{ flowQueryParams }} />
         </ScrollToTop>
       </Router>

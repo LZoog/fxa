@@ -128,11 +128,22 @@ function modifyProxyRes(proxyRes, req, res) {
   });
 }
 
+// TODO: y this no work? has no effect even on `return false`
+// maybe needs v3 upgrade
+// https://github.com/chimurai/http-proxy-middleware/blob/master/recipes/context-matching.md
+// https://github.com/chimurai/http-proxy-middleware/blob/master/recipes/pathFilter.md#custom-filtering
+// const pathFilter = function (path, req) {
+// console.log('req.query.showReactApp', req.query.showReactApp);
+// return boolean from: req.query.showReactApp === true && (check if in routes array, remove from fxa-content-server.js?)
+// return req.query.showReactApp === true;
+// };
+
 const useSettingsProxy = createProxyMiddleware({
   target: 'http://localhost:3000',
   ws: true,
   selfHandleResponse: true, // ensure res.end is not called early
   onProxyRes: modifyProxyRes,
+  // pathFilter:
 });
 
 // Modify the static settings page by replacing __SERVER_CONFIG__ with the config object

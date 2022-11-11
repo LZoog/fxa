@@ -17,6 +17,7 @@ logger.info(`commit hash set to: ${version.commit}`);
 logger.info(`fxa-content-server-l10n commit hash set to: ${version.l10n}`);
 logger.info(`tos-pp (legal-docs) commit hash set to: ${version.tosPp}`);
 const config = require('../lib/configuration');
+const { simpleRoutes } = require('../lib/routes/react-app');
 
 // Tracing must be initialized asap
 const tracing = require('fxa-shared/tracing/node-tracing');
@@ -189,8 +190,16 @@ function makeApp() {
   const routeHelpers = routing(app, routeLogger);
   routes.forEach(routeHelpers.addRoute);
 
+  const showReactSimpleRoutes = config.get('showReactApp.simpleRoutes');
+
   if (config.get('env') === 'production') {
     app.get(settingsPath, modifySettingsStatic);
+
+    if (showReactSimpleRoutes === true) {
+      simpleRoutes.forEach((route) =>
+        app.get(`/${route}/`, modifySettingsStatic)
+      );
+    }
   }
   app.use(
     serveStatic(STATIC_DIRECTORY, {
@@ -200,8 +209,20 @@ function makeApp() {
 
   if (config.get('env') === 'development') {
     app.use(settingsPath, useSettingsProxy);
+
+    if (showReactSimpleRoutes === true) {
+      simpleRoutes.forEach((route) => {
+        app.use(`/${route}/`, useSettingsProxy);
+      });
+    }
   } else {
     app.get(settingsPath + '/*', modifySettingsStatic);
+
+    if (showReactSimpleRoutes === true) {
+      simpleRoutes.forEach((route) => {
+        app.get(`/${route}/*`, modifySettingsStatic);
+      });
+    }
   }
 
   // it's a four-oh-four not found.

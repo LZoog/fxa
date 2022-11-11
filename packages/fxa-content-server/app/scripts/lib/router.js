@@ -92,7 +92,24 @@ const Router = Backbone.Router.extend({
       CompleteResetPasswordView
     ),
     'authorization(/)': createViewHandler(RedirectAuthView),
-    'cannot_create_account(/)': createViewHandler(CannotCreateAccountView),
+    'cannot_create_account(/)': function () {
+      const showReactApp = this.config.showReactApp.simpleRoutes;
+
+      // TODO: if experiments.includes('generalizedReactApp') ?
+      if (showReactApp) {
+        const { service } = this.metrics.getFilteredData();
+
+        const link = `${'/cannot_create_account'}${Url.objToSearchString({
+          // add any other needed params
+          service,
+          showReactApp,
+        })}`;
+
+        this.navigateAway(link);
+      } else {
+        createViewHandler(CannotCreateAccountView);
+      }
+    },
     'choose_what_to_sync(/)': createViewHandler(ChooseWhatToSyncView),
     'clear(/)': createViewHandler(ClearStorageView),
     'complete_reset_password(/)': createViewHandler(CompleteResetPasswordView),
@@ -216,20 +233,16 @@ const Router = Backbone.Router.extend({
       // from the content-server app passes along flow parameters.
       const { deviceId, flowBeginTime, flowId } =
         this.metrics.getFlowEventMetadata();
-
       const {
         broker,
         context: ctx,
-        experiments,
         isSampledUser,
         service,
         uniqueUserId,
       } = this.metrics.getFilteredData();
-
       // Our GQL client sets the `redirect_to` param if a user attempts
       // to navigate directly to a section in settings
       const searchParams = new URLSearchParams(this.window.location.search);
-
       let endpoint = searchParams.get('redirect_to');
       if (!endpoint) {
         endpoint = `/settings`;
@@ -238,7 +251,6 @@ const Router = Backbone.Router.extend({
       ) {
         throw new Error('Invalid redirect!');
       }
-
       const settingsLink = `${endpoint}${Url.objToSearchString({
         deviceId,
         flowBeginTime,
@@ -247,7 +259,6 @@ const Router = Backbone.Router.extend({
         context: ctx,
         isSampledUser,
         service,
-        showNewReactApp: experiments.includes('generalizedReactApp'),
         uniqueUserId,
       })}`;
       this.navigateAway(settingsLink);
