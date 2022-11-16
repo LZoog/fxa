@@ -7,6 +7,7 @@
 const config = require('../../lib/configuration');
 const { simpleRoutes } = require('./react-app');
 
+// TODO: rename to `getFrontEndRouteDefinition`?
 function getRouteObj(routes) {
   const path = routes.join('|'); // prepare for use in a RegExp
   return {
