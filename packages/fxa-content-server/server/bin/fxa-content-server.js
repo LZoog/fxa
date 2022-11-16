@@ -40,7 +40,7 @@ const {
   createSettingsProxy,
   modifySettingsStatic,
 } = require('../lib/beta-settings');
-// const { getRouteObj } = require('../lib/routes/get-frontend');
+const { getRouteObj } = require('../lib/routes/get-frontend');
 
 const userAgent = require('fxa-shared/metrics/user-agent').default;
 if (!userAgent.isToVersionStringSupported()) {
@@ -214,9 +214,19 @@ function makeApp() {
             return createSettingsProxy(req, res, next);
           }
 
-          // TODO: we need to add route for content-server routing
-          // routeHelpers.addRoute(getRouteObj([route]));
-          next();
+          // TODO: fix, this lets content-server access the route and should do what
+          // `routes.forEach(routeHelpers.addRoute);` does - we just want to implement
+          // this middleware
+          const routeHandlers = routeHelpers.getRouteHandlers(
+            getRouteObj([route])
+          );
+          routeHandlers.forEach((handler) => {
+            console.log('handler yo', handler);
+            // errors with "no such req.next"
+            handler(req, res, next);
+            // next();
+          });
+          // next();
         });
       });
     }
