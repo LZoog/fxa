@@ -7,7 +7,21 @@
 const config = require('../../lib/configuration');
 const { simpleRoutes } = require('./react-app');
 
-module.exports = function () {
+function getRouteObj(routes) {
+  const path = routes.join('|'); // prepare for use in a RegExp
+  return {
+    method: 'get',
+    path: new RegExp('^/(' + path + ')/?$'),
+    process: function (req, res, next) {
+      // setting the url to / will use the correct
+      // index.html for either dev or prod mode.
+      req.url = '/';
+      next();
+    },
+  };
+}
+
+function getFrontEnd() {
   // The array is converted into a RegExp
   const FRONTEND_ROUTES = [
     'account_recovery_confirm_key',
@@ -88,20 +102,16 @@ module.exports = function () {
   ];
 
   // remove route from list if feature flag is on and route is in list
-  const FRONTEND_ROUTES_EXCLUDE_REACT = (
+  // const FRONTEND_ROUTES_EXCLUDE_REACT = FRONTEND_ROUTES;
+  const FRONTEND_ROUTES_EXCLUDE_REACT =
     config.get('showReactApp.simpleRoutes') === true
       ? FRONTEND_ROUTES.filter((route) => !simpleRoutes.includes(route))
-      : FRONTEND_ROUTES
-  ).join('|'); // prepare for use in a RegExp
+      : FRONTEND_ROUTES;
 
-  return {
-    method: 'get',
-    path: new RegExp('^/(' + FRONTEND_ROUTES_EXCLUDE_REACT + ')/?$'),
-    process: function (req, res, next) {
-      // setting the url to / will use the correct
-      // index.html for either dev or prod mode.
-      req.url = '/';
-      next();
-    },
-  };
+  return getRouteObj(FRONTEND_ROUTES_EXCLUDE_REACT);
+}
+
+module.exports = {
+  default: getFrontEnd,
+  getRouteObj,
 };

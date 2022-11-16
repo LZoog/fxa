@@ -37,9 +37,10 @@ const sentry = require('../lib/sentry');
 const statsd = require('../lib/statsd');
 const { cors, routing } = require('fxa-shared/express').express();
 const {
-  useSettingsProxy,
+  createSettingsProxy,
   modifySettingsStatic,
 } = require('../lib/beta-settings');
+// const { getRouteObj } = require('../lib/routes/get-frontend');
 
 const userAgent = require('fxa-shared/metrics/user-agent').default;
 if (!userAgent.isToVersionStringSupported()) {
@@ -191,28 +192,32 @@ function makeApp() {
   routes.forEach(routeHelpers.addRoute);
 
   const showReactSimpleRoutes = config.get('showReactApp.simpleRoutes');
+  // const proxySettings = createSettingsProxy();
 
   if (config.get('env') === 'production') {
     app.get(settingsPath, modifySettingsStatic);
 
     if (showReactSimpleRoutes === true) {
-      simpleRoutes.forEach((route) =>
-        app.get(`/${route}/`, modifySettingsStatic)
-      );
+      simpleRoutes.forEach((route) => {
+        app.get(`/${route}/`, modifySettingsStatic);
+      });
     }
   }
-  app.use(
-    serveStatic(STATIC_DIRECTORY, {
-      maxAge: config.get('static_max_age'),
-    })
-  );
 
   if (config.get('env') === 'development') {
-    app.use(settingsPath, useSettingsProxy);
+    app.use(settingsPath, createSettingsProxy);
 
     if (showReactSimpleRoutes === true) {
       simpleRoutes.forEach((route) => {
-        app.use(`/${route}/`, useSettingsProxy);
+        app.use(`/${route}/`, (req, res, next) => {
+          if (req.query.showReactApp === 'true') {
+            return createSettingsProxy(req, res, next);
+          }
+
+          // TODO: we need to add route for content-server routing
+          // routeHelpers.addRoute(getRouteObj([route]));
+          next();
+        });
       });
     }
   } else {
@@ -220,10 +225,21 @@ function makeApp() {
 
     if (showReactSimpleRoutes === true) {
       simpleRoutes.forEach((route) => {
-        app.get(`/${route}/*`, modifySettingsStatic);
+        app.use(`/${route}/*`, (req, res, next) => {
+          if (req.query.showReactApp === 'true') {
+            return modifySettingsStatic;
+          }
+          next();
+        });
       });
     }
   }
+
+  app.use(
+    serveStatic(STATIC_DIRECTORY, {
+      maxAge: config.get('static_max_age'),
+    })
+  );
 
   // it's a four-oh-four not found.
   app.use(fourOhFour);
