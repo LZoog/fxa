@@ -40,7 +40,7 @@ const {
   createSettingsProxy,
   modifySettingsStatic,
 } = require('../lib/beta-settings');
-const { getRouteObj } = require('../lib/routes/get-frontend');
+const { getFrontEndRouteDefinitions } = require('../lib/routes/get-frontend');
 
 const userAgent = require('fxa-shared/metrics/user-agent').default;
 if (!userAgent.isToVersionStringSupported()) {
@@ -214,13 +214,13 @@ function makeApp() {
       simpleRoutes.forEach((route) => {
         const routePath = new RegExp('^/(' + route + ')/?$');
         app.get(routePath, (req, res, next) => {
-          if (req.query.showReactApp !== 'true') {
-            next('route');
-          } else {
+          if (req.query.showReactApp === 'true') {
             return createSettingsProxy(req, res, next);
+          } else {
+            next('route');
           }
         });
-        const routeDefinition = getRouteObj([route]);
+        const routeDefinition = getFrontEndRouteDefinitions([route]);
         routeHelpers.addRoute(routeDefinition);
       });
     }
@@ -239,6 +239,7 @@ function makeApp() {
     }
   }
 
+  // this must come after
   routes.forEach(routeHelpers.addRoute);
 
   app.use(

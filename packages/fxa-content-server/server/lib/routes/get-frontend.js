@@ -7,8 +7,7 @@
 const config = require('../../lib/configuration');
 const { simpleRoutes } = require('./react-app');
 
-// TODO: rename to `getFrontEndRouteDefinition`?
-function getRouteObj(routes) {
+function getFrontEndRouteDefinitions(routes) {
   const path = routes.join('|'); // prepare for use in a RegExp
   return {
     method: 'get',
@@ -103,16 +102,15 @@ function getFrontEnd() {
   ];
 
   // remove route from list if feature flag is on and route is in list
-  // const FRONTEND_ROUTES_EXCLUDE_REACT = FRONTEND_ROUTES;
   const FRONTEND_ROUTES_EXCLUDE_REACT =
     config.get('showReactApp.simpleRoutes') === true
       ? FRONTEND_ROUTES.filter((route) => !simpleRoutes.includes(route))
       : FRONTEND_ROUTES;
 
-  return getRouteObj(FRONTEND_ROUTES_EXCLUDE_REACT);
+  return getFrontEndRouteDefinitions(FRONTEND_ROUTES_EXCLUDE_REACT);
 }
 
 module.exports = {
   default: getFrontEnd,
-  getRouteObj,
+  getFrontEndRouteDefinitions,
 };
