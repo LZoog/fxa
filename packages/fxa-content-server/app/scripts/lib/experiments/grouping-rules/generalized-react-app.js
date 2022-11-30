@@ -20,13 +20,14 @@ const BaseGroupingRule = require('./base');
 const GROUPS = [
   'control',
 
-  // Treatment branches. This one is for users who will see the new, generalized React app which houses more urls than just `/settings`
-  'generalized',
+  // Treatment branches.
+  // This one is for users who will see the React version of content-server pages
+  'react',
 ];
 
 // This experiment is disabled by default. If you would like to go through
 // open the settings page with the following query params:
-// `?forceExperiment=generalizedReactApp&forceExperimentGroup=generalized`
+// `?forceExperiment=generalizedReactApp&forceExperimentGroup=react`
 const ROLLOUT_RATE = 0.0;
 
 // This splits users into users who see the original Settings React app,

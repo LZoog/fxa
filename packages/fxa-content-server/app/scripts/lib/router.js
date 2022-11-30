@@ -84,7 +84,14 @@ function createViewModel(data) {
 
 const Router = Backbone.Router.extend({
   routes: {
-    '(/)': createViewHandler(IndexView),
+    '(/)': function () {
+      const { experiments } = this.metrics.getFilteredData();
+      console.log('experiments!', experiments);
+      // createViewHandler(IndexView),
+      return getView(IndexView).then((View) => {
+        return this.showView(View);
+      });
+    },
     'account_recovery_confirm_key(/)': createViewHandler(
       AccountRecoveryConfirmKey
     ),
@@ -93,11 +100,18 @@ const Router = Backbone.Router.extend({
     ),
     'authorization(/)': createViewHandler(RedirectAuthView),
     'cannot_create_account(/)': function () {
-      const showReactApp = this.config.showReactApp.simpleRoutes;
-      // const showReactApp = false;
+      const { experiments } = this.metrics.getFilteredData();
 
-      // TODO: also if experiments.includes('generalizedReactApp')
-      if (showReactApp) {
+      const showReactApp = this.config.showReactApp.simpleRoutes;
+
+      console.log('experiments', experiments);
+
+      console.log(
+        'experiment includes?',
+        experiments.includes('generalizedReactApp')
+      );
+
+      if (showReactApp && experiments.includes('generalizedReactApp')) {
         const link = `${'/cannot_create_account'}${Url.objToSearchString({
           showReactApp,
         })}`;
