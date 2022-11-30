@@ -189,7 +189,6 @@ function makeApp() {
   const routes = require('../lib/routes')(config, i18n, statsd);
   const routeLogger = loggerFactory('server.routes');
   const routeHelpers = routing(app, routeLogger);
-  // routes.forEach(routeHelpers.addRoute);
 
   const showReactSimpleRoutes = config.get('showReactApp.simpleRoutes');
   // TODO: we don't want to create this middleware on every request
@@ -229,17 +228,18 @@ function makeApp() {
 
     if (showReactSimpleRoutes === true) {
       simpleRoutes.forEach((route) => {
-        app.use(`/${route}/*`, (req, res, next) => {
+        app.get(`/${route}/*`, (req, res, next) => {
           if (req.query.showReactApp === 'true') {
             return modifySettingsStatic;
+          } else {
+            next('route');
           }
-          next();
         });
       });
     }
   }
 
-  // this must come after
+  // this must come after React-related route modifications
   routes.forEach(routeHelpers.addRoute);
 
   app.use(
