@@ -92,24 +92,26 @@ const Router = Backbone.Router.extend({
       CompleteResetPasswordView
     ),
     'authorization(/)': createViewHandler(RedirectAuthView),
-    'cannot_create_account(/)': function () {
-      const showReactApp = this.config.showReactApp.simpleRoutes;
+    // 'cannot_create_account(/)': function () {
+    //   // const showReactApp = this.config.showReactApp.simpleRoutes;
+    //   // console.log('hello! in router', showReactApp);
 
-      // TODO: if experiments.includes('generalizedReactApp') ?
-      if (showReactApp) {
-        const { service } = this.metrics.getFilteredData();
+    //   // // TODO: if experiments.includes('generalizedReactApp') ?
+    //   // if (showReactApp) {
+    //   //   const { service } = this.metrics.getFilteredData();
 
-        const link = `${'/cannot_create_account'}${Url.objToSearchString({
-          // add any other needed params
-          service,
-          showReactApp,
-        })}`;
+    //   //   const link = `${'/cannot_create_account'}${Url.objToSearchString({
+    //   //     // add any other needed params
+    //   //     service,
+    //   //     showReactApp,
+    //   //   })}`;
 
-        this.navigateAway(link);
-      } else {
-        createViewHandler(CannotCreateAccountView);
-      }
-    },
+    //   //   this.navigateAway(link);
+    //   // } else {
+    //   return createViewHandler(CannotCreateAccountView);
+    //   // }
+    // },
+    'cannot_create_account(/)': createViewHandler(CannotCreateAccountView),
     'choose_what_to_sync(/)': createViewHandler(ChooseWhatToSyncView),
     'clear(/)': createViewHandler(ClearStorageView),
     'complete_reset_password(/)': createViewHandler(CompleteResetPasswordView),

@@ -189,7 +189,7 @@ function makeApp() {
   const routes = require('../lib/routes')(config, i18n, statsd);
   const routeLogger = loggerFactory('server.routes');
   const routeHelpers = routing(app, routeLogger);
-  routes.forEach(routeHelpers.addRoute);
+  // routes.forEach(routeHelpers.addRoute);
 
   const showReactSimpleRoutes = config.get('showReactApp.simpleRoutes');
   // TODO: we don't want to create this middleware on every request
@@ -212,25 +212,16 @@ function makeApp() {
 
     if (showReactSimpleRoutes === true) {
       simpleRoutes.forEach((route) => {
-        app.use(`/${route}/`, (req, res, next) => {
-          if (req.query.showReactApp === 'true') {
+        const routePath = new RegExp('^/(' + route + ')/?$');
+        app.get(routePath, (req, res, next) => {
+          if (req.query.showReactApp !== 'true') {
+            next('route');
+          } else {
             return createSettingsProxy(req, res, next);
           }
-
-          // TODO: fix, this lets content-server access the route and should do what
-          // `routes.forEach(routeHelpers.addRoute);` does - we just want to implement
-          // this middleware
-          const routeHandlers = routeHelpers.getRouteHandlers(
-            getRouteObj([route])
-          );
-          routeHandlers.forEach((handler) => {
-            console.log('handler yo', handler);
-            // errors with "no such req.next"
-            handler(req, res, next);
-            // next();
-          });
-          next();
         });
+        const routeDefinition = getRouteObj([route]);
+        routeHelpers.addRoute(routeDefinition);
       });
     }
   } else {
@@ -247,6 +238,8 @@ function makeApp() {
       });
     }
   }
+
+  routes.forEach(routeHelpers.addRoute);
 
   app.use(
     serveStatic(STATIC_DIRECTORY, {
