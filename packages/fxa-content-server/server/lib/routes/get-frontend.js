@@ -87,12 +87,14 @@ function getFrontEnd() {
     'would_you_like_to_sync',
   ];
 
-  console.log('simpleRoutes!!!!', simpleRoutes);
-
-  // remove route from list if feature flag is on and route is in list
+  // Remove route from list if feature flag is on and route is in list. Route definitions
+  // for the excluded routes are created separately
   // TODO: account for other feature flags / React route lists
   const FRONTEND_ROUTES_EXCLUDE_REACT = simpleRoutes.featureFlagOn
-    ? FRONTEND_ROUTES.filter((route) => !simpleRoutes.routes.includes(route))
+    ? FRONTEND_ROUTES.filter(
+        (routeName) =>
+          !simpleRoutes.routes.find((route) => routeName === route.name)
+      )
     : FRONTEND_ROUTES;
 
   return getFrontEndRouteDefinitions(FRONTEND_ROUTES_EXCLUDE_REACT);

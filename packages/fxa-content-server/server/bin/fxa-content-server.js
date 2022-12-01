@@ -18,8 +18,8 @@ logger.info(`fxa-content-server-l10n commit hash set to: ${version.l10n}`);
 logger.info(`tos-pp (legal-docs) commit hash set to: ${version.tosPp}`);
 const config = require('../lib/configuration');
 const {
-  simpleRoutes,
-  addReactRoutesConditionally,
+  addAllReactRoutesConditionally,
+  // addAllReactWildcardRoutesConditionally,
 } = require('../lib/routes/react-app');
 
 // Tracing must be initialized asap
@@ -195,37 +195,19 @@ function makeApp() {
   if (config.get('env') === 'production') {
     app.get(settingsPath, modifySettingsStatic);
 
-    if (simpleRoutes.featureFlagOn === true) {
-      simpleRoutes.routes.forEach((route) => {
-        app.get(`/${route}`, (req, res, next) => {
-          if (req.query.showReactApp === 'true') {
-            return modifySettingsStatic;
-          } else {
-            next('route');
-          }
-        });
-      });
-    }
+    addAllReactRoutesConditionally(app, routeHelpers, modifySettingsStatic);
   }
 
   if (config.get('env') === 'development') {
     app.use(settingsPath, createSettingsProxy);
 
-    addReactRoutesConditionally(app, routeHelpers, createSettingsProxy);
+    addAllReactRoutesConditionally(app, routeHelpers, createSettingsProxy);
   } else {
     app.get(settingsPath + '/*', modifySettingsStatic);
 
-    if (simpleRoutes.featureFlagOn === true) {
-      simpleRoutes.routes.forEach((route) => {
-        app.get(`/${route}/*`, (req, res, next) => {
-          if (req.query.showReactApp === 'true') {
-            return modifySettingsStatic;
-          } else {
-            next('route');
-          }
-        });
-      });
-    }
+    // TODO: Add wildcard routes for (I believe) only routes that are nested, like `/pair/*`?
+    // Or, maybe we don't need this since we're accounting for each route individually
+    // addAllReactWildcardRoutesConditionally(app, modifySettingsStatic);
   }
 
   // This creates `app.whatever('/path' ...` handlers for every content-server route and
