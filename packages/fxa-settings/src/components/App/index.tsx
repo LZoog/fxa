@@ -13,14 +13,14 @@ import PageCannotCreateAccount from '../PageCannotCreateAccount';
 export const App = ({
   flowQueryParams,
 }: { flowQueryParams: QueryParams } & RouteComponentProps) => {
-  // const { showNewReactApp } = flowQueryParams;
+  // const { showReactApp } = flowQueryParams;
 
   return (
     <>
       <Head />
       <Router basepath={'/'}>
         <ScrollToTop default>
-          {/* TODO: setup guard around simpleRoutes, checking for `showNewReactApp`
+          {/* TODO: set up client-side guard around simpleRoutes by checking for `showReactApp`
            * and if config flag is on  */}
           <PageCannotCreateAccount path="/cannot_create_account/*" />
 

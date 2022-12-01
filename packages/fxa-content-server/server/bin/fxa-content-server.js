@@ -218,6 +218,7 @@ function makeApp() {
   // route implementations.
   routes.forEach(routeHelpers.addRoute);
 
+  // must come after route handling
   app.use(
     serveStatic(STATIC_DIRECTORY, {
       maxAge: config.get('static_max_age'),
