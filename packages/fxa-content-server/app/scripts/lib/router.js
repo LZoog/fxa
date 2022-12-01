@@ -84,14 +84,7 @@ function createViewModel(data) {
 
 const Router = Backbone.Router.extend({
   routes: {
-    '(/)': function () {
-      const { experiments } = this.metrics.getFilteredData();
-      console.log('experiments!', experiments);
-      // createViewHandler(IndexView),
-      return getView(IndexView).then((View) => {
-        return this.showView(View);
-      });
-    },
+    '(/)': createViewHandler(IndexView),
     'account_recovery_confirm_key(/)': createViewHandler(
       AccountRecoveryConfirmKey
     ),
@@ -100,18 +93,13 @@ const Router = Backbone.Router.extend({
     ),
     'authorization(/)': createViewHandler(RedirectAuthView),
     'cannot_create_account(/)': function () {
-      const { experiments } = this.metrics.getFilteredData();
-
       const showReactApp = this.config.showReactApp.simpleRoutes;
 
-      console.log('experiments', experiments);
-
-      console.log(
-        'experiment includes?',
-        experiments.includes('generalizedReactApp')
-      );
-
-      if (showReactApp && experiments.includes('generalizedReactApp')) {
+      // TODO: also check if in experiment. Does this have to happen at the view level?...
+      // const { experiments } = this.metrics.getFilteredData(); is always an empty array
+      // when trying to force the experiment with URL params at signup
+      // `?forceExperiment=generalizedReactApp&forceExperimentGroup=react`
+      if (showReactApp) {
         const link = `${'/cannot_create_account'}${Url.objToSearchString({
           showReactApp,
         })}`;

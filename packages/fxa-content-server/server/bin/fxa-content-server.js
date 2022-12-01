@@ -191,11 +191,6 @@ function makeApp() {
   const routeHelpers = routing(app, routeLogger);
 
   const showReactSimpleRoutes = config.get('showReactApp.simpleRoutes');
-  // TODO: we don't want to create this middleware on every request
-  // lets call it like the first answer does:
-  // https://stackoverflow.com/questions/61021398/how-do-i-use-createproxymiddleware-with-the-nested-logic
-  // const proxySettings = createSettingsProxy();
-
   if (config.get('env') === 'production') {
     app.get(settingsPath, modifySettingsStatic);
 
@@ -211,15 +206,15 @@ function makeApp() {
 
     if (showReactSimpleRoutes === true) {
       simpleRoutes.forEach((route) => {
-        const routePath = new RegExp('^/(' + route + ')/?$');
-        app.get(routePath, (req, res, next) => {
+        const routeDefinition = getFrontEndRouteDefinitions([route]);
+
+        app[routeDefinition.method](routeDefinition.path, (req, res, next) => {
           if (req.query.showReactApp === 'true') {
             return createSettingsProxy(req, res, next);
           } else {
             next('route');
           }
         });
-        const routeDefinition = getFrontEndRouteDefinitions([route]);
         routeHelpers.addRoute(routeDefinition);
       });
     }
