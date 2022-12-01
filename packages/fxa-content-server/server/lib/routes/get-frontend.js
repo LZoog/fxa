@@ -4,22 +4,8 @@
 
 'use strict';
 
-const config = require('../../lib/configuration');
 const { simpleRoutes } = require('./react-app');
-
-function getFrontEndRouteDefinitions(routes) {
-  const path = routes.join('|'); // prepare for use in a RegExp
-  return {
-    method: 'get',
-    path: new RegExp('^/(' + path + ')/?$'),
-    process: function (req, res, next) {
-      // setting the url to / will use the correct
-      // index.html for either dev or prod mode.
-      req.url = '/';
-      next();
-    },
-  };
-}
+const { getFrontEndRouteDefinitions } = require('./route-definitions');
 
 function getFrontEnd() {
   // The array is converted into a RegExp
@@ -101,16 +87,17 @@ function getFrontEnd() {
     'would_you_like_to_sync',
   ];
 
+  console.log('simpleRoutes!!!!', simpleRoutes);
+
   // remove route from list if feature flag is on and route is in list
-  const FRONTEND_ROUTES_EXCLUDE_REACT =
-    config.get('showReactApp.simpleRoutes') === true
-      ? FRONTEND_ROUTES.filter((route) => !simpleRoutes.includes(route))
-      : FRONTEND_ROUTES;
+  // TODO: account for other feature flags / React route lists
+  const FRONTEND_ROUTES_EXCLUDE_REACT = simpleRoutes.featureFlagOn
+    ? FRONTEND_ROUTES.filter((route) => !simpleRoutes.routes.includes(route))
+    : FRONTEND_ROUTES;
 
   return getFrontEndRouteDefinitions(FRONTEND_ROUTES_EXCLUDE_REACT);
 }
 
 module.exports = {
   default: getFrontEnd,
-  getFrontEndRouteDefinitions,
 };

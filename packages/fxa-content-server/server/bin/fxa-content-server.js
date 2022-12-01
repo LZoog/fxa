@@ -40,7 +40,6 @@ const {
   createSettingsProxy,
   modifySettingsStatic,
 } = require('../lib/beta-settings');
-const { getFrontEndRouteDefinitions } = require('../lib/routes/get-frontend');
 
 const userAgent = require('fxa-shared/metrics/user-agent').default;
 if (!userAgent.isToVersionStringSupported()) {
@@ -190,13 +189,18 @@ function makeApp() {
   const routeLogger = loggerFactory('server.routes');
   const routeHelpers = routing(app, routeLogger);
 
-  const showReactSimpleRoutes = config.get('showReactApp.simpleRoutes');
   if (config.get('env') === 'production') {
     app.get(settingsPath, modifySettingsStatic);
 
-    if (showReactSimpleRoutes === true) {
-      simpleRoutes.forEach((route) => {
-        app.get(`/${route}/`, modifySettingsStatic);
+    if (simpleRoutes.featureFlagOn === true) {
+      simpleRoutes.routes.forEach((route) => {
+        app.get(`/${route}`, (req, res, next) => {
+          if (req.query.showReactApp === 'true') {
+            return modifySettingsStatic;
+          } else {
+            next('route');
+          }
+        });
       });
     }
   }
@@ -204,25 +208,24 @@ function makeApp() {
   if (config.get('env') === 'development') {
     app.use(settingsPath, createSettingsProxy);
 
-    if (showReactSimpleRoutes === true) {
-      simpleRoutes.forEach((route) => {
-        const routeDefinition = getFrontEndRouteDefinitions([route]);
-
-        app[routeDefinition.method](routeDefinition.path, (req, res, next) => {
+    if (simpleRoutes.featureFlagOn === true) {
+      simpleRoutes.routes.forEach(({ definition }) => {
+        app[definition.method](definition.path, (req, res, next) => {
           if (req.query.showReactApp === 'true') {
             return createSettingsProxy(req, res, next);
           } else {
             next('route');
           }
         });
-        routeHelpers.addRoute(routeDefinition);
+        // Manually add route for content-server to serve; occurs when next('route'); is called
+        routeHelpers.addRoute(definition);
       });
     }
   } else {
     app.get(settingsPath + '/*', modifySettingsStatic);
 
-    if (showReactSimpleRoutes === true) {
-      simpleRoutes.forEach((route) => {
+    if (simpleRoutes.featureFlagOn === true) {
+      simpleRoutes.routes.forEach((route) => {
         app.get(`/${route}/*`, (req, res, next) => {
           if (req.query.showReactApp === 'true') {
             return modifySettingsStatic;
