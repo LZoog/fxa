@@ -234,7 +234,12 @@ function makeApp() {
     }
   }
 
-  // this must come after React-related route modifications
+  // This creates `app.whatever('/path' ...` handlers for every content-server route and
+  // excludes routes in `react-app.js` if corresponding feature flags are on. We manually add
+  // these excluded routes for content-server to serve in checks above if the feature flag is
+  // set to false or if the request does not contain `showReactApp=true`. Adding these routes
+  // must come after React-related route modifications so that `next('route')` skips to these
+  // route implementations.
   routes.forEach(routeHelpers.addRoute);
 
   app.use(

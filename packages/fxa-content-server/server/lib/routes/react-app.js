@@ -4,6 +4,15 @@
 
 'use strict';
 
+const simpleRoutes = [
+  'cannot_create_account',
+  // add route name here when we're ready to serve the React version of a page
+];
+
+// const simpleRoutes = {
+//   featureFlagOn:
+// }
+
 module.exports = {
-  simpleRoutes: ['cannot_create_account'],
+  simpleRoutes,
 };
