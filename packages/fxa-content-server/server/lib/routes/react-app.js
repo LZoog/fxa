@@ -21,6 +21,23 @@ const simpleRoutes = {
   // getRouteDefinitionFns: [getFrontEndRouteDefinitions],
 };
 
+function addReactRoutesConditionally(app, routeHelpers, createSettingsProxy) {
+  if (simpleRoutes.featureFlagOn === true) {
+    simpleRoutes.routes.forEach(({ definition }) => {
+      app[definition.method](definition.path, (req, res, next) => {
+        if (req.query.showReactApp === 'true') {
+          return createSettingsProxy(req, res, next);
+        } else {
+          next('route');
+        }
+      });
+      // Manually add route for content-server to serve; occurs when next('route'); is called
+      routeHelpers.addRoute(definition);
+    });
+  }
+}
+
 module.exports = {
   simpleRoutes,
+  addReactRoutesConditionally,
 };

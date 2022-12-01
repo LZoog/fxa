@@ -17,7 +17,10 @@ logger.info(`commit hash set to: ${version.commit}`);
 logger.info(`fxa-content-server-l10n commit hash set to: ${version.l10n}`);
 logger.info(`tos-pp (legal-docs) commit hash set to: ${version.tosPp}`);
 const config = require('../lib/configuration');
-const { simpleRoutes } = require('../lib/routes/react-app');
+const {
+  simpleRoutes,
+  addReactRoutesConditionally,
+} = require('../lib/routes/react-app');
 
 // Tracing must be initialized asap
 const tracing = require('fxa-shared/tracing/node-tracing');
@@ -208,19 +211,7 @@ function makeApp() {
   if (config.get('env') === 'development') {
     app.use(settingsPath, createSettingsProxy);
 
-    if (simpleRoutes.featureFlagOn === true) {
-      simpleRoutes.routes.forEach(({ definition }) => {
-        app[definition.method](definition.path, (req, res, next) => {
-          if (req.query.showReactApp === 'true') {
-            return createSettingsProxy(req, res, next);
-          } else {
-            next('route');
-          }
-        });
-        // Manually add route for content-server to serve; occurs when next('route'); is called
-        routeHelpers.addRoute(definition);
-      });
-    }
+    addReactRoutesConditionally(app, routeHelpers, createSettingsProxy);
   } else {
     app.get(settingsPath + '/*', modifySettingsStatic);
 
