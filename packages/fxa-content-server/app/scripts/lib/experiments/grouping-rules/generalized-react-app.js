@@ -25,11 +25,11 @@ const GROUPS = [
   'react',
 ];
 
-// This experiment is disabled by default. If you would like to see the React pages, make sure
-// 1) your local config is set up to enable feature flags for the set of routes you're interested
-// in and either 2a) append `showReactApp=true` to the URL _or_ 2b) to see it in a flow, append
-// the following query params to the page that will navigate to the page you're interested in:
-// `?forceExperiment=generalizedReactApp&forceExperimentGroup=react`
+/* This experiment is disabled by default. If you would like to see the React pages, make sure
+ * 1) your local config is set up to enable feature flags for the set of routes you're interested
+ * in and either 2a) append `showReactApp=true` to the URL _or_ 2b) to see it in a flow, append
+ * the following query params to the page that will navigate to the page you're interested in:
+ * `?forceExperiment=generalizedReactApp&forceExperimentGroup=react` */
 const ROLLOUT_RATE = 0.0;
 
 module.exports = class GeneralizedReactApp extends BaseGroupingRule {
