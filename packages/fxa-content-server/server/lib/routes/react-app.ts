@@ -2,19 +2,27 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-'use strict';
+import config from '../configuration';
+import { getFrontEndRouteDefinitions } from './route-definitions';
+import { Express, RequestHandler } from 'express';
+import { RouteDefinition } from 'fxa-shared/express/routing';
 
-const config = require('../configuration');
-const { getFrontEndRouteDefinitions } = require('./route-definitions');
+interface RouteFeatureFlagGroup {
+  featureFlagOn: boolean;
+  routes: {
+    name: string;
+    definition: RouteDefinition;
+  }[];
+}
 
-const simpleRoutes = {
+const simpleRoutes: RouteFeatureFlagGroup = {
   featureFlagOn: config.get('showReactApp.simpleRoutes'),
   routes: [
-    // When you're ready to serve the React version of a "simpleRoute", add a new object here
-    // with the route name and definition. Definitions come from route files in `lib/routes/` -
-    // you need to find which file your new route exists in to determine which definition
-    // the route needs. You may need to create and extract out the route definition function
-    // from the file if it hasn't been done already.
+    /* When you're ready to serve the React version of a "simpleRoute", add a new object here
+     * with the route name and definition. Definitions come from route files in `lib/routes/` -
+     * you need to find which file your new route exists in to determine which definition
+     * the route needs.
+     * TODO: Create other get[Descriptor]RouteDefinition functions, FXA-TBD */
     {
       name: 'cannot_create_account',
       definition: getFrontEndRouteDefinitions(['cannot_create_account']),
@@ -23,10 +31,10 @@ const simpleRoutes = {
 };
 
 function addReactRoutesConditionally(
-  app,
-  routeHelpers,
-  middleware,
-  { featureFlagOn, routes }
+  app: Express,
+  routeHelpers: any,
+  middleware: RequestHandler,
+  { featureFlagOn, routes }: RouteFeatureFlagGroup
 ) {
   if (featureFlagOn === true) {
     routes.forEach(({ definition }) => {
@@ -45,12 +53,19 @@ function addReactRoutesConditionally(
   }
 }
 
-function addSimpleRoutes(app, routeHelpers, middleware) {
+function addSimpleRoutes(
+  app: Express,
+  routeHelpers: any,
+  middleware: RequestHandler
+) {
   addReactRoutesConditionally(app, routeHelpers, middleware, simpleRoutes);
 }
 
-// middleware: either createSettingsProxy or modifySettingsStatic
-function addAllReactRoutesConditionally(app, routeHelpers, middleware) {
+function addAllReactRoutesConditionally(
+  app: Express,
+  routeHelpers: any,
+  middleware: RequestHandler // 'createSettingsProxy' in dev, else 'modifySettingsStatic'
+) {
   addSimpleRoutes(app, routeHelpers, middleware);
   // add other addRoutes functions here when created
 }

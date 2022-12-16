@@ -4,12 +4,9 @@
   "exclude": ["node_modules", "**/*.spec.ts"],
   "compilerOptions": {
     "outDir": "./.tscompiled/",
-    "rootDir": "./app/scripts/",
+    // "rootDir": "./app/scripts/",
     "baseUrl": "./app/scripts",
     "noImplicitAny": false
   },
-  "references": [
-    { "path": "../fxa-shared" },
-    { "path": "../fxa-react" }
-  ]
+  "references": [{ "path": "../fxa-shared" }, { "path": "../fxa-react" }]
 }

@@ -6,7 +6,7 @@ import express from 'express';
 import Logger from '../lib/logger';
 import cors from './cors';
 
-type RouteMethod =
+export type RouteMethod =
   | 'all'
   | 'get'
   | 'post'
@@ -15,7 +15,7 @@ type RouteMethod =
   | 'patch'
   | 'options'
   | 'head';
-type RouteDefinition = {
+export type RouteDefinition = {
   method: RouteMethod;
   path: string | RegExp;
   process: Function;

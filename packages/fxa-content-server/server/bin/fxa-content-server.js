@@ -205,17 +205,17 @@ function makeApp() {
   } else {
     app.get(settingsPath + '/*', modifySettingsStatic);
 
-    // TODO: Add wildcard routes for (I believe) only routes that are nested, like `/pair/*`?
-    // Or, maybe we don't need this since we're accounting for each route individually
-    // addAllReactWildcardRoutesConditionally(app, modifySettingsStatic);
+    /* TODO: Add wildcard routes for (I believe) only routes that are nested, like `/pair/*`?
+     * Or, maybe we don't need this since we're accounting for each route individually
+     * addAllReactWildcardRoutesConditionally(app, modifySettingsStatic); */
   }
 
-  // This creates `app.whatever('/path' ...` handlers for every content-server route and
-  // excludes routes in `react-app.js` if corresponding feature flags are on. We manually add
-  // these excluded routes for content-server to serve in checks above if the feature flag is
-  // set to false or if the request does not contain `showReactApp=true`. Adding these routes
-  // must come after React-related route modifications so that `next('route')` skips to these
-  // route implementations.
+  /* This creates `app.whatever('/path' ...` handlers for every content-server route and
+   * excludes routes in `react-app.ts` if corresponding feature flags are on. We manually add
+   * these excluded routes for content-server to serve in checks above if the feature flag is
+   * set to false or if the request does not contain `showReactApp=true`. Adding these routes
+   * must come after React-related route modifications so that `next('route')` skips to these
+   * route implementations. */
   routes.forEach(routeHelpers.addRoute);
 
   // must come after route handling
