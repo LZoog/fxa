@@ -9,6 +9,7 @@ import Backbone from 'backbone';
 import CannotCreateAccountView from '../views/cannot_create_account';
 import ChooseWhatToSyncView from '../views/choose_what_to_sync';
 import ClearStorageView from '../views/clear_storage';
+// import Cocktail from 'cocktail';
 import CompleteResetPasswordView from '../views/complete_reset_password';
 import CompleteSignUpView from '../views/complete_sign_up';
 import ConfirmResetPasswordView from '../views/confirm_reset_password';
@@ -43,6 +44,7 @@ import UserAgent from './user-agent';
 import VerificationReasons from './verification-reasons';
 import WouldYouLikeToSync from '../views/would_you_like_to_sync';
 import { isAllowed } from 'fxa-shared/configuration/convict-format-allow-list';
+// import ExperimentMixin from '../views/mixins/experiment-mixin';
 
 const NAVIGATE_AWAY_IN_MOBILE_DELAY_MS = 75;
 
@@ -83,6 +85,7 @@ function createViewModel(data) {
 }
 
 const Router = Backbone.Router.extend({
+  // mixins: [ExperimentMixin],
   routes: {
     '(/)': createViewHandler(IndexView),
     'account_recovery_confirm_key(/)': createViewHandler(
@@ -94,6 +97,22 @@ const Router = Backbone.Router.extend({
     'authorization(/)': createViewHandler(RedirectAuthView),
     'cannot_create_account(/)': function () {
       const showReactApp = this.config.showReactApp.simpleRoutes;
+
+      console.log('HELLO user agent', this.getUserAgent);
+      console.log('HELLO isinexperiment', this.isInExperiment);
+      // console.log('HELLO experiment mixin', ExperimentMixin);
+      // console.log(
+      //   'HELLO experiment mixin with call',
+      //   ExperimentMixin.isInExperiment('generalizedReactApp')
+      // );
+      // console.log('HELLO this is in experiment', this.isInExperiment);
+
+      // console.log(
+      //   'HELLO this mixins is in experiment',
+      //   this.mixins[0].isInExperiment('generalizedReactApp')
+      // );
+
+      // console.log('HELLO', this.isInExperiment('generalizedReactApp'));
 
       // TODO: also check if in experiment. Does this have to happen at the view level?...
       // const { experiments } = this.metrics.getFilteredData(); is always an empty array
@@ -608,5 +627,7 @@ const Router = Backbone.Router.extend({
    */
   createChildViewHandler: createChildViewHandler,
 });
+
+// Cocktail.mixin(Router, ExperimentMixin);
 
 export default Router;
