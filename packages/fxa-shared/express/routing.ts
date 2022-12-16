@@ -6,7 +6,7 @@ import express from 'express';
 import Logger from '../lib/logger';
 import cors from './cors';
 
-export type RouteMethod =
+type RouteMethod =
   | 'all'
   | 'get'
   | 'post'

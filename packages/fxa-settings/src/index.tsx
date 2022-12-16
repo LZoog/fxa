@@ -9,7 +9,6 @@ import {
   getTracingHeadersFromDocument,
   init as initTracing,
 } from 'fxa-shared/tracing/browser-tracing';
-import Settings from './components/Settings';
 import App from './components/App';
 import config, { readConfigMeta } from './lib/config';
 import { searchParams } from './lib/utilities';
