@@ -44,7 +44,7 @@ import UserAgent from './user-agent';
 import VerificationReasons from './verification-reasons';
 import WouldYouLikeToSync from '../views/would_you_like_to_sync';
 import { isAllowed } from 'fxa-shared/configuration/convict-format-allow-list';
-// import ExperimentMixin from '../views/mixins/experiment-mixin';
+import ExperimentMixin from '../views/mixins/experiment-mixin';
 
 const NAVIGATE_AWAY_IN_MOBILE_DELAY_MS = 75;
 
@@ -84,8 +84,7 @@ function createViewModel(data) {
   return new Backbone.Model(data || {});
 }
 
-const Router = Backbone.Router.extend({
-  // mixins: [ExperimentMixin],
+const Router = Backbone.Router.extend(ExperimentMixin, {
   routes: {
     '(/)': createViewHandler(IndexView),
     'account_recovery_confirm_key(/)': createViewHandler(
@@ -98,8 +97,7 @@ const Router = Backbone.Router.extend({
     'cannot_create_account(/)': function () {
       const showReactApp = this.config.showReactApp.simpleRoutes;
 
-      console.log('HELLO user agent', this.getUserAgent);
-      console.log('HELLO isinexperiment', this.isInExperiment);
+      console.log('HELLO this.isInExperiment', this.isInExperiment);
       // console.log('HELLO experiment mixin', ExperimentMixin);
       // console.log(
       //   'HELLO experiment mixin with call',

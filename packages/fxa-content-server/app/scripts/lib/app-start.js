@@ -51,7 +51,6 @@ import Url from './url';
 import User from '../models/user';
 import UserAgentMixin from './user-agent-mixin';
 import WebChannel from './channels/web';
-import ExperimentMixin from '../views/mixins/experiment-mixin';
 
 const AUTOMATED_BROWSER_STARTUP_DELAY = 750;
 
@@ -859,6 +858,6 @@ Start.prototype = {
   },
 };
 
-Cocktail.mixin(Start, UserAgentMixin, ExperimentMixin);
+Cocktail.mixin(Start, UserAgentMixin);
 
 export default Start;

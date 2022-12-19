@@ -61,7 +61,7 @@ function addSimpleRoutes(
   addReactRoutesConditionally(app, routeHelpers, middleware, simpleRoutes);
 }
 
-function addAllReactRoutesConditionally(
+export function addAllReactRoutesConditionally(
   app: Express,
   routeHelpers: any,
   middleware: RequestHandler // 'createSettingsProxy' in dev, else 'modifySettingsStatic'
@@ -89,7 +89,14 @@ function addAllReactRoutesConditionally(
 //   }
 // }
 
-module.exports = {
+export const reactApp = () => ({
   simpleRoutes,
   addAllReactRoutesConditionally,
-};
+});
+
+export default reactApp;
+
+// module.exports = {
+//   simpleRoutes,
+//   addAllReactRoutesConditionally,
+// };

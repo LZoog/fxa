@@ -4,7 +4,7 @@
 
 'use strict';
 
-const { simpleRoutes } = require('./react-app');
+const { simpleRoutes } = require('./react-app').reactApp();
 const { getFrontEndRouteDefinitions } = require('./route-definitions');
 
 function getFrontEnd() {

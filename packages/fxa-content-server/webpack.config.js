@@ -42,10 +42,14 @@ const webpackConfig = {
   resolve: {
     extensions: ['.ts', '.js', '.jsx'],
     modules: [
+      () => {
+        console.log('hello!');
+      },
       path.resolve(__dirname, 'app/scripts'),
       path.resolve(__dirname, 'app/scripts/templates'),
       path.resolve(__dirname, 'app'),
       path.resolve(__dirname, '.tscompiled/scripts'),
+      path.resolve(__dirname, '.tscompiled/routes'),
       path.resolve(__dirname, 'node_modules'),
       'node_modules',
     ],
