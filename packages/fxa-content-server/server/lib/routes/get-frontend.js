@@ -5,7 +5,9 @@
 'use strict';
 
 const { simpleRoutes } = require('./react-app');
-const { getFrontEndRouteDefinitions } = require('./route-definitions');
+const {
+  getFrontEndRouteDefinitions,
+} = require('./react-app/route-definitions');
 
 function getFrontEnd() {
   // The array is converted into a RegExp

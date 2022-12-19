@@ -2,20 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import config from '../configuration';
-import { getFrontEndRouteDefinitions } from './route-definitions';
-import { Express, RequestHandler } from 'express';
-import { RouteDefinition } from 'fxa-shared/express/routing';
+const config = require('../../configuration');
+const { getFrontEndRouteDefinitions } = require('./route-definitions');
 
-interface RouteFeatureFlagGroup {
-  featureFlagOn: boolean;
-  routes: {
-    name: string;
-    definition: RouteDefinition;
-  }[];
-}
-
-const simpleRoutes: RouteFeatureFlagGroup = {
+/** @type {import("./types").RouteFeatureFlagGroup} */
+const simpleRoutes = {
   featureFlagOn: config.get('showReactApp.simpleRoutes'),
   routes: [
     /* When you're ready to serve the React version of a "simpleRoute", add a new object here
@@ -30,11 +21,22 @@ const simpleRoutes: RouteFeatureFlagGroup = {
   ],
 };
 
+/** Check if the feature flag passed in is `true` and the request contains `?showReactApp=true`.
+ * If true, use the middleware passed ('createSettingsProxy' in dev, else 'modifySettingsStatic')
+ * for that route, allowing `fxa-settings` to serve the page. If false, skip the middleware and
+ * use the default routing middleware from `fxa-shared/express/routing.ts`.
+ * @param {import("express").Express} app
+ * @param {Object} routeHelpers
+ *  @param {Function} routeHelpers.addRoute
+ *  @param {Function} routeHelpers.validationErrorHandler
+ * @param {import("express").RequestHandler} middleware
+ * @param {import("./types").RouteFeatureFlagGroup}
+ */
 function addReactRoutesConditionally(
-  app: Express,
-  routeHelpers: any,
-  middleware: RequestHandler,
-  { featureFlagOn, routes }: RouteFeatureFlagGroup
+  app,
+  routeHelpers,
+  middleware,
+  { featureFlagOn, routes }
 ) {
   if (featureFlagOn === true) {
     routes.forEach(({ definition }) => {
@@ -53,19 +55,25 @@ function addReactRoutesConditionally(
   }
 }
 
-function addSimpleRoutes(
-  app: Express,
-  routeHelpers: any,
-  middleware: RequestHandler
-) {
+/** Add routes from `simpleRoutes` for fxa-settings or fxa-content-server to serve.
+ * @param {import("express").Express} app
+ * @param {Object} routeHelpers
+ *  @param {Function} routeHelpers.addRoute
+ *  @param {Function} routeHelpers.validationErrorHandler
+ * @param {import("express").RequestHandler} middleware
+ */
+function addSimpleRoutes(app, routeHelpers, middleware) {
   addReactRoutesConditionally(app, routeHelpers, middleware, simpleRoutes);
 }
 
-function addAllReactRoutesConditionally(
-  app: Express,
-  routeHelpers: any,
-  middleware: RequestHandler // 'createSettingsProxy' in dev, else 'modifySettingsStatic'
-) {
+/** Add all routes routes from all route objects for fxa-settings or fxa-content-server to serve.
+ * @param {import("express").Express} app
+ * @param {Object} routeHelpers
+ *  @param {Function} routeHelpers.addRoute
+ *  @param {Function} routeHelpers.validationErrorHandler
+ * @param {import("express").RequestHandler} middleware
+ */
+function addAllReactRoutesConditionally(app, routeHelpers, middleware) {
   addSimpleRoutes(app, routeHelpers, middleware);
   // add other addRoutes functions here when created
 }
