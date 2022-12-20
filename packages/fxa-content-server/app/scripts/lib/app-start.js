@@ -36,7 +36,7 @@ import p from './promise';
 import ProfileClient from './profile-client';
 import RefreshObserver from '../models/refresh-observer';
 import Relier from '../models/reliers/relier';
-import Router, { reactRoutes } from './router';
+import Router from './router';
 import SameBrowserVerificationModel from '../models/verification/same-browser';
 import ScreenInfo from './screen-info';
 import SentryMetrics from './sentry';
