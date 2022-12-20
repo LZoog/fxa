@@ -17,10 +17,7 @@ logger.info(`commit hash set to: ${version.commit}`);
 logger.info(`fxa-content-server-l10n commit hash set to: ${version.l10n}`);
 logger.info(`tos-pp (legal-docs) commit hash set to: ${version.tosPp}`);
 const config = require('../lib/configuration');
-const {
-  addAllReactRoutesConditionally,
-  // addAllReactWildcardRoutesConditionally,
-} = require('../lib/routes/react-app');
+const { addAllReactRoutesConditionally } = require('../lib/routes/react-app');
 
 // Tracing must be initialized asap
 const tracing = require('fxa-shared/tracing/node-tracing');

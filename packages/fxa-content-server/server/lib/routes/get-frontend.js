@@ -91,7 +91,7 @@ function getFrontEnd() {
 
   // Remove route from list if feature flag is on and route is in list. Route definitions
   // for the excluded routes are created separately
-  // TODO: account for other feature flags / React route lists, FXA-[TBD]
+  // TODO: account for other feature flags / React route lists, FXA-TBD
   const FRONTEND_ROUTES_EXCLUDE_REACT = simpleRoutes.featureFlagOn
     ? FRONTEND_ROUTES.filter(
         (routeName) =>

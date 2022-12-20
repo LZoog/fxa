@@ -84,12 +84,6 @@ function createViewModel(data) {
   return new Backbone.Model(data || {});
 }
 
-// let Router = Backbone.Router.extend({
-//   routes: {},
-// });
-
-// Cocktail.mixin(Router, ExperimentMixin);
-
 let Router = Backbone.Router.extend({
   routes: {
     '(/)': createViewHandler(IndexView),
@@ -100,33 +94,7 @@ let Router = Backbone.Router.extend({
       CompleteResetPasswordView
     ),
     'authorization(/)': createViewHandler(RedirectAuthView),
-    'cannot_create_account(/)': function () {
-      const showReactApp = this.config.showReactApp.simpleRoutes;
-
-      console.log(
-        'HELLO isinexperiment',
-        this.isInExperiment('generalizedReactApp')
-      );
-
-      // TODO: also check if in experiment. Does this have to happen at the view level?...
-      // const { experiments } = this.metrics.getFilteredData(); is always an empty array
-      // when trying to force the experiment with URL params at signup
-      // `?forceExperiment=generalizedReactApp&forceExperimentGroup=react`
-      if (showReactApp) {
-        const link = `${'/cannot_create_account'}${Url.objToSearchString({
-          showReactApp,
-        })}`;
-
-        this.navigateAway(link);
-      } else {
-        // TODO: make a helper function out of this or make `createViewHandler` work
-        return getView(CannotCreateAccountView).then((View) => {
-          return this.showView(View);
-        });
-      }
-    },
     'cannot_create_account(/)': createViewHandler(CannotCreateAccountView),
-
     'choose_what_to_sync(/)': createViewHandler(ChooseWhatToSyncView),
     'clear(/)': createViewHandler(ClearStorageView),
     'complete_reset_password(/)': createViewHandler(CompleteResetPasswordView),
