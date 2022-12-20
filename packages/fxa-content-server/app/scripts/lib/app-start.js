@@ -36,7 +36,7 @@ import p from './promise';
 import ProfileClient from './profile-client';
 import RefreshObserver from '../models/refresh-observer';
 import Relier from '../models/reliers/relier';
-import Router from './router';
+import Router, { reactRoutes } from './router';
 import SameBrowserVerificationModel from '../models/verification/same-browser';
 import ScreenInfo from './screen-info';
 import SentryMetrics from './sentry';
@@ -51,7 +51,6 @@ import Url from './url';
 import User from '../models/user';
 import UserAgentMixin from './user-agent-mixin';
 import WebChannel from './channels/web';
-import ExperimentMixin from '../views/mixins/experiment-mixin';
 
 const AUTOMATED_BROWSER_STARTUP_DELAY = 750;
 
@@ -505,6 +504,7 @@ Start.prototype = {
         broker: this._authenticationBroker,
         config: this._config,
         createView: this.createView.bind(this),
+        experimentGroupingRules: this._experimentGroupingRules,
         metrics: this._metrics,
         notifier: this._notifier,
         relier: this._relier,
@@ -859,6 +859,6 @@ Start.prototype = {
   },
 };
 
-Cocktail.mixin(Start, UserAgentMixin, ExperimentMixin);
+Cocktail.mixin(Start, UserAgentMixin);
 
 export default Start;
