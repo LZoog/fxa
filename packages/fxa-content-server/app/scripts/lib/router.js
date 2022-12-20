@@ -85,6 +85,37 @@ function createViewModel(data) {
 }
 
 let Router = Backbone.Router.extend({
+  initialize(options = {}) {
+    this.broker = options.broker;
+    this.config = options.config;
+    this.metrics = options.metrics;
+    this.notifier = options.notifier;
+    this.relier = options.relier;
+    this.user = options.user;
+    this.window = options.window || window;
+    this._viewModelStack = [];
+
+    this.notifier.once(
+      'view-shown',
+      this._afterFirstViewHasRendered.bind(this)
+    );
+    this.notifier.on('navigate', this.onNavigate.bind(this));
+    this.notifier.on('navigate-back', this.onNavigateBack.bind(this));
+    this.notifier.on('email-first-flow', () => this._onEmailFirstFlow());
+
+    // If legacy signin/signup flows are disabled, this is obviously
+    // an email-first flow!
+    if (this.broker.getCapability('disableLegacySigninSignup')) {
+      this._isEmailFirstFlow = true;
+    }
+
+    this.storage = Storage.factory('sessionStorage', this.window);
+  },
+});
+
+Cocktail.mixin(Router, ReactMixin);
+
+Router = Router.extend({
   routes: {
     '(/)': createViewHandler(IndexView),
     'account_recovery_confirm_key(/)': createViewHandler(
@@ -94,7 +125,25 @@ let Router = Backbone.Router.extend({
       CompleteResetPasswordView
     ),
     'authorization(/)': createViewHandler(RedirectAuthView),
-    'cannot_create_account(/)': createViewHandler(CannotCreateAccountView),
+    'cannot_create_account(/)': function () {
+      // TODO: check for what feature flag group this route is in and check `featureFlagOn` so
+      // we don't have to check all of these at the router level. Probably turn this into some
+      // helper function. FXA-TBD
+      const showReactApp = this.config.showReactApp.simpleRoutes;
+
+      if (showReactApp && this.isInReactExperiment()) {
+        const link = `${'/cannot_create_account'}${Url.objToSearchString({
+          showReactApp,
+        })}`;
+
+        this.navigateAway(link);
+      } else {
+        // TODO: make a helper function out of this or make `createViewHandler` work
+        return getView(CannotCreateAccountView).then((View) => {
+          return this.showView(View);
+        });
+      }
+    },
     'choose_what_to_sync(/)': createViewHandler(ChooseWhatToSyncView),
     'clear(/)': createViewHandler(ClearStorageView),
     'complete_reset_password(/)': createViewHandler(CompleteResetPasswordView),
@@ -291,33 +340,6 @@ let Router = Backbone.Router.extend({
       type: VerificationReasons.SECONDARY_EMAIL_VERIFIED,
     }),
     'would_you_like_to_sync(/)': createViewHandler(WouldYouLikeToSync),
-  },
-
-  initialize(options = {}) {
-    this.broker = options.broker;
-    this.config = options.config;
-    this.metrics = options.metrics;
-    this.notifier = options.notifier;
-    this.relier = options.relier;
-    this.user = options.user;
-    this.window = options.window || window;
-    this._viewModelStack = [];
-
-    this.notifier.once(
-      'view-shown',
-      this._afterFirstViewHasRendered.bind(this)
-    );
-    this.notifier.on('navigate', this.onNavigate.bind(this));
-    this.notifier.on('navigate-back', this.onNavigateBack.bind(this));
-    this.notifier.on('email-first-flow', () => this._onEmailFirstFlow());
-
-    // If legacy signin/signup flows are disabled, this is obviously
-    // an email-first flow!
-    if (this.broker.getCapability('disableLegacySigninSignup')) {
-      this._isEmailFirstFlow = true;
-    }
-
-    this.storage = Storage.factory('sessionStorage', this.window);
   },
 
   onNavigate(event) {
@@ -589,33 +611,6 @@ let Router = Backbone.Router.extend({
    * @returns {Function} - a function that can be given to the router.
    */
   createChildViewHandler: createChildViewHandler,
-});
-
-Cocktail.mixin(Router, ReactMixin);
-
-Router = Router.extend({
-  routes: {
-    ...Router.prototype.routes,
-    'cannot_create_account(/)': function () {
-      // TODO: check for what feature flag group this route is in and check `featureFlagOn` so
-      // we don't have to check all of these at the router level. Probably turn this into some
-      // helper function. FXA-TBD
-      const showReactApp = this.config.showReactApp.simpleRoutes;
-
-      if (showReactApp && this.isInReactExperiment()) {
-        const link = `${'/cannot_create_account'}${Url.objToSearchString({
-          showReactApp,
-        })}`;
-
-        this.navigateAway(link);
-      } else {
-        // TODO: make a helper function out of this or make `createViewHandler` work
-        return getView(CannotCreateAccountView).then((View) => {
-          return this.showView(View);
-        });
-      }
-    },
-  },
 });
 
 export default Router;
