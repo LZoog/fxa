@@ -213,57 +213,57 @@ const conf = (module.exports = convict({
   showReactApp: {
     simpleRoutes: {
       default: false,
-      doc: 'Enable users visiting the simple routes',
+      doc: 'Enable users to visit the React version of "simple" routes',
       format: Boolean,
       env: 'REACT_CONVERSION_SIMPLE_ROUTES',
     },
-    resetPassword: {
+    resetPasswordRoutes: {
       default: false,
-      doc: 'Enable users visiting the routes associated with reset_password',
+      doc: 'Enable users to visit the React version of "reset_password" routes',
       format: Boolean,
-      env: 'REACT_CONVERSION_RESET_PASSWORD',
+      env: 'REACT_CONVERSION_RESET_PASSWORD_ROUTES',
     },
-    oauth: {
+    oauthRoutes: {
       default: false,
-      doc: 'Enable users visiting the oauth routes',
+      doc: 'Enable users to visit the React version of routes requiring oauth',
       format: Boolean,
-      env: 'REACT_CONVERSION_OAUTH',
+      env: 'REACT_CONVERSION_OAUTH_ROUTES',
     },
-    signIn: {
+    signInRoutes: {
       default: false,
-      doc: 'Enable users visiting the signin routes',
+      doc: 'Enable users to visit the React version of "signin" routes',
       format: Boolean,
-      env: 'REACT_CONVERSION_SIGNIN',
+      env: 'REACT_CONVERSION_SIGNIN_ROUTES',
     },
-    signUp: {
+    signUpRoutes: {
       default: false,
-      doc: 'Enable users visiting the signup routes',
+      doc: 'Enable users to visit the React version of "signup" routes',
       format: Boolean,
-      env: 'REACT_CONVERSION_SIGNUP',
+      env: 'REACT_CONVERSION_SIGNUP_ROUTES',
     },
-    pair: {
+    pairRoutes: {
       default: false,
-      doc: 'Enable users visiting the pair routes',
+      doc: 'Enable users to visit the React version of "pair" routes',
       format: Boolean,
-      env: 'REACT_CONVERSION_PAIR',
+      env: 'REACT_CONVERSION_PAIR_ROUTES',
     },
-    postVerifyAddRecoveryKey: {
+    postVerifyAddRecoveryKeyRoutes: {
       default: false,
-      doc: 'Enable users visiting the post-verify add recovery key routes',
+      doc: 'Enable users to visit the React version of "post-verify add recovery key" routes',
       format: Boolean,
-      env: 'REACT_CONVERSION_POST_VERIFY_ADD_RECOVERY_KEY',
+      env: 'REACT_CONVERSION_POST_VERIFY_ADD_RECOVERY_KEY_ROUTES',
     },
-    postVerifyCADviaQR: {
+    postVerifyCADViaQRRoutes: {
       default: false,
-      doc: 'Enable users visiting the post verify CAD via QR code routes',
+      doc: 'Enable users to visit the React version of "post verify CAD via QR code" routes',
       format: Boolean,
-      env: 'REACT_CONVERSION_POST_VERIFY_CAD_VIA_QR',
+      env: 'REACT_CONVERSION_POST_VERIFY_CAD_VIA_QR_ROUTES',
     },
-    signInVerificationViaPush: {
+    signInVerificationViaPushRoutes: {
       default: false,
-      doc: 'Enable users visiting the sign-in verification via push routes',
+      doc: 'Enable users to visit the React version of "signin verification via push" routes',
       format: Boolean,
-      env: 'REACT_CONVERSION_SIGNIN_VERIFICATION_VIA_PUSH',
+      env: 'REACT_CONVERSION_SIGNIN_VERIFICATION_VIA_PUSH_ROUTES',
     },
   },
   flow_id_expiry: {
