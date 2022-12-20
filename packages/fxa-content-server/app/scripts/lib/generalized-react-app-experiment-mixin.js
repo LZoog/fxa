@@ -11,7 +11,6 @@ export default {
     const experimentGroup = this.getAndReportExperimentGroup(
       'generalizedReactApp'
     );
-    console.log('experimentGroup', experimentGroup);
     return experimentGroup === 'react';
   },
 };

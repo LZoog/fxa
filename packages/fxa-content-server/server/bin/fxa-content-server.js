@@ -204,10 +204,6 @@ function makeApp() {
     addAllReactRoutesConditionally(app, routeHelpers, createSettingsProxy);
   } else {
     app.get(settingsPath + '/*', modifySettingsStatic);
-
-    /* TODO: Add wildcard routes for (I believe) only routes that are nested, like `/pair/*`?
-     * Or, maybe we don't need this since we're accounting for each route individually
-     * addAllReactWildcardRoutesConditionally(app, modifySettingsStatic); */
   }
 
   /* This creates `app.whatever('/path' ...` handlers for every content-server route and

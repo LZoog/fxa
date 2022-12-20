@@ -629,15 +629,12 @@ Router = Router.extend({
   routes: {
     ...Router.prototype.routes,
     'cannot_create_account(/)': function () {
+      // TODO: check for what feature flag group this route is in and check `featureFlagOn` so
+      // we don't have to check all of these at the router level. Probably turn this into some
+      // helper function. FXA-TBD
       const showReactApp = this.config.showReactApp.simpleRoutes;
 
-      console.log('HELLO in generalizedReactApp', this.isInReactExperiment());
-
-      // TODO: also check if in experiment. Does this have to happen at the view level?...
-      // const { experiments } = this.metrics.getFilteredData(); is always an empty array
-      // when trying to force the experiment with URL params at signup
-      // `?forceExperiment=generalizedReactApp&forceExperimentGroup=react`
-      if (showReactApp) {
+      if (showReactApp && this.isInReactExperiment()) {
         const link = `${'/cannot_create_account'}${Url.objToSearchString({
           showReactApp,
         })}`;

@@ -78,25 +78,6 @@ function addAllReactRoutesConditionally(app, routeHelpers, middleware) {
   // add other addRoutes functions here when created
 }
 
-// TODO: Add wildcard routes for (I believe) only routes that are nested, like `/pair/*`?
-// Or, maybe we don't need this since we're accounting for each route individually
-// function addAllReactWildcardRoutesConditionally(
-//   app,
-//   modifySettingsStatic
-// ) {
-//   if (simpleRoutes.featureFlagOn === true) {
-//     simpleRoutes.routes.forEach((route) => {
-//       app.get(`/${route}/*`, (req, res, next) => {
-//         if (req.query.showReactApp === 'true') {
-//           return modifySettingsStatic(req, res);
-//         } else {
-//           next('route');
-//         }
-//       });
-//     });
-//   }
-// }
-
 module.exports = {
   simpleRoutes,
   addAllReactRoutesConditionally,
