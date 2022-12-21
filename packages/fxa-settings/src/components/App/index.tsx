@@ -21,7 +21,7 @@ export const App = ({
       <Router basepath={'/'}>
         <ScrollToTop default>
           {/* TODO: set up client-side guard around simpleRoutes by checking for `showReactApp`
-           * and if config flag is on  */}
+           * and if config flag is on, FXA-TBD2  */}
           <PageCannotCreateAccount path="/cannot_create_account/*" />
 
           <Settings path="/settings/*" {...{ flowQueryParams }} />
