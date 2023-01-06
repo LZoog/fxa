@@ -5,6 +5,13 @@
 // TS setup for anything outside of `app/` is complex. This file defines types we
 // import for JSDoc instead.
 
+import {
+  Express,
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from 'express';
 import { RouteDefinition } from 'fxa-shared/express/routing';
 
 export interface RouteFeatureFlagGroup {
@@ -13,4 +20,22 @@ export interface RouteFeatureFlagGroup {
     name: string;
     definition: RouteDefinition;
   }[];
+}
+
+export interface GetRouteDefinition {
+  (routes: string[]): RouteDefinition;
+}
+
+export interface RouteHelpers {
+  addRoute: (routeDefinition: RouteDefinition) => void;
+  validationErrorHandler: (
+    err: Error,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => void;
+}
+
+export interface AddRoutes {
+  (app: Express, routeHelpers: RouteHelpers, middleware: RequestHandler): void;
 }

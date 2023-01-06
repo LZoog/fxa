@@ -10,7 +10,7 @@ const { getFrontEndRouteDefinition } = require('./route-definitions');
  * To determine which route definition is needed, find which `lib/routes` file your route is
  * listed in, e.g. `get-frontend.js` which is where most routes will be, to determine which
  * function to use or create to get the definition, e.g. `get-frontend` corresponds with
- * `getFrontEndRouteDefitions`.
+ * `getFrontEndRouteDefitions`. */
 
 /** @type {import("./types").RouteFeatureFlagGroup} */
 const simpleRoutes = {
@@ -76,9 +76,7 @@ const signInVerificationViaPushRoutes = {
  * for that route, allowing `fxa-settings` to serve the page. If false, skip the middleware and
  * use the default routing middleware from `fxa-shared/express/routing.ts`.
  * @param {import("express").Express} app
- * @param {Object} routeHelpers
- *  @param {Function} routeHelpers.addRoute
- *  @param {Function} routeHelpers.validationErrorHandler
+ * @param {import("./types").RouteHelpers routeHelpers}
  * @param {import("express").RequestHandler} middleware
  * @param {import("./types").RouteFeatureFlagGroup}
  */
@@ -106,22 +104,14 @@ function addReactRoutesConditionally(
 }
 
 /** Add routes from `simpleRoutes` for fxa-settings or fxa-content-server to serve.
- * @param {import("express").Express} app
- * @param {Object} routeHelpers
- *  @param {Function} routeHelpers.addRoute
- *  @param {Function} routeHelpers.validationErrorHandler
- * @param {import("express").RequestHandler} middleware
+ * @type {import("./types").AddRoutes}
  */
 function addSimpleRoutes(app, routeHelpers, middleware) {
   addReactRoutesConditionally(app, routeHelpers, middleware, simpleRoutes);
 }
 
 /** Add all routes routes from all route objects for fxa-settings or fxa-content-server to serve.
- * @param {import("express").Express} app
- * @param {Object} routeHelpers
- *  @param {Function} routeHelpers.addRoute
- *  @param {Function} routeHelpers.validationErrorHandler
- * @param {import("express").RequestHandler} middleware
+ * @type {import("./types").AddRoutes}
  */
 function addAllReactRoutesConditionally(app, routeHelpers, middleware) {
   addSimpleRoutes(app, routeHelpers, middleware);

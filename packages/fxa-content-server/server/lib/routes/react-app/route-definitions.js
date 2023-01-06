@@ -2,10 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/**
- * @param {Array.<String>} routes
- * @returns {import("fxa-shared/express/routing").RouteDefinition}
- */
+/** @type {import("./types").GetRouteDefinition} */
 function getFrontEndRouteDefinition(routes) {
   const path = routes.join('|'); // prepare for use in a RegExp
   return {
@@ -20,10 +17,7 @@ function getFrontEndRouteDefinition(routes) {
   };
 }
 
-/**
- * @param {Array.<String>} routes
- * @returns {import("fxa-shared/express/routing").RouteDefinition}
- */
+/** @type {import("./types").GetRouteDefinition} */
 function getFrontEndPairingRouteDefinition(routes) {
   const path = routes.join('|'); // prepare for use in a RegExp
   return {
