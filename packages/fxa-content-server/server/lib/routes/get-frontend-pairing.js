@@ -4,10 +4,15 @@
 
 'use strict';
 
+const {
+  getFrontEndPairingRouteDefinition,
+} = require('./react-app/route-definitions');
+
 // This route handler prevents REFRESH behaviour for the pairing flow
 // If the user refreshes the browser during pairing, we instruct them to start over
 
-module.exports = function () {
+/** @type {import("./react-app/types").GetBackboneRouteDefinition} */
+module.exports = function ({ pairRoutes }) {
   // The array is converted into a RegExp
   const PAIRING_ROUTES = [
     'pair/auth/allow',
@@ -16,13 +21,19 @@ module.exports = function () {
     'pair/auth/wait_for_supp',
     'pair/supp/allow',
     'pair/supp/wait_for_auth',
-  ].join('|'); // prepare for use in a RegExp
+  ];
 
-  return {
-    method: 'get',
-    path: new RegExp('^/(' + PAIRING_ROUTES + ')/?$'),
-    process: function (req, res) {
-      res.redirect(302, '/pair/failure');
-    },
-  };
+  /* Remove route from list if feature flag is set to true and route is included in
+   * relevant react route groups. Route definitions for the excluded routes are created
+   * separately in `fxa-content-server.js`. */
+  const PAIRING_ROUTES_EXCLUDE_REACT = pairRoutes.featureFlagOn
+    ? PAIRING_ROUTES.filter(
+        (routeName) =>
+          !pairRoutes.routes.find((route) => routeName === route.name)
+      )
+    : PAIRING_ROUTES;
+
+  return PAIRING_ROUTES_EXCLUDE_REACT.length > 0
+    ? getFrontEndPairingRouteDefinition(PAIRING_ROUTES_EXCLUDE_REACT)
+    : null;
 };

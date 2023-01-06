@@ -3,10 +3,47 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * @param {Array.<String>} routes
- * @returns {import("fxa-shared/express/routing").RouteDefinition}
+ * Returns a route object with the `name` of the route and the route `definition`
+ * if used on the server-side.
  */
-function getFrontEndRouteDefinitions(routes) {
+class ReactGroupRoute {
+  /** @param {Boolean} isServer Is access coming from the server? The client
+   * doesn't need route definitions. */
+  constructor(isServer) {
+    this.isServer = isServer;
+  }
+
+  /** @type {import("./types").GetRoute} */
+  getFrontEnd(name) {
+    return {
+      name,
+      ...(this.isServer && { definition: getFrontEndRouteDefinition([name]) }),
+    };
+  }
+
+  /** @type {import("./types").GetRoute} */
+  getFrontEndPairing(name) {
+    return {
+      name,
+      ...(this.isServer && {
+        definition: getFrontEndPairingRouteDefinition([name]),
+      }),
+    };
+  }
+
+  /** @type {import("./types").GetRoute} */
+  getOAuthSuccess(name) {
+    return {
+      name,
+      ...(this.isServer && {
+        definition: getOAuthSuccessRouteDefinition([name]),
+      }),
+    };
+  }
+}
+
+/** @type {import("./types").GetRouteDefinition} */
+function getFrontEndRouteDefinition(routes) {
   const path = routes.join('|'); // prepare for use in a RegExp
   return {
     method: 'get',
@@ -20,6 +57,33 @@ function getFrontEndRouteDefinitions(routes) {
   };
 }
 
+/** @type {import("./types").GetRouteDefinition} */
+function getFrontEndPairingRouteDefinition(routes) {
+  const path = routes.join('|'); // prepare for use in a RegExp
+  return {
+    method: 'get',
+    path: new RegExp('^/(' + path + ')/?$'),
+    process: function (req, res) {
+      res.redirect(302, '/pair/failure');
+    },
+  };
+}
+
+/** @type {import("./types").GetRouteDefinition} */
+function getOAuthSuccessRouteDefinition(path) {
+  return {
+    method: 'get',
+    path,
+    process: function (req, res, next) {
+      req.url = '/';
+      next();
+    },
+  };
+}
+
 module.exports = {
-  getFrontEndRouteDefinitions,
+  ReactGroupRoute,
+  getFrontEndRouteDefinition,
+  getFrontEndPairingRouteDefinition,
+  getOAuthSuccessRouteDefinition,
 };

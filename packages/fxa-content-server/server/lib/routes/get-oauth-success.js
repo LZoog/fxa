@@ -4,9 +4,15 @@
 
 'use strict';
 
-exports.path = '/oauth/success/:clientId';
-exports.method = 'get';
-exports.process = function (req, res, next) {
-  req.url = '/';
-  next();
+const {
+  getOAuthSuccessRouteDefinition,
+} = require('./react-app/route-definitions');
+
+/** @type {import("./react-app/types").GetBackboneRouteDefinition} */
+module.exports = function ({ oauthRoutes }) {
+  if (oauthRoutes.featureFlagOn) {
+    return null;
+  } else {
+    return getOAuthSuccessRouteDefinition('/oauth/success/:clientId');
+  }
 };

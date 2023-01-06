@@ -4,12 +4,10 @@
 
 'use strict';
 
-const { simpleRoutes } = require('./react-app');
-const {
-  getFrontEndRouteDefinitions,
-} = require('./react-app/route-definitions');
+const { getFrontEndRouteDefinition } = require('./react-app/route-definitions');
 
-function getFrontEnd() {
+/** @type {import("./react-app/types").GetBackboneRouteDefinition} */
+module.exports = function (reactRouteGroups) {
   // The array is converted into a RegExp
   const FRONTEND_ROUTES = [
     'account_recovery_confirm_key',
@@ -89,19 +87,24 @@ function getFrontEnd() {
     'would_you_like_to_sync',
   ];
 
-  // Remove route from list if feature flag is on and route is in list. Route definitions
-  // for the excluded routes are created separately
-  // TODO: account for other feature flags / React route lists, FXA-6538
-  const FRONTEND_ROUTES_EXCLUDE_REACT = simpleRoutes.featureFlagOn
-    ? FRONTEND_ROUTES.filter(
-        (routeName) =>
-          !simpleRoutes.routes.find((route) => routeName === route.name)
-      )
-    : FRONTEND_ROUTES;
+  /* Remove route from list if React feature flag is set to true and route is included in
+   * any react route group. Route definitions for the excluded routes are created
+   * separately in `fxa-content-server.js`. */
+  const FRONTEND_ROUTES_EXCLUDE_REACT = FRONTEND_ROUTES.filter((routeName) => {
+    let shouldInclude = true;
+    for (const routeGroup in reactRouteGroups) {
+      if (
+        reactRouteGroups[routeGroup]?.featureFlagOn &&
+        reactRouteGroups[routeGroup].routes.find(
+          (route) => routeName === route.name
+        )
+      ) {
+        shouldInclude = false;
+        break;
+      }
+    }
+    return shouldInclude;
+  });
 
-  return getFrontEndRouteDefinitions(FRONTEND_ROUTES_EXCLUDE_REACT);
-}
-
-module.exports = {
-  default: getFrontEnd,
+  return getFrontEndRouteDefinition(FRONTEND_ROUTES_EXCLUDE_REACT);
 };
