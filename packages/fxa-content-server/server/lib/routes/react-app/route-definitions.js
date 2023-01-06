@@ -6,7 +6,7 @@
  * @param {Array.<String>} routes
  * @returns {import("fxa-shared/express/routing").RouteDefinition}
  */
-function getFrontEndRouteDefinitions(routes) {
+function getFrontEndRouteDefinition(routes) {
   const path = routes.join('|'); // prepare for use in a RegExp
   return {
     method: 'get',
@@ -24,11 +24,11 @@ function getFrontEndRouteDefinitions(routes) {
  * @param {Array.<String>} routes
  * @returns {import("fxa-shared/express/routing").RouteDefinition}
  */
-function getFrontEndPairingRouteDefinitions(routes) {
+function getFrontEndPairingRouteDefinition(routes) {
   const path = routes.join('|'); // prepare for use in a RegExp
   return {
     method: 'get',
-    path: new RegExp('^/(' + PAIRING_ROUTES + ')/?$'),
+    path: new RegExp('^/(' + path + ')/?$'),
     process: function (req, res) {
       res.redirect(302, '/pair/failure');
     },
@@ -36,6 +36,6 @@ function getFrontEndPairingRouteDefinitions(routes) {
 }
 
 module.exports = {
-  getFrontEndRouteDefinitions,
-  getFrontEndPairingRouteDefinitions,
+  getFrontEndRouteDefinition,
+  getFrontEndPairingRouteDefinition,
 };
