@@ -4,10 +4,18 @@
 
 'use strict';
 
-const { simpleRoutes } = require('./react-app');
 const {
-  getFrontEndRouteDefinitions,
-} = require('./react-app/route-definitions');
+  simpleRoutes,
+  resetPasswordRoutes,
+  oauthRoutes,
+  signInRoutes,
+  signUpRoutes,
+  pairRoutes,
+  postVerifyAddRecoveryKeyRoutes,
+  postVerifyCADViaQRRoutes,
+  signInVerificationViaPushRoutes,
+} = require('./react-app');
+const { getFrontEndRouteDefinition } = require('./react-app/route-definitions');
 
 function getFrontEnd() {
   // The array is converted into a RegExp
@@ -89,17 +97,34 @@ function getFrontEnd() {
     'would_you_like_to_sync',
   ];
 
-  // Remove route from list if feature flag is on and route is in list. Route definitions
-  // for the excluded routes are created separately
-  // TODO: account for other feature flags / React route lists, FXA-6538
-  const FRONTEND_ROUTES_EXCLUDE_REACT = simpleRoutes.featureFlagOn
-    ? FRONTEND_ROUTES.filter(
-        (routeName) =>
-          !simpleRoutes.routes.find((route) => routeName === route.name)
-      )
-    : FRONTEND_ROUTES;
+  function routeShouldBeExcluded(routeFeatureFlagGroup, routeName) {
+    return (
+      routeFeatureFlagGroup.featureFlagOn &&
+      routeFeatureFlagGroup.routes.find((route) => routeName === route.name)
+    );
+  }
 
-  return getFrontEndRouteDefinitions(FRONTEND_ROUTES_EXCLUDE_REACT);
+  /* Remove route from list if React feature flag is set to true and route is included in
+   * relevant feature flag groups. Route definitions for the excluded routes are created
+   * separately in `fxa-content-server.js`. */
+  const FRONTEND_ROUTES_EXCLUDE_REACT = FRONTEND_ROUTES.filter((routeName) => {
+    if (
+      routeShouldBeExcluded(simpleRoutes, routeName) ||
+      routeShouldBeExcluded(resetPasswordRoutes, routeName) ||
+      routeShouldBeExcluded(oauthRoutes, routeName) ||
+      routeShouldBeExcluded(signInRoutes, routeName) ||
+      routeShouldBeExcluded(signUpRoutes, routeName) ||
+      routeShouldBeExcluded(pairRoutes, routeName) ||
+      routeShouldBeExcluded(postVerifyAddRecoveryKeyRoutes, routeName) ||
+      routeShouldBeExcluded(postVerifyCADViaQRRoutes, routeName) ||
+      routeShouldBeExcluded(signInVerificationViaPushRoutes, routeName)
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  return getFrontEndRouteDefinition(FRONTEND_ROUTES_EXCLUDE_REACT);
 }
 
 module.exports = {

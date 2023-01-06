@@ -20,6 +20,22 @@ function getFrontEndRouteDefinitions(routes) {
   };
 }
 
+/**
+ * @param {Array.<String>} routes
+ * @returns {import("fxa-shared/express/routing").RouteDefinition}
+ */
+function getFrontEndPairingRouteDefinitions(routes) {
+  const path = routes.join('|'); // prepare for use in a RegExp
+  return {
+    method: 'get',
+    path: new RegExp('^/(' + PAIRING_ROUTES + ')/?$'),
+    process: function (req, res) {
+      res.redirect(302, '/pair/failure');
+    },
+  };
+}
+
 module.exports = {
   getFrontEndRouteDefinitions,
+  getFrontEndPairingRouteDefinitions,
 };
