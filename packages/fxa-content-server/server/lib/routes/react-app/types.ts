@@ -14,7 +14,7 @@ import {
 } from 'express';
 import { RouteDefinition } from 'fxa-shared/express/routing';
 
-export interface RouteFeatureFlagGroup {
+export interface ReactRouteGroup {
   featureFlagOn: boolean;
   routes: {
     name: string;
@@ -41,5 +41,5 @@ export interface AddRoutes {
 }
 
 export interface ReactRouteGroups {
-  [key: string]: RouteFeatureFlagGroup;
+  [key: string]: ReactRouteGroup;
 }
