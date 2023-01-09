@@ -24,7 +24,7 @@ module.exports = function () {
   ];
 
   /* Remove route from list if feature flag is set to true and route is included in
-   * relevant feature flag groups. Route definitions for the excluded routes are created
+   * relevant react route groups. Route definitions for the excluded routes are created
    * separately in `fxa-content-server.js`. */
   const PAIRING_ROUTES_EXCLUDE_REACT = pairRoutes.featureFlagOn
     ? PAIRING_ROUTES.filter(

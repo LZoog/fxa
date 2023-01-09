@@ -12,63 +12,57 @@ const { getFrontEndRouteDefinition } = require('./route-definitions');
  * function to use or create to get the definition, e.g. `get-frontend` corresponds with
  * `getFrontEndRouteDefitions`. */
 
-/** @type {import("./types").RouteFeatureFlagGroup} */
-const simpleRoutes = {
-  featureFlagOn: config.get('showReactApp.simpleRoutes'),
-  routes: [
-    {
-      name: 'cannot_create_account',
-      definition: getFrontEndRouteDefinition(['cannot_create_account']),
-    },
-  ],
-};
+/** @type {import("./types").ReactRouteGroups} */
+const reactRouteGroups = {
+  simpleRoutes: {
+    featureFlagOn: config.get('showReactApp.simpleRoutes'),
+    routes: [
+      {
+        name: 'cannot_create_account',
+        definition: getFrontEndRouteDefinition(['cannot_create_account']),
+      },
+    ],
+  },
 
-/** @type {import("./types").RouteFeatureFlagGroup} */
-const resetPasswordRoutes = {
-  featureFlagOn: config.get('showReactApp.resetPasswordRoutes'),
-  routes: [],
-};
+  resetPasswordRoutes: {
+    featureFlagOn: config.get('showReactApp.resetPasswordRoutes'),
+    routes: [],
+  },
 
-/** @type {import("./types").RouteFeatureFlagGroup} */
-const oauthRoutes = {
-  featureFlagOn: config.get('showReactApp.oauthRoutes'),
-  routes: [],
-};
+  oauthRoutes: {
+    featureFlagOn: config.get('showReactApp.oauthRoutes'),
+    routes: [],
+  },
 
-/** @type {import("./types").RouteFeatureFlagGroup} */
-const signInRoutes = {
-  featureFlagOn: config.get('showReactApp.signInRoutes'),
-  routes: [],
-};
+  signInRoutes: {
+    featureFlagOn: config.get('showReactApp.signInRoutes'),
+    routes: [],
+  },
 
-/** @type {import("./types").RouteFeatureFlagGroup} */
-const signUpRoutes = {
-  featureFlagOn: config.get('showReactApp.signUpRoutes'),
-  routes: [],
-};
+  signUpRoutes: {
+    featureFlagOn: config.get('showReactApp.signUpRoutes'),
+    routes: [],
+  },
 
-/** @type {import("./types").RouteFeatureFlagGroup} */
-const pairRoutes = {
-  featureFlagOn: config.get('showReactApp.pairRoutes'),
-  routes: [],
-};
+  pairRoutes: {
+    featureFlagOn: config.get('showReactApp.pairRoutes'),
+    routes: [],
+  },
 
-/** @type {import("./types").RouteFeatureFlagGroup} */
-const postVerifyAddRecoveryKeyRoutes = {
-  featureFlagOn: config.get('showReactApp.postVerifyAddRecoveryKeyRoutes'),
-  routes: [],
-};
+  postVerifyAddRecoveryKeyRoutes: {
+    featureFlagOn: config.get('showReactApp.postVerifyAddRecoveryKeyRoutes'),
+    routes: [],
+  },
 
-/** @type {import("./types").RouteFeatureFlagGroup} */
-const postVerifyCADViaQRRoutes = {
-  featureFlagOn: config.get('showReactApp.postVerifyCADViaQRRoutes'),
-  routes: [],
-};
+  postVerifyCADViaQRRoutes: {
+    featureFlagOn: config.get('showReactApp.postVerifyCADViaQRRoutes'),
+    routes: [],
+  },
 
-/** @type {import("./types").RouteFeatureFlagGroup} */
-const signInVerificationViaPushRoutes = {
-  featureFlagOn: config.get('showReactApp.signInVerificationViaPushRoutes'),
-  routes: [],
+  signInVerificationViaPushRoutes: {
+    featureFlagOn: config.get('showReactApp.signInVerificationViaPushRoutes'),
+    routes: [],
+  },
 };
 
 /** Add all routes routes from all route objects for fxa-settings or fxa-content-server to serve.
@@ -79,7 +73,7 @@ function addAllReactRoutesConditionally(app, routeHelpers, middleware) {
    * If true, use the middleware passed ('createSettingsProxy' in dev, else 'modifySettingsStatic')
    * for that route, allowing `fxa-settings` to serve the page. If false, skip the middleware and
    * use the default routing middleware from `fxa-shared/express/routing.ts`.
-   * @param {import("./types").RouteFeatureFlagGroup}
+   * @param {import("./types").ReactRouteGroup}
    */
   function addReactRoutesConditionally({ featureFlagOn, routes }) {
     if (featureFlagOn === true) {
@@ -99,26 +93,12 @@ function addAllReactRoutesConditionally(app, routeHelpers, middleware) {
     }
   }
 
-  addReactRoutesConditionally(simpleRoutes);
-  addReactRoutesConditionally(resetPasswordRoutes);
-  addReactRoutesConditionally(oauthRoutes);
-  addReactRoutesConditionally(signInRoutes);
-  addReactRoutesConditionally(signUpRoutes);
-  addReactRoutesConditionally(pairRoutes);
-  addReactRoutesConditionally(postVerifyAddRecoveryKeyRoutes);
-  addReactRoutesConditionally(postVerifyCADViaQRRoutes);
-  addReactRoutesConditionally(signInVerificationViaPushRoutes);
+  for (const routeGroup in reactRouteGroups) {
+    addReactRoutesConditionally(reactRouteGroups[routeGroup]);
+  }
 }
 
 module.exports = {
-  simpleRoutes,
-  resetPasswordRoutes,
-  oauthRoutes,
-  signInRoutes,
-  signUpRoutes,
-  pairRoutes,
-  postVerifyAddRecoveryKeyRoutes,
-  postVerifyCADViaQRRoutes,
-  signInVerificationViaPushRoutes,
+  reactRouteGroups,
   addAllReactRoutesConditionally,
 };

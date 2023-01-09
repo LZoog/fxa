@@ -39,3 +39,7 @@ export interface RouteHelpers {
 export interface AddRoutes {
   (app: Express, routeHelpers: RouteHelpers, middleware: RequestHandler): void;
 }
+
+export interface ReactRouteGroups {
+  [key: string]: RouteFeatureFlagGroup;
+}

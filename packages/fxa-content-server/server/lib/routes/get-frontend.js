@@ -4,17 +4,7 @@
 
 'use strict';
 
-const {
-  simpleRoutes,
-  resetPasswordRoutes,
-  oauthRoutes,
-  signInRoutes,
-  signUpRoutes,
-  pairRoutes,
-  postVerifyAddRecoveryKeyRoutes,
-  postVerifyCADViaQRRoutes,
-  signInVerificationViaPushRoutes,
-} = require('./react-app');
+const { reactRouteGroups } = require('./react-app');
 const { getFrontEndRouteDefinition } = require('./react-app/route-definitions');
 
 function getFrontEnd() {
@@ -97,31 +87,23 @@ function getFrontEnd() {
     'would_you_like_to_sync',
   ];
 
-  function routeShouldBeExcluded(routeFeatureFlagGroup, routeName) {
-    return (
-      routeFeatureFlagGroup.featureFlagOn &&
-      routeFeatureFlagGroup.routes.find((route) => routeName === route.name)
-    );
-  }
-
   /* Remove route from list if React feature flag is set to true and route is included in
-   * relevant feature flag groups. Route definitions for the excluded routes are created
+   * any react route group. Route definitions for the excluded routes are created
    * separately in `fxa-content-server.js`. */
   const FRONTEND_ROUTES_EXCLUDE_REACT = FRONTEND_ROUTES.filter((routeName) => {
-    if (
-      routeShouldBeExcluded(simpleRoutes, routeName) ||
-      routeShouldBeExcluded(resetPasswordRoutes, routeName) ||
-      routeShouldBeExcluded(oauthRoutes, routeName) ||
-      routeShouldBeExcluded(signInRoutes, routeName) ||
-      routeShouldBeExcluded(signUpRoutes, routeName) ||
-      routeShouldBeExcluded(pairRoutes, routeName) ||
-      routeShouldBeExcluded(postVerifyAddRecoveryKeyRoutes, routeName) ||
-      routeShouldBeExcluded(postVerifyCADViaQRRoutes, routeName) ||
-      routeShouldBeExcluded(signInVerificationViaPushRoutes, routeName)
-    ) {
-      return false;
+    let shouldInclude = true;
+    for (const routeGroup in reactRouteGroups) {
+      if (
+        reactRouteGroups[routeGroup].featureFlagOn &&
+        reactRouteGroups[routeGroup].routes.find(
+          (route) => routeName === route.name
+        )
+      ) {
+        shouldInclude = false;
+        break;
+      }
     }
-    return true;
+    return shouldInclude;
   });
 
   return getFrontEndRouteDefinition(FRONTEND_ROUTES_EXCLUDE_REACT);
