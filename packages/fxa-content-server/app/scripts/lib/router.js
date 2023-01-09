@@ -45,6 +45,7 @@ import VerificationReasons from './verification-reasons';
 import WouldYouLikeToSync from '../views/would_you_like_to_sync';
 import { isAllowed } from 'fxa-shared/configuration/convict-format-allow-list';
 import ReactExperimentMixin from './generalized-react-app-experiment-mixin';
+import { reactRouteGroups } from '../../../server/lib/routes/react-app';
 
 const NAVIGATE_AWAY_IN_MOBILE_DELAY_MS = 75;
 
@@ -115,6 +116,23 @@ let Router = Backbone.Router.extend({
 
 Cocktail.mixin(Router, ReactExperimentMixin);
 
+function getShowReactApp(routeName) {
+  let showReactApp = false;
+  for (const routeGroup in reactRouteGroups) {
+    if (
+      reactRouteGroups[routeGroup].routes.find(
+        (route) => routeName === route.name
+      )
+    ) {
+      showReactApp = reactRouteGroups[routeGroup].featureFlagOn;
+      break;
+    }
+  }
+  return showReactApp;
+}
+
+// function createReactOrBackboneViewHandler(routeName, ViewOrPath, options) {}
+
 Router = Router.extend({
   routes: {
     '(/)': createViewHandler(IndexView),
@@ -126,10 +144,8 @@ Router = Router.extend({
     ),
     'authorization(/)': createViewHandler(RedirectAuthView),
     'cannot_create_account(/)': function () {
-      // TODO: check for what feature flag group this route is in and check `featureFlagOn` so
-      // we don't have to check all of these at the router level. Probably turn this into some
-      // helper function. FXA-6538
-      const showReactApp = this.config.showReactApp.simpleRoutes;
+      const routeName = 'cannot_create_account';
+      const showReactApp = getShowReactApp(routeName);
 
       if (showReactApp && this.isInReactExperiment()) {
         const link = `${'/cannot_create_account'}${Url.objToSearchString({
