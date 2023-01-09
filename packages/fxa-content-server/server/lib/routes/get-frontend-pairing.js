@@ -4,7 +4,7 @@
 
 'use strict';
 
-const { pairRoutes } = require('./react-app');
+const { pairRoutes } = require('./react-app').reactRouteGroups;
 const {
   getFrontEndPairingRouteDefinition,
 } = require('./react-app/route-definitions');

@@ -92,15 +92,15 @@ function getFrontEnd() {
    * separately in `fxa-content-server.js`. */
   const FRONTEND_ROUTES_EXCLUDE_REACT = FRONTEND_ROUTES.filter((routeName) => {
     let shouldInclude = true;
-    for (const routeGroup in reactRouteGroups) {
-      if (
-        reactRouteGroups[routeGroup].featureFlagOn &&
-        reactRouteGroups[routeGroup].routes.find(
-          (route) => routeName === route.name
-        )
-      ) {
-        shouldInclude = false;
-        break;
+
+    routeGroupLoop: for (const routeGroupName in reactRouteGroups) {
+      if (reactRouteGroups[routeGroupName].featureFlagOn) {
+        for (const route in reactRouteGroups) {
+          if (route === routeName) {
+            shouldInclude = false;
+            break routeGroupLoop;
+          }
+        }
       }
     }
     return shouldInclude;
