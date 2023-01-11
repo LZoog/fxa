@@ -67,5 +67,5 @@ export interface GetRoute {
   };
 }
 export interface GetBackboneRouteDefinition {
-  (reactRouteGroups: ReactRouteGroups): RouteDefinition;
+  (reactRouteGroups: ReactRouteGroups, routeNames: string[]): RouteDefinition;
 }

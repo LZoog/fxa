@@ -13,7 +13,6 @@ const { ReactGroupRoute } = require('./route-definitions');
  * `route.getFrontEnd`. */
 /**
  *  @type {import("./types").GetReactRouteGroups}
- *  @returns {import("./types").ReactRouteGroups}
  */
 const getReactRouteGroups = (showReactApp, isServer = true) => {
   const route = new ReactGroupRoute(isServer);
