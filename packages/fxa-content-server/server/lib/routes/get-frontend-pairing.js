@@ -45,5 +45,5 @@ function getFrontEndPairing({ pairRoutes }, routeNames = PAIRING_ROUTES) {
 module.exports = {
   default: getFrontEndPairing,
   PAIRING_ROUTES,
-  getRoutesExcludingPairingReact,
+  getRoutesExcludingPairingReact, // exported for testing
 };

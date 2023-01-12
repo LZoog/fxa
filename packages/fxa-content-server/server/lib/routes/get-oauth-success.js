@@ -8,11 +8,21 @@ const {
   getOAuthSuccessRouteDefinition,
 } = require('./react-app/route-definitions');
 
+const OAUTH_SUCCESS_ROUTES = ['/oauth/success/:clientId'];
+
 /** @type {import("./react-app/types").GetBackboneRouteDefinition} */
-module.exports = function ({ oauthRoutes }) {
+function getOAuthSuccessRoutes(
+  { oauthRoutes },
+  routeNames = OAUTH_SUCCESS_ROUTES
+) {
   if (oauthRoutes.featureFlagOn) {
     return null;
   } else {
     return getOAuthSuccessRouteDefinition('/oauth/success/:clientId');
   }
+}
+
+module.exports = {
+  default: getOAuthSuccessRoutes,
+  OAUTH_SUCCESS_ROUTES,
 };

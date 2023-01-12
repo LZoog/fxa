@@ -4,23 +4,19 @@
 
 const { ReactGroupRoute } = require('./route-definitions');
 
-/* When you're ready to serve the React version of a page, identify which feature flag group
- * object it should go in, and add a new object in `routes` by calling a helper method on
- * the route class. To determine which helper method to call, which will give you the
- * corresponding route `definition`, find which `lib/routes` file your route is
- * listed in, e.g. `get-frontend.js` which is where most routes will be, to determine which
- * function to use or create to get the definition, e.g. `get-frontend` corresponds with
- * `route.getFrontEnd`. */
+/* When you're ready to serve the React version of a page, identify which feature flag
+ * group object it should go in and add a new object in `routes` by calling the helper
+ * method on the route class. */
 /**
  *  @type {import("./types").GetReactRouteGroups}
  */
 const getReactRouteGroups = (showReactApp, isServer = true) => {
-  const route = new ReactGroupRoute(isServer);
+  const reactRoute = new ReactGroupRoute(isServer);
 
   return {
     simpleRoutes: {
       featureFlagOn: showReactApp.simpleRoutes,
-      routes: [route.getFrontEnd('cannot_create_account')],
+      routes: [reactRoute.getRoute('cannot_create_account')],
     },
 
     resetPasswordRoutes: {
@@ -30,7 +26,7 @@ const getReactRouteGroups = (showReactApp, isServer = true) => {
 
     oauthRoutes: {
       featureFlagOn: showReactApp.oauthRoutes,
-      routes: [route.getOAuthSuccess('oauth/success/:clientId')],
+      routes: [reactRoute.getRoute('oauth/success/:clientId')],
     },
 
     signInRoutes: {

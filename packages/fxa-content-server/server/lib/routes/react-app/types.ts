@@ -26,6 +26,10 @@ export interface GetRouteDefinition {
   (routes: string[]): RouteDefinition;
 }
 
+export interface GetRouteDefinitionSingle {
+  (route: string): RouteDefinition;
+}
+
 export interface RouteHelpers {
   addRoute: (routeDefinition: RouteDefinition) => void;
   validationErrorHandler: (
@@ -61,11 +65,12 @@ export interface GetReactRouteGroups {
 }
 
 export interface GetRoute {
-  (name: string): {
+  (name: string, definition: RouteDefinition): {
     name: string;
     definition?: RouteDefinition;
   };
 }
+
 export interface GetBackboneRouteDefinition {
   (reactRouteGroups: ReactRouteGroups, routeNames: string[]): RouteDefinition;
 }

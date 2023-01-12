@@ -4,9 +4,14 @@
 
 const {
   getRoutesExcludingAllReact,
-  FRONTEND_ROUTES,
 } = require('../../../server/lib/routes/get-frontend');
+const {
+  getRoutesExcludingPairingReact,
+} = require('../../../server/lib/routes/get-frontend-pairing');
 const { getReactRouteGroups } = require('../../../server/lib/routes/react-app');
+const {
+  ReactGroupRoute,
+} = require('../../../server/lib/routes/react-app/route-definitions');
 
 const { registerSuite } = intern.getInterface('object');
 const assert = intern.getPlugin('chai').assert;
@@ -28,14 +33,31 @@ let routeName = [''];
 
 registerSuite('routes/react-app', {
   tests: {
+    // 'route definitions from ReactGroupRoute methods match': function () {
+    //   for (const routeGroup in reactRouteGroups) {
+    //     routeGroup.routes.forEach((route) => {
+    //       // route.name
+    //     });
+    //   }
+    // },
+    ReactGroupRoute: {
+      'getRoute returns expected value': function () {
+        const reactRoute = new ReactGroupRoute();
+        const result = reactRoute.getRoute('cannot_create_account');
+        console.log('RESULT!', result);
+      },
+      'route definitions are omitted if option is passed': function () {
+        const reactRoute = new ReactGroupRoute(false);
+        const result = reactRoute.getRoute('cannot_create_account');
+        console.log('RESULT!', result);
+      },
+    },
     'get-frontend': {
       before: function () {
         routeName = ['cannot_create_account'];
       },
       'excludes route present in React route group with feature flag on':
         function () {
-          assert.includeMembers(FRONTEND_ROUTES, routeName);
-
           const routesWithExclusion = getRoutesExcludingAllReact(
             reactRouteGroups,
             routeName
@@ -66,28 +88,80 @@ registerSuite('routes/react-app', {
           );
           assert.includeMembers(routesWithExclusion, routeName);
         },
-      'route definitions from ReactGroupRoute methods match': function () {},
     },
-    //   'when route name is present in React route group with feature flag on, it is excluded from:':
-    //     {
-    //       // before: function () {
-    //       //   reactRouteGroups = getReactRouteGroups(showReactApp);
-    //       // },
-    //       'get-frontend': function () {},
-    //       'get-frontend-pairing': function () {},
-    //       'get-oauth-success': function () {},
-    //     },
+    'get-frontend-pairing': {
+      before: function () {
+        routeName = ['pair/auth/allow'];
+      },
+      'excludes route present in React route group with feature flag on':
+        function () {
+          const routesWithExclusion = getRoutesExcludingPairingReact(
+            reactRouteGroups,
+            routeName
+          );
+          assert.notIncludeMembers(routesWithExclusion, routeName);
+        },
+      'does not exclude route present in React route group with feature flag off':
+        function () {
+          reactRouteGroups = getReactRouteGroups({
+            ...showReactApp,
+            simpleRoutes: false,
+          });
 
-    //   'route definitions from ReactGroupRoute methods match:': {
-    //     'get-frontend': function () {},
-    //     'get-frontend-pairing': function () {},
-    //     'get-oauth-success': function () {},
-    //   },
+          const routesWithExclusion = getRoutesExcludingPairingReact(
+            reactRouteGroups,
+            routeName
+          );
+          assert.includeMembers(routesWithExclusion, routeName);
+        },
+      'does not exclude route if not present in React route group with feature flag on':
+        function () {
+          const modifiedReactRouteGroups = { ...reactRouteGroups };
+          modifiedReactRouteGroups.pairingRoutes.routes = [];
 
-    //   'routes definitions from ReactGroupRoute are omitted if option is passed':
-    //     function () {
-    //       reactRouteGroups = getReactRouteGroups(showReactApp, false);
-    //     },
-    // },
+          const routesWithExclusion = getRoutesExcludingPairingReact(
+            modifiedReactRouteGroups,
+            routeName
+          );
+          assert.includeMembers(routesWithExclusion, routeName);
+        },
+    },
+    'get-oauth': {
+      before: function () {
+        routeName = ['pair/auth/allow'];
+      },
+      'excludes route present in React route group with feature flag on':
+        function () {
+          const routesWithExclusion = getRoutesExcludingPairingReact(
+            reactRouteGroups,
+            routeName
+          );
+          assert.notIncludeMembers(routesWithExclusion, routeName);
+        },
+      'does not exclude route present in React route group with feature flag off':
+        function () {
+          reactRouteGroups = getReactRouteGroups({
+            ...showReactApp,
+            simpleRoutes: false,
+          });
+
+          const routesWithExclusion = getRoutesExcludingPairingReact(
+            reactRouteGroups,
+            routeName
+          );
+          assert.includeMembers(routesWithExclusion, routeName);
+        },
+      'does not exclude route if not present in React route group with feature flag on':
+        function () {
+          const modifiedReactRouteGroups = { ...reactRouteGroups };
+          modifiedReactRouteGroups.pairingRoutes.routes = [];
+
+          const routesWithExclusion = getRoutesExcludingPairingReact(
+            modifiedReactRouteGroups,
+            routeName
+          );
+          assert.includeMembers(routesWithExclusion, routeName);
+        },
+    },
   },
 });
