@@ -5,12 +5,37 @@
 import React from 'react';
 import { FtlMsg } from 'fxa-react/lib/utils';
 
+enum SecurityEventName {
+  Create = 'account.create',
+  Disable = 'account.disable',
+  Enable = 'account.enable',
+  Login = 'account.login',
+  Reset = 'account.reset',
+  ClearBounces = 'account.clearBounces',
+}
+
+const getSecurityEventNameL10n = (name: SecurityEventName) => {
+  if (name === SecurityEventName.Create) {
+    return {
+      ftlId: 'security-name-event-create',
+      fallbackText: 'Account was created',
+    };
+  }
+  if (name === SecurityEventName.Disable) {
+    return {
+      ftlId: 'security-events-account-disable',
+      fallbackText: 'Account was disabled',
+    };
+  }
+  return { ftlId: '', fallbackText: '' };
+};
+
 export function SecurityEvent({
   name,
   createdAt,
   verified,
 }: {
-  name: string;
+  name: SecurityEventName;
   createdAt: number;
   verified?: boolean;
 }) {
@@ -22,17 +47,17 @@ export function SecurityEvent({
     minute: 'numeric',
   }).format(new Date(createdAt));
 
-  const formattedName = `security-events-${name.split('.').join('-')}`;
+  const { ftlId, fallbackText } = getSecurityEventNameL10n(name);
 
   return (
-    <li className="mt-5 ml-4" data-testid={formattedName}>
+    <li className="mt-5 ml-4">
       <div className="absolute w-3 h-3 bg-green-600 rounded-full mt-1.5 -left-1.5 border border-green-700"></div>
       <time className="text-grey-900 text-s mobileLandscape:mt-3">
         {createdAtDateText}
       </time>
-      <FtlMsg id={formattedName}>
+      <FtlMsg id={ftlId}>
         <p className="text-grey-400 text-xs mobileLandscape:mt-3">
-          {formattedName}
+          {fallbackText}
         </p>
       </FtlMsg>
     </li>
