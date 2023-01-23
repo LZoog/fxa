@@ -17,7 +17,11 @@ const getReactRouteGroups = (showReactApp, isServer = true) => {
   return {
     simpleRoutes: {
       featureFlagOn: showReactApp.simpleRoutes,
-      routes: [reactRoute.getRoute('cannot_create_account')],
+      routes: reactRoute.getRoutes([
+        'cannot_create_account',
+        'clear',
+        'cookies_disabled',
+      ]),
     },
 
     resetPasswordRoutes: {

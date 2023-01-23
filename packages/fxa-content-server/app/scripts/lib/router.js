@@ -151,7 +151,12 @@ Router = Router.extend({
     }),
     'confirm_signup_code(/)': createViewHandler(ConfirmSignupCodeView),
     'connect_another_device(/)': createViewHandler(ConnectAnotherDeviceView),
-    'cookies_disabled(/)': createViewHandler(CookiesDisabledView),
+    'cookies_disabled(/)': function () {
+      this.createReactOrBackboneViewHandler(
+        'cookies_disabled',
+        CookiesDisabledView
+      );
+    },
     'force_auth(/)': createViewHandler(ForceAuthView),
     'inline_totp_setup(/)': createViewHandler(InlineTotpSetupView),
     'inline_recovery_setup(/)': createViewHandler(InlineRecoverySetupView),
