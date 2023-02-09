@@ -21,9 +21,9 @@ const getReactRouteGroups = (showReactApp, isServer = true) => {
         'cannot_create_account',
         'clear',
         'cookies_disabled',
-        // 'legal',
+        'legal',
         // 'legal/privacy',
-        // 'legal/terms'
+        'legal/terms',
       ]),
     },
 

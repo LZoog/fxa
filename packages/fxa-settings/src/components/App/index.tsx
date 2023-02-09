@@ -12,6 +12,8 @@ import CannotCreateAccount from '../../pages/CannotCreateAccount';
 import Clear from '../../pages/Clear';
 import CookiesDisabled from '../../pages/CookiesDisabled';
 import ResetPassword from '../../pages/ResetPassword';
+import Legal from '../../pages/Legal';
+import LegalTerms from '../../pages/Legal/Terms';
 
 export const App = ({
   flowQueryParams,
@@ -32,9 +34,9 @@ export const App = ({
               <Clear path="/clear/*" />
               <CookiesDisabled path="/cookies_disabled/*" />
               <ResetPassword path="/reset_password/*" />
+              <LegalTerms path="/legal/terms/*" />
             </>
           )}
-
           <Settings path="/settings/*" {...{ flowQueryParams }} />
         </ScrollToTop>
       </Router>

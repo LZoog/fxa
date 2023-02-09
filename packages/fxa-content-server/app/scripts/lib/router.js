@@ -167,9 +167,13 @@ Router = Router.extend({
     'force_auth(/)': createViewHandler(ForceAuthView),
     'inline_totp_setup(/)': createViewHandler(InlineTotpSetupView),
     'inline_recovery_setup(/)': createViewHandler(InlineRecoverySetupView),
-    'legal(/)': createViewHandler('legal'),
+    'legal(/)': function () {
+      this.createReactOrBackboneViewHandler('legal', 'legal');
+    },
     'legal/privacy(/)': createViewHandler('pp'),
-    'legal/terms(/)': createViewHandler('tos'),
+    'legal/terms(/)': function () {
+      this.createReactOrBackboneViewHandler('legal/terms', 'tos');
+    },
     'oauth(/)': createViewHandler(IndexView),
     'oauth/force_auth(/)': createViewHandler(ForceAuthView),
     'oauth/signin(/)': createViewHandler(SignInPasswordView),
