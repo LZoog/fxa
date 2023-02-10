@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { FRONTEND_ROUTES } = require('../get-frontend');
-const { PAIRING_ROUTES } = require('../get-frontend-pairing');
-const { OAUTH_SUCCESS_ROUTES } = require('../get-oauth-success');
-const { TERMS_PRIVACY_REGEX } = require('../get-terms-privacy');
+const { FRONTEND_ROUTES } = require('./content-server-routes');
+const { PAIRING_ROUTES } = require('./content-server-routes');
+const { OAUTH_SUCCESS_ROUTES } = require('./content-server-routes');
+const { TERMS_PRIVACY_REGEX } = require('./content-server-routes');
 
 /**
  */
@@ -21,7 +21,7 @@ const reactRouteClient = {
       return name;
     }
     // When using a regex, explicitly return matched routes from router.js
-    if (name instanceof RegExp && TERMS_PRIVACY_REGEX.test(name)) {
+    if (TERMS_PRIVACY_REGEX.test(name)) {
       return ['legal/privacy', 'legal/terms'];
     }
 

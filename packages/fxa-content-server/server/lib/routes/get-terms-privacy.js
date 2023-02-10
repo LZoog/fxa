@@ -17,13 +17,10 @@
  */
 
 'use strict';
-
 const {
   getTermsPrivacyRouteDefinition,
 } = require('./react-app/route-definitions');
-
-const TERMS_PRIVACY_REGEX =
-  /^\/(?:([a-zA-Z-\_]*)\/)?legal\/(terms|privacy)(?:\/)?$/;
+const { TERMS_PRIVACY_REGEX } = require('./react-app/content-server-routes');
 
 // /** @type {import("./react-app/types").GetBackboneRouteDefinition} */
 function getTermsPrivacy(reactRouteGroups, i18n, regex = TERMS_PRIVACY_REGEX) {
@@ -38,5 +35,4 @@ function getTermsPrivacy(reactRouteGroups, i18n, regex = TERMS_PRIVACY_REGEX) {
 
 module.exports = {
   default: getTermsPrivacy,
-  TERMS_PRIVACY_REGEX,
 };

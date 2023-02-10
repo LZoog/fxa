@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { FRONTEND_ROUTES } = require('../get-frontend');
-const { PAIRING_ROUTES } = require('../get-frontend-pairing');
-const { OAUTH_SUCCESS_ROUTES } = require('../get-oauth-success');
-const { TERMS_PRIVACY_REGEX } = require('../get-terms-privacy');
+const { FRONTEND_ROUTES } = require('./content-server-routes');
+const { PAIRING_ROUTES } = require('./content-server-routes');
+const { OAUTH_SUCCESS_ROUTES } = require('./content-server-routes');
+const { TERMS_PRIVACY_REGEX } = require('./content-server-routes');
 const {
   getFrontEndRouteDefinition,
   getFrontEndPairingRouteDefinition,
@@ -37,7 +37,12 @@ class ReactRouteServer {
         return this.getOAuthSuccess(name);
       }
     }
-    if (name.source === TERMS_PRIVACY_REGEX.source) {
+    console.log('name instanceof RegExp', name instanceof RegExp);
+    console.log(
+      'name.source === TERMS_PRIVACY_REGEX.source',
+      name.source === TERMS_PRIVACY_REGEX.source
+    );
+    if (name instanceof RegExp && name.source === TERMS_PRIVACY_REGEX.source) {
       return this.getTermsPrivacy(TERMS_PRIVACY_REGEX);
     }
 
@@ -62,8 +67,7 @@ class ReactRouteServer {
   getRouteObject(name, definition) {
     return {
       name,
-      // the client does not need route definitions
-      ...(this.isServer && { definition }),
+      definition,
     };
   }
 

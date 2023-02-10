@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { ReactRouteServer } = require('./react-route');
 const { reactRouteClient } = require('./react-route-client');
 
 /**
@@ -14,10 +13,19 @@ const { reactRouteClient } = require('./react-route-client');
  * `react-route-client.js`.
  *  @type {import("./types").GetReactRouteGroups}
  */
-const getReactRouteGroups = (showReactApp, i18n) => {
+const getReactRouteGroups = (showReactApp, i18n = false) => {
   // const reactRoute = new ReactRoute(i18n);
 
-  const reactRoute = !!i18n ? new ReactRouteServer(i18n) : reactRouteClient;
+  console.log('in getReactRouteGRoups');
+
+  let reactRoute = reactRouteClient;
+  if (i18n) {
+    // console.log('in if i18n', i18n);
+    const ReactRouteServer = require('./react-route').ReactRouteServer;
+    reactRoute = new ReactRouteServer(i18n);
+  }
+
+  // const reactRoute = i18n ? new ReactRouteServer(i18n) : reactRouteClient;
 
   return {
     simpleRoutes: {
