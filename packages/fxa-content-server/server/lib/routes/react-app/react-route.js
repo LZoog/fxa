@@ -37,11 +37,6 @@ class ReactRouteServer {
         return this.getOAuthSuccess(name);
       }
     }
-    console.log('name instanceof RegExp', name instanceof RegExp);
-    console.log(
-      'name.source === TERMS_PRIVACY_REGEX.source',
-      name.source === TERMS_PRIVACY_REGEX.source
-    );
     if (name instanceof RegExp && name.source === TERMS_PRIVACY_REGEX.source) {
       return this.getTermsPrivacy(TERMS_PRIVACY_REGEX);
     }

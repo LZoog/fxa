@@ -44,7 +44,7 @@ import VerificationReasons from './verification-reasons';
 import WouldYouLikeToSync from '../views/would_you_like_to_sync';
 import { isAllowed } from 'fxa-shared/configuration/convict-format-allow-list';
 import ReactExperimentMixin from './generalized-react-app-experiment-mixin';
-import { getReactRouteGroups } from '../../../server/lib/routes/react-app';
+import { getClientReactRouteGroups } from '../../../server/lib/routes/react-app/route-groups-client';
 
 const NAVIGATE_AWAY_IN_MOBILE_DELAY_MS = 75;
 
@@ -110,7 +110,7 @@ let Router = Backbone.Router.extend({
     }
 
     this.storage = Storage.factory('sessionStorage', this.window);
-    this.reactRouteGroups = getReactRouteGroups(this.config.showReactApp);
+    this.reactRouteGroups = getClientReactRouteGroups(this.config.showReactApp);
   },
 });
 

@@ -51,6 +51,8 @@ function termsPrivacyRouteDefinitionProcess(i18n, req, res, next) {
   const lang = req.params[0] || req.lang;
   const page = req.params[1];
 
+  console.log('i18n in termsprivacyroutedefinitionprocess', i18n);
+
   const getTemplate = templates(i18n, PAGE_TEMPLATE_DIRECTORY);
 
   if (isUserRefreshingPage(req)) {

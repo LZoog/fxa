@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { getReactRouteGroups } = require('.');
+const { getServerReactRouteGroups } = require('./route-groups-server');
 const config = require('../../configuration');
 
 /** Add all routes routes from all route objects for fxa-settings or fxa-content-server to serve.
@@ -33,7 +33,7 @@ function addAllReactRoutesConditionally(app, routeHelpers, middleware, i18n) {
     }
   }
 
-  const reactRouteGroups = getReactRouteGroups(
+  const reactRouteGroups = getServerReactRouteGroups(
     config.get('showReactApp'),
     i18n
   );

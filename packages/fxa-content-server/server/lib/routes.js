@@ -4,11 +4,13 @@
 
 'use strict';
 
-const { getReactRouteGroups } = require('./routes/react-app');
+const {
+  getServerReactRouteGroups,
+} = require('./routes/react-app/route-groups-server');
 
 module.exports = function (config, i18n, statsd) {
   const redirectVersionedToUnversioned = require('./routes/redirect-versioned-to-unversioned');
-  const reactRouteGroups = getReactRouteGroups(
+  const reactRouteGroups = getServerReactRouteGroups(
     config.get('showReactApp'),
     i18n
   );

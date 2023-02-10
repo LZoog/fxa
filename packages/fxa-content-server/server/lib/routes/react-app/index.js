@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { reactRouteClient } = require('./react-route-client');
-
 /**
  * When you're ready to serve the React version of a page, identify which feature flag
  * group object it should go in and add a new object in `routes` by calling `.getRoute`
@@ -13,20 +11,7 @@ const { reactRouteClient } = require('./react-route-client');
  * `react-route-client.js`.
  *  @type {import("./types").GetReactRouteGroups}
  */
-const getReactRouteGroups = (showReactApp, i18n = false) => {
-  // const reactRoute = new ReactRoute(i18n);
-
-  console.log('in getReactRouteGRoups');
-
-  let reactRoute = reactRouteClient;
-  if (i18n) {
-    // console.log('in if i18n', i18n);
-    const ReactRouteServer = require('./react-route').ReactRouteServer;
-    reactRoute = new ReactRouteServer(i18n);
-  }
-
-  // const reactRoute = i18n ? new ReactRouteServer(i18n) : reactRouteClient;
-
+const getReactRouteGroups = (showReactApp, reactRoute) => {
   return {
     simpleRoutes: {
       featureFlagOn: showReactApp.simpleRoutes,

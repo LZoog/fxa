@@ -8,6 +8,7 @@ const path = require('path');
 const logger = require('./logging/log')('legal-templates');
 
 module.exports = function (i18n, root) {
+  console.log('in template', i18n);
   const templateCache = {};
   function getTemplate(type, lang, defaultLang, defaultLegalLang) {
     const DEFAULT_LOCALE = i18n.localeFrom(defaultLegalLang);

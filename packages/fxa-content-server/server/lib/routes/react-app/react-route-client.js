@@ -21,7 +21,7 @@ const reactRouteClient = {
       return name;
     }
     // When using a regex, explicitly return matched routes from router.js
-    if (TERMS_PRIVACY_REGEX.test(name)) {
+    if (name instanceof RegExp && name.source === TERMS_PRIVACY_REGEX.source) {
       return ['legal/privacy', 'legal/terms'];
     }
 
