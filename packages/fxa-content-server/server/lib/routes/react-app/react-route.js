@@ -5,10 +5,12 @@
 const { FRONTEND_ROUTES } = require('../get-frontend');
 const { PAIRING_ROUTES } = require('../get-frontend-pairing');
 const { OAUTH_SUCCESS_ROUTES } = require('../get-oauth-success');
+const { TERMS_PRIVACY_REGEX } = require('../get-terms-privacy');
 const {
   getFrontEndRouteDefinition,
   getFrontEndPairingRouteDefinition,
   getOAuthSuccessRouteDefinition,
+  getTermsPrivacyRouteDefinition,
 } = require('./route-definitions');
 
 /**
@@ -16,22 +18,29 @@ const {
  * if used on the server-side.
  */
 class ReactRoute {
-  /** @param {Boolean} isServer Is access coming from the server? The client
-   * doesn't need route definitions. */
-  constructor(isServer) {
-    this.isServer = isServer;
+  /** @param {any} i18n
+   * */
+  constructor(i18n) {
+    this.i18n = i18n;
+    // i18n is only passed in server-side use
+    this.isServer = !!i18n;
   }
 
-  /** @param {String} name */
+  /** @param {String|RegExp} name */
   getRoute(name) {
-    if (FRONTEND_ROUTES.includes(name)) {
-      return this.getFrontEnd(name);
+    if (typeof name === 'string') {
+      if (FRONTEND_ROUTES.includes(name)) {
+        return this.getFrontEnd(name);
+      }
+      if (PAIRING_ROUTES.includes(name)) {
+        return this.getFrontEndPairing(name);
+      }
+      if (OAUTH_SUCCESS_ROUTES.includes(name)) {
+        return this.getOAuthSuccess(name);
+      }
     }
-    if (PAIRING_ROUTES.includes(name)) {
-      return this.getFrontEndPairing(name);
-    }
-    if (OAUTH_SUCCESS_ROUTES.includes(name)) {
-      return this.getOAuthSuccess(name);
+    if (name.source === TERMS_PRIVACY_REGEX.source) {
+      return this.getTermsPrivacy(TERMS_PRIVACY_REGEX);
     }
 
     throw new Error(
@@ -55,6 +64,7 @@ class ReactRoute {
   getRouteObject(name, definition) {
     return {
       name,
+      // the client does not need route definitions
       ...(this.isServer && { definition }),
     };
   }
@@ -72,6 +82,14 @@ class ReactRoute {
   /** @private */
   getOAuthSuccess(name) {
     return this.getRouteObject(name, getOAuthSuccessRouteDefinition([name]));
+  }
+
+  /** @private */
+  getTermsPrivacy(regex) {
+    return this.getRouteObject(
+      regex,
+      getTermsPrivacyRouteDefinition(regex, this.i18n)
+    );
   }
 }
 

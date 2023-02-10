@@ -11,8 +11,8 @@ const { ReactRoute } = require('./react-route');
  *
  *  @type {import("./types").GetReactRouteGroups}
  */
-const getReactRouteGroups = (showReactApp, isServer = true) => {
-  const reactRoute = new ReactRoute(isServer);
+const getReactRouteGroups = (showReactApp, i18n) => {
+  const reactRoute = new ReactRoute(i18n);
 
   return {
     simpleRoutes: {
@@ -22,8 +22,12 @@ const getReactRouteGroups = (showReactApp, isServer = true) => {
         'clear',
         'cookies_disabled',
         'legal',
-        // 'legal/privacy',
-        'legal/terms',
+        // Match (allow for optional trailing slash):
+        // * /legal/terms
+        // * /<locale>/legal/terms
+        // * /legal/privacy
+        // * /<locale>/legal/privacy
+        /^\/(?:([a-zA-Z-\_]*)\/)?legal\/(terms|privacy)(?:\/)?$/,
       ]),
     },
 

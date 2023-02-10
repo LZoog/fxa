@@ -110,10 +110,7 @@ let Router = Backbone.Router.extend({
     }
 
     this.storage = Storage.factory('sessionStorage', this.window);
-    this.reactRouteGroups = getReactRouteGroups(
-      this.config.showReactApp,
-      false
-    );
+    this.reactRouteGroups = getReactRouteGroups(this.config.showReactApp);
   },
 });
 
@@ -357,6 +354,7 @@ Router = Router.extend({
   },
 
   showReactApp(routeName) {
+    console.log('HIIIII');
     for (const routeGroup in this.reactRouteGroups) {
       if (
         this.reactRouteGroups[routeGroup].routes.find(

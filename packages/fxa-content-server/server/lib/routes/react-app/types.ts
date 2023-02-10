@@ -27,7 +27,7 @@ export interface GetRouteDefinition {
 }
 
 export interface GetRouteDefinitionSingle {
-  (route: string): RouteDefinition;
+  (route: string | RegExp): RouteDefinition;
 }
 
 export interface RouteHelpers {

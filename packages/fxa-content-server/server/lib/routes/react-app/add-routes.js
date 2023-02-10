@@ -8,7 +8,7 @@ const config = require('../../configuration');
 /** Add all routes routes from all route objects for fxa-settings or fxa-content-server to serve.
  * @type {import("./types").AddRoutes}
  */
-function addAllReactRoutesConditionally(app, routeHelpers, middleware) {
+function addAllReactRoutesConditionally(app, routeHelpers, middleware, i18n) {
   /** Check if the feature flag passed in is `true` and the request contains `?showReactApp=true`.
    * If true, use the middleware passed ('createSettingsProxy' in dev, else 'modifySettingsStatic')
    * for that route, allowing `fxa-settings` to serve the page. If false, skip the middleware and
@@ -33,7 +33,10 @@ function addAllReactRoutesConditionally(app, routeHelpers, middleware) {
     }
   }
 
-  const reactRouteGroups = getReactRouteGroups(config.get('showReactApp'));
+  const reactRouteGroups = getReactRouteGroups(
+    config.get('showReactApp'),
+    i18n
+  );
   for (const routeGroup in reactRouteGroups) {
     addReactRoutesConditionally(reactRouteGroups[routeGroup]);
   }
