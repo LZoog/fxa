@@ -28,7 +28,10 @@ const TERMS_PRIVACY_REGEX =
 // /** @type {import("./react-app/types").GetBackboneRouteDefinition} */
 function getTermsPrivacy(reactRouteGroups, i18n, regex = TERMS_PRIVACY_REGEX) {
   return reactRouteGroups.simpleRoutes.featureFlagOn &&
-    reactRouteGroups.simpleRoutes.routes.find((route) => route === regex)
+    reactRouteGroups.simpleRoutes.routes.find(
+      (route) =>
+        route.name instanceof RegExp && route.name.source === regex.source
+    )
     ? null
     : getTermsPrivacyRouteDefinition(regex, i18n);
 }

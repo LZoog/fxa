@@ -6,14 +6,14 @@ import React from 'react';
 import AppLayout from '../../components/AppLayout';
 import { Link, RouteComponentProps } from '@reach/router';
 import { FtlMsg } from 'fxa-react/lib/utils';
-import { usePageViewEvent } from '../../lib/metrics';
+// import { usePageViewEvent } from '../../lib/metrics';
 import CardHeader from '../../components/CardHeader';
-import { REACT_ENTRYPOINT } from '../../constants';
+// import { REACT_ENTRYPOINT } from '../../constants';
 
 export const viewName = 'legal';
 
 const Legal = (_: RouteComponentProps) => {
-  usePageViewEvent(viewName, REACT_ENTRYPOINT);
+  // usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
   return (
     <AppLayout>

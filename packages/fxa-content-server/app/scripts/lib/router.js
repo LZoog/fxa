@@ -354,7 +354,6 @@ Router = Router.extend({
   },
 
   showReactApp(routeName) {
-    console.log('HIIIII');
     for (const routeGroup in this.reactRouteGroups) {
       if (
         this.reactRouteGroups[routeGroup].routes.find(

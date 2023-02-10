@@ -10,8 +10,7 @@ module.exports = function (config, i18n, statsd) {
   const redirectVersionedToUnversioned = require('./routes/redirect-versioned-to-unversioned');
   const reactRouteGroups = getReactRouteGroups(
     config.get('showReactApp'),
-    i18n,
-    true
+    i18n
   );
 
   const routes = [

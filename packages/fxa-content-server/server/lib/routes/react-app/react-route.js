@@ -17,13 +17,11 @@ const {
  * Returns a route object with the `name` of the route and the route `definition`
  * if used on the server-side.
  */
-class ReactRoute {
+class ReactRouteServer {
   /** @param {any} i18n
    * */
   constructor(i18n) {
     this.i18n = i18n;
-    // i18n is only passed in server-side use
-    this.isServer = !!i18n;
   }
 
   /** @param {String|RegExp} name */
@@ -86,13 +84,10 @@ class ReactRoute {
 
   /** @private */
   getTermsPrivacy(regex) {
-    return this.getRouteObject(
-      regex,
-      getTermsPrivacyRouteDefinition(regex, this.i18n)
-    );
+    return this.getRouteObject(regex, getTermsPrivacyRouteDefinition(regex));
   }
 }
 
 module.exports = {
-  ReactRoute,
+  ReactRouteServer,
 };

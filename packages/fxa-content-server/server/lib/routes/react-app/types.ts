@@ -61,7 +61,7 @@ export interface ReactRouteGroups {
 }
 
 export interface GetReactRouteGroups {
-  (showReactApp: ShowReactApp, isServer: boolean): ReactRouteGroups;
+  (showReactApp: ShowReactApp, i18n: any): ReactRouteGroups;
 }
 
 export interface GetRoute {

@@ -53,7 +53,7 @@ function getTermsPrivacyRouteDefinition(regex, i18n) {
     path: regex,
     process: function (req, res, next) {
       next();
-      // termsPrivacyRouteDefinitionProcess(i18n, req, res, next);
+      termsPrivacyRouteDefinitionProcess(i18n, req, res, next);
     },
   };
 }

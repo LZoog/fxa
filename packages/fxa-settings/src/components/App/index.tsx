@@ -35,6 +35,7 @@ export const App = ({
               <CookiesDisabled path="/cookies_disabled/*" />
               <ResetPassword path="/reset_password/*" />
               <LegalTerms path="/legal/terms/*" />
+              <LegalTerms path="*/legal/terms/*" />
             </>
           )}
           <Settings path="/settings/*" {...{ flowQueryParams }} />

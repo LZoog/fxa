@@ -2,17 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { ReactRoute } = require('./react-route');
+const { ReactRouteServer } = require('./react-route');
+const { reactRouteClient } = require('./react-route-client');
 
 /**
  * When you're ready to serve the React version of a page, identify which feature flag
  * group object it should go in and add a new object in `routes` by calling `.getRoute`
  * or setting `routes` with `.getRoutes` on the react route class. See tests for examples.
  *
+ * When setting a regex, the corresponding matches for `router.js` must be set in
+ * `react-route-client.js`.
  *  @type {import("./types").GetReactRouteGroups}
  */
 const getReactRouteGroups = (showReactApp, i18n) => {
-  const reactRoute = new ReactRoute(i18n);
+  // const reactRoute = new ReactRoute(i18n);
+
+  const reactRoute = !!i18n ? new ReactRouteServer(i18n) : reactRouteClient;
 
   return {
     simpleRoutes: {
@@ -38,7 +43,7 @@ const getReactRouteGroups = (showReactApp, i18n) => {
 
     oauthRoutes: {
       featureFlagOn: showReactApp.oauthRoutes,
-      routes: [reactRoute.getRoute('/oauth/success/:clientId')],
+      routes: [],
     },
 
     signInRoutes: {

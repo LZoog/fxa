@@ -63,7 +63,7 @@ export const viewName = 'legal-terms';
 // });
 
 const LegalTerms = (_: RouteComponentProps) => {
-  usePageViewEvent(viewName, REACT_ENTRYPOINT);
+  // usePageViewEvent(viewName, REACT_ENTRYPOINT);
   const canGoBack = true; // TODO
 
   const acceptLanguage = navigator.languages.join(', ');
