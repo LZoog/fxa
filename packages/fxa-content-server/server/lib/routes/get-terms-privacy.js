@@ -24,7 +24,6 @@ const { TERMS_PRIVACY_REGEX } = require('./react-app/content-server-routes');
 
 // /** @type {import("./react-app/types").GetBackboneRouteDefinition} */
 function getTermsPrivacy(reactRouteGroups, i18n, regex = TERMS_PRIVACY_REGEX) {
-  // console.log('i18n getTermsPrivacy!! ***', i18n);
   return reactRouteGroups.simpleRoutes.featureFlagOn &&
     reactRouteGroups.simpleRoutes.routes.find(
       (route) =>

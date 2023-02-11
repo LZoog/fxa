@@ -5,7 +5,7 @@
 /*
  * Routes being conditionally served to the React application can't live in
  * the `routes/get-<whatever>.js` files because those files import route definitions,
- * and the web client's `getReactRouteGroups` usage in `router.js` cannot import anything
+ * and the client's `getReactRouteGroups` usage in `router.js` cannot import anything
  * with route definitions since some contain server-side imports and logic.
  */
 
