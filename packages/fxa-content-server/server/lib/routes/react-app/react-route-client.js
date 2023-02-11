@@ -2,10 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { FRONTEND_ROUTES } = require('./content-server-routes');
-const { PAIRING_ROUTES } = require('./content-server-routes');
-const { OAUTH_SUCCESS_ROUTES } = require('./content-server-routes');
-const { TERMS_PRIVACY_REGEX } = require('./content-server-routes');
+const {
+  FRONTEND_ROUTES,
+  PAIRING_ROUTES,
+  OAUTH_SUCCESS_ROUTES,
+  TERMS_PRIVACY_REGEX,
+} = require('./content-server-routes');
 
 /**
  */

@@ -48,13 +48,11 @@ function getOAuthSuccessRouteDefinition(routes) {
 
 /** @type {import("./types").GetRouteDefinitionSingle} */
 function getTermsPrivacyRouteDefinition(regex, i18n) {
-  console.log('i18n getTermsPrivacyRouteDefinition ***** ', i18n);
   return {
     method: 'get',
     path: regex,
     process: function (req, res, next) {
-      // next();
-      return termsPrivacyRouteDefinitionProcess(i18n, req, res, next);
+      termsPrivacyRouteDefinitionProcess(i18n, req, res, next);
     },
   };
 }

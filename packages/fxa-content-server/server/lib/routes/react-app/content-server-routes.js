@@ -2,10 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// const { FRONTEND_ROUTES } = require('../get-frontend');
-// const { PAIRING_ROUTES } = require('../get-frontend-pairing');
-// const { OAUTH_SUCCESS_ROUTES } = require('../get-oauth-success');
-// const { TERMS_PRIVACY_REGEX } = require('../get-terms-privacy');
+/*
+ * Routes being conditionally served to the React application can't live in
+ * the `routes/get-<whatever>.js` files because those files import route definitions,
+ * and the web client's `getReactRouteGroups` usage in `router.js` cannot import anything
+ * with route definitions since some contain server-side imports and logic.
+ */
 
 const FRONTEND_ROUTES = [
   'account_recovery_confirm_key',

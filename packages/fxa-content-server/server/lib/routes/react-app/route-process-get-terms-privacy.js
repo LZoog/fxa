@@ -2,13 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* This file houses complex route definition processes with dependencies (imports, params).
- * These must go in a separate file to avoid a circular dependency between `route-definitions.js`
- * and the route file used by content-server in `routes.js`.
-. */
-
-/* Having a separate file for this process avoids a circular dependency between
- * `route-definitions.js` and `get-terms-privacy.js`. */
+/*
+ * Having a separate file for this process avoids a circular dependency between
+ * `route-definitions.js` and `get-terms-privacy.js`.
+ * */
 
 'use strict';
 const path = require('path');
@@ -50,8 +47,6 @@ function getRedirectURL(i18n, lang, page) {
 function termsPrivacyRouteDefinitionProcess(i18n, req, res, next) {
   const lang = req.params[0] || req.lang;
   const page = req.params[1];
-
-  console.log('i18n in termsprivacyroutedefinitionprocess', i18n);
 
   const getTemplate = templates(i18n, PAGE_TEMPLATE_DIRECTORY);
 
