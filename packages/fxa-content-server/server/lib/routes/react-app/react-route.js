@@ -83,7 +83,10 @@ class ReactRouteServer {
 
   /** @private */
   getTermsPrivacy(regex) {
-    return this.getRouteObject(regex, getTermsPrivacyRouteDefinition(regex));
+    return this.getRouteObject(
+      regex,
+      getTermsPrivacyRouteDefinition(regex, this.i18n)
+    );
   }
 }
 
