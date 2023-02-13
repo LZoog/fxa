@@ -128,6 +128,8 @@ copy_md() {
     local md_name legal_docs_dir
     md_name="$1"
 
+    log "Copying $md_name and parent locale directories into $MODULE_PATH/public/legal-docs/"
+
     results=()
     for src in **"/${md_name}.md"; do
         [ -f "$src" ] || continue
@@ -137,7 +139,9 @@ copy_md() {
         results+=("$(echo "$legal_docs_dir" | sed -E 's/.+\/([a-zA-Z_]+)/\1/; s/-/_/g')")
     done
 
-    echo "${results[@]}" > "$MODULE_PATH/public/legal-docs/${md_name}_locales.txt"
+    log "Creating .json file containing array of available locales in $MODULE_PATH/public/legal-docs/${md_name}_locales.json"
+
+    echo "[$(echo "${results[@]}" | tr ' ' ',' | sed -E 's/([^,]+)/"\1"/g')]" > "$MODULE_PATH/public/legal-docs/${md_name}_locales.json"
 }
 
 SETTINGS="fxa-settings"
