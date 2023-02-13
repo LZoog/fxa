@@ -26474,7 +26474,6 @@ fsevents@~2.1.1:
     grunt-contrib-concat: ^2.1.0
     grunt-contrib-watch: ^1.1.0
     jest-watch-typeahead: 0.6.5
-    legal-docs: "https://github.com/mozilla/legal-docs.git#569f5c812ef288c4ebf19b8d521ba90b99e99cfc"
     lodash.groupby: ^4.6.0
     mutationobserver-shim: ^0.3.7
     npm-run-all: ^4.1.5
