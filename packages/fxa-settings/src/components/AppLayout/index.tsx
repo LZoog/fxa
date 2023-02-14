@@ -6,18 +6,25 @@ import React from 'react';
 import mozLogo from 'fxa-react/images/moz-logo.svg';
 import LinkExternal from 'fxa-react/components/LinkExternal';
 import { useLocalization } from '@fluent/react';
+import classNames from 'classnames';
 
 type AppLayoutProps = {
   children: React.ReactNode;
+  widthClass?: string;
 };
 
-export const AppLayout = ({ children }: AppLayoutProps) => {
+export const AppLayout = ({
+  children,
+  // HACK: this overwrites a class; if we use it often, consider pulling
+  // `.card` classes out into this component and give it a default value
+  widthClass,
+}: AppLayoutProps) => {
   const { l10n } = useLocalization();
   return (
     <div className="flex min-h-screen flex-col items-center" data-testid="app">
       <main className="mobileLandscape:flex mobileLandscape:items-center mobileLandscape:flex-1">
         <section>
-          <div className="card">{children}</div>
+          <div className={classNames('card', widthClass)}>{children}</div>
         </section>
       </main>
       <footer className="hidden mobileLandscape:block w-full p-8">

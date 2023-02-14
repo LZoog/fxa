@@ -5,7 +5,7 @@
 # and file into `public/legal-docs` if present.
 #
 # Additionally, this script outputs `legal-docs/[name]_locales.json` with an array of locales
-# (directories) that the file was found in. This makes it easy for the client to ingest and
+# (directories) that the file was found in. This makes it easy for the client to fetch and
 # know what's available when determining which locale to show the user.
 
 # ensure the script errors out when a command fails

@@ -11,31 +11,23 @@ import CardHeader from '../../../components/CardHeader';
 import { REACT_ENTRYPOINT } from '../../../constants';
 import { navigate } from '@reach/router';
 import { fetchLegalMd, LegalDocFile } from '../../../lib/file-utils-legal';
-import ReactMarkdown from 'react-markdown';
-
-// privacy file: firefox_privacy_notice.md
-// terms file: firefox_cloud_services_tos.md
+import MarkdownLegal from '../../../components/MarkdownLegal';
 
 export const viewName = 'legal-terms';
 
-const LegalTerms = (_: RouteComponentProps) => {
+const LegalTerms = ({ locale }: { locale?: string } & RouteComponentProps) => {
   // usePageViewEvent(viewName, REACT_ENTRYPOINT);
   const canGoBack = true; // TODO
   const [terms, setTerms] = useState<string | undefined>();
-
-  // const localesToTry = currentLocales.length;
+  const [hasH1, setHasH1] = useState(false);
 
   useEffect(() => {
     (async () => {
-      // const locales = await
-      // const currentLocales = parseAcceptLanguage();
-      setTerms(await fetchLegalMd(navigator.languages, LegalDocFile.terms));
+      setTerms(
+        await fetchLegalMd(navigator.languages, locale, LegalDocFile.terms)
+      );
     })();
-  }, []);
-
-  // get supportedLanguages
-  // const locale = determineLocale(acceptLang)
-  // const currentLocales = parseAcceptLanguage(navigator.languages.join(', '));
+  }, [locale]);
 
   /* TODO: error state */
 
@@ -44,26 +36,24 @@ const LegalTerms = (_: RouteComponentProps) => {
     navigate(-1);
   };
 
-  // get the accept language
-  // get list of locales (must look for dir names + file name)
-  // use `determineLocale(acceptLanguage, availableLocales)` to find the best option
-  // read the MD file with the best locale option
-  // send into react-markdown, render, profit???
-
   return (
-    <AppLayout>
-      {/* <CardHeader
-        headingTextFtlId="legal-terms-header"
-        headingText="Terms of Service"
-      /> */}
+    <AppLayout widthClass="mobileLandscape:w-192">
+      {!hasH1 && (
+        <CardHeader
+          headingTextFtlId="legal-terms-header"
+          headingText="Terms of Service"
+        />
+      )}
 
-      <article className="text-start legal-docs">
-        {terms && <ReactMarkdown children={terms} />}
-      </article>
+      {terms && (
+        <article className="text-start">
+          <MarkdownLegal markdown={terms} {...{ setHasH1 }} />
+        </article>
+      )}
 
       {canGoBack && (
         <div className="flex">
-          <FtlMsg id="cookies-disabled-button-try-again">
+          <FtlMsg id="tbd">
             <button className="cta-primary cta-xl" onClick={buttonHandler}>
               Back
             </button>
