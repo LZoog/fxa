@@ -4,7 +4,7 @@
 
 const {
   termsPrivacyRouteDefinitionProcess,
-} = require('./route-process-get-terms-privacy');
+} = require('./route-definition-get-terms-privacy-process');
 
 /** @type {import("./types").GetRouteDefinition} */
 function getFrontEndRouteDefinition(routes) {

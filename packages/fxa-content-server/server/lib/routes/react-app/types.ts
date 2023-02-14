@@ -18,7 +18,8 @@ export interface ReactRouteGroup {
   featureFlagOn: boolean;
   routes: {
     name: string;
-    definition: RouteDefinition;
+    // only server-side react route groups contain the route definition
+    definition?: RouteDefinition;
   }[];
 }
 
@@ -72,5 +73,8 @@ export interface GetRoute {
 }
 
 export interface GetBackboneRouteDefinition {
-  (reactRouteGroups: ReactRouteGroups, routeNames: string[]): RouteDefinition;
+  (
+    reactRouteGroups: ReactRouteGroups,
+    routeNames: string[]
+  ): RouteDefinition | null;
 }

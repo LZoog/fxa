@@ -3,9 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { getReactRouteGroups } = require('.');
-const { ReactRouteServer } = require('./react-route');
+const { ReactRouteServer } = require('./react-route-server');
 
 /**
+ * The react route group used on the server-side, containing route definitions.
+
  *  @type {import("./types").GetReactRouteGroups}
  */
 const getServerReactRouteGroups = (showReactApp, i18n) => {

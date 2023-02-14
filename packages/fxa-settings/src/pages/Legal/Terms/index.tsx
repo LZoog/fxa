@@ -12,24 +12,31 @@ import { REACT_ENTRYPOINT } from '../../../constants';
 import { navigate } from '@reach/router';
 import { fetchLegalMd, LegalDocFile } from '../../../lib/file-utils-legal';
 import MarkdownLegal from '../../../components/MarkdownLegal';
+import Banner, { BannerType } from '../../../components/Banner';
 
 export const viewName = 'legal-terms';
 
 const LegalTerms = ({ locale }: { locale?: string } & RouteComponentProps) => {
   // usePageViewEvent(viewName, REACT_ENTRYPOINT);
-  const canGoBack = true; // TODO
   const [terms, setTerms] = useState<string | undefined>();
+  const [error, setError] = useState<string | undefined>();
   const [hasH1, setHasH1] = useState(false);
 
   useEffect(() => {
     (async () => {
-      setTerms(
-        await fetchLegalMd(navigator.languages, locale, LegalDocFile.terms)
+      const { markdown, error } = await fetchLegalMd(
+        navigator.languages,
+        locale,
+        LegalDocFile.terms
       );
+      if (markdown) {
+        setTerms(markdown);
+      }
+      if (error) {
+        setError(error);
+      }
     })();
   }, [locale]);
-
-  /* TODO: error state */
 
   const buttonHandler = () => {
     logViewEvent(`flow.${viewName}`, 'back', REACT_ENTRYPOINT);
@@ -40,7 +47,7 @@ const LegalTerms = ({ locale }: { locale?: string } & RouteComponentProps) => {
     <AppLayout widthClass="mobileLandscape:w-192">
       {!hasH1 && (
         <CardHeader
-          headingTextFtlId="legal-terms-header"
+          headingTextFtlId="legal-terms-heading"
           headingText="Terms of Service"
         />
       )}
@@ -51,15 +58,19 @@ const LegalTerms = ({ locale }: { locale?: string } & RouteComponentProps) => {
         </article>
       )}
 
-      {canGoBack && (
-        <div className="flex">
-          <FtlMsg id="tbd">
-            <button className="cta-primary cta-xl" onClick={buttonHandler}>
-              Back
-            </button>
-          </FtlMsg>
-        </div>
+      {!terms && error && (
+        <Banner type={BannerType.error}>
+          <FtlMsg id="app-general-err-message">{error}</FtlMsg>
+        </Banner>
       )}
+
+      <div className="flex">
+        <FtlMsg id="legal-terms-back-button">
+          <button className="cta-primary cta-xl" onClick={buttonHandler}>
+            Back
+          </button>
+        </FtlMsg>
+      </div>
     </AppLayout>
   );
 };

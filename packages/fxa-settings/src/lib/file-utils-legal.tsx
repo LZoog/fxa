@@ -2,7 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { parseAcceptLanguage } from '../../../fxa-shared/l10n/parseAcceptLanguage';
+import { determineLocale } from 'fxa-shared/l10n/determineLocale';
+import sentryMetrics from 'fxa-shared/lib/sentry';
 
 export enum LegalDocFile {
   privacy = 'firefox_privacy_notice',
@@ -11,25 +12,26 @@ export enum LegalDocFile {
 
 const LEGAL_DOCS_PATH = '/settings/legal-docs';
 
+// TODO: probably move this + clone script to gql-api to reduce network requests
+
 const fetchLegalMdByLocale = async (locale: string, file: LegalDocFile) => {
   try {
     const response = await fetch(`${LEGAL_DOCS_PATH}/${locale}/${file}.md`);
-    const markdown = await response.text();
-    return markdown;
+    return { markdown: await response.text() };
   } catch (e) {
-    // report to Sentry, try next locale
-    console.log('no fetchy fetch md');
+    sentryMetrics.captureException(e);
 
     // TODO: If the first preferred language can't be loaded, recursively try
     // the others and then fallback to English + clean this up
     if (locale !== 'en') {
-      const response = await fetch(`${LEGAL_DOCS_PATH}/en/${file}.md`);
-      const markdown = await response.text();
-      return markdown;
+      try {
+        const response = await fetch(`${LEGAL_DOCS_PATH}/en/${file}.md`);
+        return { markdown: await response.text() };
+      } catch (e) {
+        sentryMetrics.captureException(e);
+      }
     }
-    // report to Sentry, try next locale
-    console.log('no fetchy fetch fallback english md');
-    return 'md error'; //todo
+    return { error: 'Something went wrong. Please try again later.' };
   }
 };
 
@@ -43,15 +45,13 @@ export const fetchLegalMd = async (
     const response = await fetch(`${LEGAL_DOCS_PATH}/${file}_locales.json`);
     availableLocales = await response.json();
   } catch (e) {
-    // report to Sentry, go with default locales
-    console.log('no fetchy fetch json');
-    return 'json error'; //todo
+    // report to Sentry and allow default locales to be loaded
+    sentryMetrics.captureException(e);
   }
 
-  const locales = parseAcceptLanguage(
+  const locale = determineLocale(
     localeParam ? localeParam : acceptLanguages.join(', '),
     availableLocales
   );
-  const locale = locales[0];
   return fetchLegalMdByLocale(locale, file);
 };

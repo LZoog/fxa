@@ -16,8 +16,7 @@ const {
 } = require('./route-definitions');
 
 /**
- * Returns a route object with the `name` of the route and the route `definition`
- * if used on the server-side.
+ * Returns a route object with the `name` of the route and the route `definition`.
  */
 class ReactRouteServer {
   /** @param {any} i18n

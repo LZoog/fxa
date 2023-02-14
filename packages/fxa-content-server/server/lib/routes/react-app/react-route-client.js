@@ -10,6 +10,7 @@ const {
 } = require('./content-server-routes');
 
 /**
+ *  Returns a route object with the `name` of the route.
  */
 const reactRouteClient = {
   /** @param {String|RegExp} name */

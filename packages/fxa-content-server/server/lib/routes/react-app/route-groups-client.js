@@ -6,12 +6,8 @@ const { reactRouteClient } = require('./react-route-client');
 const { getReactRouteGroups } = require('.');
 
 /**
- * When you're ready to serve the React version of a page, identify which feature flag
- * group object it should go in and add a new object in `routes` by calling `.getRoute`
- * or setting `routes` with `.getRoutes` on the react route class. See tests for examples.
+ * The react route group used on the client-side. It does not contain route definitions.
  *
- * When setting a regex, the corresponding matches for `router.js` must be set in
- * `react-route-client.js`.
  *  @type {import("./types").GetReactRouteGroups}
  */
 const getClientReactRouteGroups = (showReactApp) => {

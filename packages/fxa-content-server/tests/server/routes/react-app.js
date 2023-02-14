@@ -17,7 +17,7 @@ const {
 const { getReactRouteGroups } = require('../../../server/lib/routes/react-app');
 const {
   ReactRoute,
-} = require('../../../server/lib/routes/react-app/react-route');
+} = require('../../../server/lib/routes/react-app/react-route-server');
 
 const sinon = require('sinon');
 const { registerSuite } = intern.getInterface('object');
