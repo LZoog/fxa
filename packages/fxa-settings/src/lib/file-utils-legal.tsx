@@ -15,9 +15,16 @@ const LEGAL_DOCS_PATH = '/settings/legal-docs';
 // TODO: probably move this + clone script to gql-api to reduce network requests
 
 const fetchLegalMdByLocale = async (locale: string, file: LegalDocFile) => {
+  // use the general app error for now, might change when moving this to gql-api
+  const error = 'Something went wrong. Please try again later.';
+
   try {
     const response = await fetch(`${LEGAL_DOCS_PATH}/${locale}/${file}.md`);
-    return { markdown: await response.text() };
+    if (response.ok) {
+      return { markdown: await response.text() };
+    } else {
+      throw Error(response.statusText);
+    }
   } catch (e) {
     sentryMetrics.captureException(e);
 
@@ -26,12 +33,15 @@ const fetchLegalMdByLocale = async (locale: string, file: LegalDocFile) => {
     if (locale !== 'en') {
       try {
         const response = await fetch(`${LEGAL_DOCS_PATH}/en/${file}.md`);
-        return { markdown: await response.text() };
+        if (response.ok) {
+          return { markdown: await response.text() };
+        }
       } catch (e) {
         sentryMetrics.captureException(e);
+        return { error };
       }
     }
-    return { error: 'Something went wrong. Please try again later.' };
+    return { error };
   }
 };
 

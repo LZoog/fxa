@@ -13,11 +13,12 @@ import { navigate } from '@reach/router';
 import { fetchLegalMd, LegalDocFile } from '../../../lib/file-utils-legal';
 import MarkdownLegal from '../../../components/MarkdownLegal';
 import Banner, { BannerType } from '../../../components/Banner';
+import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 
 export const viewName = 'legal-terms';
 
 const LegalTerms = ({ locale }: { locale?: string } & RouteComponentProps) => {
-  // usePageViewEvent(viewName, REACT_ENTRYPOINT);
+  usePageViewEvent(viewName, REACT_ENTRYPOINT);
   const [terms, setTerms] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
   const [hasH1, setHasH1] = useState(false);
@@ -64,7 +65,11 @@ const LegalTerms = ({ locale }: { locale?: string } & RouteComponentProps) => {
         </Banner>
       )}
 
-      <div className="flex">
+      {!terms && !error && (
+        <LoadingSpinner imageClassName="w-10 h-10 animate-spin mx-auto" />
+      )}
+
+      <div className="flex mt-5">
         <FtlMsg id="legal-terms-back-button">
           <button className="cta-primary cta-xl" onClick={buttonHandler}>
             Back
