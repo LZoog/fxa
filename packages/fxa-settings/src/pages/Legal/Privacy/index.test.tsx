@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from 'react';
-import LegalTerms, { viewName } from '.';
+import LegalPrivacy, { viewName } from '.';
 import { screen, render, fireEvent, waitFor } from '@testing-library/react';
 import { usePageViewEvent, logViewEvent } from '../../../lib/metrics';
 import { FluentBundle } from '@fluent/bundle';
@@ -34,7 +34,7 @@ jest.mock('rehype-raw', () => {
   };
 });
 
-describe.skip('Legal/Terms', () => {
+describe('Legal/Privacy', () => {
   let bundle: FluentBundle;
   beforeAll(async () => {
     bundle = await getFtlBundle('settings');
@@ -50,17 +50,17 @@ describe.skip('Legal/Terms', () => {
   });
 
   it('renders as expected', async () => {
-    render(<LegalTerms />);
+    render(<LegalPrivacy />);
     testAllL10n(screen, bundle);
 
     // renders if `markdown` is undefined
     screen.getByRole('heading', {
-      name: 'Terms of Service',
+      name: 'Privacy Notice',
     });
   });
 
   it('emits metrics events as expected', async () => {
-    render(<LegalTerms />);
+    render(<LegalPrivacy />);
     expect(usePageViewEvent).toHaveBeenCalledWith(viewName, REACT_ENTRYPOINT);
 
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));

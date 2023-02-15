@@ -3,18 +3,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from 'react';
-import LegalTerms, { viewName } from '.';
+import { Subject } from './mocks';
 import { screen, render, fireEvent, waitFor } from '@testing-library/react';
-import { usePageViewEvent, logViewEvent } from '../../../lib/metrics';
-import { FluentBundle } from '@fluent/bundle';
-import { getFtlBundle, testAllL10n } from 'fxa-react/lib/test-utils';
-import { REACT_ENTRYPOINT } from '../../../constants';
-import { fetchLegalMd } from '../../../lib/file-utils-legal';
+import { fetchLegalMd } from '../../lib/file-utils-legal';
+import { navigate } from '@reach/router';
 
-jest.mock('../../../lib/file-utils-legal');
-jest.mock('../../../lib/metrics', () => ({
+jest.mock('../../lib/file-utils-legal');
+jest.mock('../../lib/metrics', () => ({
   usePageViewEvent: jest.fn(),
   logViewEvent: jest.fn(),
+}));
+jest.mock('@reach/router', () => ({
+  navigate: jest.fn(),
 }));
 
 // There's not a good way to use react-markdown in tests until we use jest ESM. Using the jest
@@ -34,40 +34,42 @@ jest.mock('rehype-raw', () => {
   };
 });
 
-describe.skip('Legal/Terms', () => {
-  let bundle: FluentBundle;
-  beforeAll(async () => {
-    bundle = await getFtlBundle('settings');
-  });
-
+describe('LegalWithMarkdown', () => {
   beforeEach(() => {
     (fetchLegalMd as jest.Mock).mockImplementation(() => ({
-      markdown: undefined,
+      terms: '## Some markdown',
     }));
   });
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('renders as expected', async () => {
-    render(<LegalTerms />);
-    testAllL10n(screen, bundle);
-
-    // renders if `markdown` is undefined
-    screen.getByRole('heading', {
-      name: 'Terms of Service',
+  it('can go back', async () => {
+    render(<Subject />);
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith(-1);
     });
   });
 
-  it('emits metrics events as expected', async () => {
-    render(<LegalTerms />);
-    expect(usePageViewEvent).toHaveBeenCalledWith(viewName, REACT_ENTRYPOINT);
+  it('displays a loading state', async () => {
+    render(<Subject />);
+    screen.getByTestId('loading-spinner');
+  });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
-    expect(logViewEvent).toHaveBeenCalledWith(
-      `flow.${viewName}`,
-      'back',
-      REACT_ENTRYPOINT
-    );
+  describe('with error returned from fetchLegalMd', () => {
+    beforeEach(() => {
+      (fetchLegalMd as jest.Mock).mockImplementation(() => ({
+        error: 'boop',
+      }));
+    });
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('displays an error state', async () => {
+      render(<Subject />);
+      await screen.findByText('boop');
+    });
   });
 });

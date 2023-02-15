@@ -38,10 +38,10 @@ const fetchLegalMdByLocale = async (locale: string, file: LegalDocFile) => {
         }
       } catch (e) {
         sentryMetrics.captureException(e);
-        return { error };
+        return { error, markdown: undefined };
       }
     }
-    return { error };
+    return { error, markdown: undefined };
   }
 };
 

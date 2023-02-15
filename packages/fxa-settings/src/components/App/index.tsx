@@ -14,6 +14,7 @@ import CookiesDisabled from '../../pages/CookiesDisabled';
 import ResetPassword from '../../pages/ResetPassword';
 import Legal from '../../pages/Legal';
 import LegalTerms from '../../pages/Legal/Terms';
+import LegalPrivacy from '../../pages/Legal/Privacy';
 
 export const App = ({
   flowQueryParams,
@@ -37,6 +38,8 @@ export const App = ({
               <Legal path="/legal/*" />
               <LegalTerms path="/legal/terms/*" />
               <LegalTerms path=":locale/legal/terms/*" />
+              <LegalPrivacy path="/legal/privacy/*" />
+              <LegalPrivacy path=":locale/legal/privacy/*" />
             </>
           )}
           <Settings path="/settings/*" {...{ flowQueryParams }} />

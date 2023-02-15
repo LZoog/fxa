@@ -7,15 +7,17 @@ import { RouteComponentProps } from '@reach/router';
 import LegalWithMarkdown from '../../../components/LegalWithMarkdown';
 import { LegalDocFile } from '../../../lib/file-utils-legal';
 
-export const viewName = 'legal-terms';
+export const viewName = 'legal-privacy';
 
-const LegalTerms = ({ locale }: { locale?: string } & RouteComponentProps) => (
+const LegalPrivacy = ({
+  locale,
+}: { locale?: string } & RouteComponentProps) => (
   <LegalWithMarkdown
     {...{ locale, viewName }}
-    headingTextFtlId="legal-terms-heading"
-    headingText="Terms of Service"
-    legalDocFile={LegalDocFile.terms}
+    legalDocFile={LegalDocFile.privacy}
+    headingTextFtlId="legal-privacy-heading"
+    headingText="Privacy Notice"
   />
 );
 
-export default LegalTerms;
+export default LegalPrivacy;

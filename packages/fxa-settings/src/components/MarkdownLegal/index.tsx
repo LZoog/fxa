@@ -11,24 +11,20 @@ import rehypeRaw from 'rehype-raw';
 
 type MarkdownLegalProps = {
   markdown: string;
-  setHasH1: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const commonHeadingClasses = 'font-header font-bold';
 const commonListClasses = 'ltr:ml-5 rtl:mr-5 mb-5';
 
-export const MarkdownLegal = ({ markdown, setHasH1 }: MarkdownLegalProps) => (
+export const MarkdownLegal = ({ markdown }: MarkdownLegalProps) => (
   <ReactMarkdown
     children={markdown}
     // `rehypeRaw` allows HTML like `<i>whatever</i>` from MD to be rendered
     rehypePlugins={[rehypeRaw]}
     components={{
-      h1: ({ node, ...props }) => {
-        setHasH1(true);
-        return (
-          <h1 className={`${commonHeadingClasses} text-xl mb-4`} {...props} />
-        );
-      },
+      h1: ({ node, ...props }) => (
+        <h1 className={`${commonHeadingClasses} text-xl mb-4`} {...props} />
+      ),
       h2: ({ node, ...props }) => (
         <h2 className={`${commonHeadingClasses} text-lg my-5`} {...props} />
       ),
