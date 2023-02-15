@@ -4,30 +4,39 @@
 
 import React from 'react';
 import LegalTerms, { viewName } from '.';
-import { screen, render, fireEvent } from '@testing-library/react';
+import { screen, render, fireEvent, waitFor } from '@testing-library/react';
 import { usePageViewEvent, logViewEvent } from '../../../lib/metrics';
 import { FluentBundle } from '@fluent/bundle';
 import { getFtlBundle, testAllL10n } from 'fxa-react/lib/test-utils';
 import { REACT_ENTRYPOINT } from '../../../constants';
+import { fetchLegalMd } from '../../../lib/file-utils-legal';
 import { navigate } from '@reach/router';
 
+jest.mock('../../../lib/file-utils-legal');
 jest.mock('../../../lib/metrics', () => ({
   usePageViewEvent: jest.fn(),
   logViewEvent: jest.fn(),
 }));
+jest.mock('@reach/router', () => ({
+  navigate: jest.fn(),
+}));
 
-// there's not a good way to use react-markdown in tests until we use jest ESM
+// There's not a good way to use react-markdown in tests until we use jest ESM. Using the jest
+// config recommended in this issue is fragile and causes other tests to fail. We could
+// alternatively use react-markdown @ 6.0.3. and rehype-raw @5.1.0, but these packages are already
+// a couple years old at the time of writing and requires at least one other workaround.
 // https://github.com/remarkjs/react-markdown/issues/635
 // https://jestjs.io/docs/ecmascript-modules
-// jest.mock('react-markdown', () => {
-//   const originalModule = jest.requireActual('react-markdown');
-
-//   return {
-//     __esModule: true,
-//     ...originalModule,
-//     ReactMarkdown: (props: any) => <>{props.children}</>,
-//   };
-// });
+jest.mock('react-markdown', () => {
+  return {
+    ReactMarkdown: (props: any) => <>{props.children}</>,
+  };
+});
+jest.mock('rehype-raw', () => {
+  return {
+    rehypeRaw: (props: any) => <>{props.children}</>,
+  };
+});
 
 describe('Legal/Terms', () => {
   let bundle: FluentBundle;
@@ -35,96 +44,64 @@ describe('Legal/Terms', () => {
     bundle = await getFtlBundle('settings');
   });
 
-  it('renders as expected when markdown has h1', () => {
-    beforeAll(() => {
-      jest.mock('../../../lib/file-utils-legal.tsx', () => ({
-        fetchLegalMd: jest
-          .fn()
-          .mockResolvedValue({ markdown: '# H1 from markdown' }),
+  describe('with terms returned from fetchLegalMd', () => {
+    beforeEach(() => {
+      (fetchLegalMd as jest.Mock).mockImplementation(() => ({
+        terms: '## Some markdown',
       }));
     });
-    afterAll(() => {
-      jest.resetAllMocks();
+    afterEach(() => {
+      jest.clearAllMocks();
     });
-    render(<LegalTerms />);
-    testAllL10n(screen, bundle);
 
-    // heading is hidden when the markdown contains one
-    expect(
-      screen.queryByRole('heading', {
+    // note: in practice, if the markdown contains an H1, we hide CardHeader.
+    // we can't mock that properly due to note above.
+    it('renders as expected', async () => {
+      render(<LegalTerms />);
+      testAllL10n(screen, bundle);
+      await waitFor(() => {
+        expect(fetchLegalMd).toHaveBeenCalled();
+      });
+
+      screen.getByRole('heading', {
         name: 'Terms of Service',
-      })
-    ).not.toBeInTheDocument();
+      });
+    });
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'H1 from markdown'
-    );
+    it('can go back, and emits metrics events as expected', async () => {
+      render(<LegalTerms />);
+      expect(usePageViewEvent).toHaveBeenCalledWith(viewName, REACT_ENTRYPOINT);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+      await waitFor(() => {
+        expect(navigate).toHaveBeenCalledWith(-1);
+      });
+      expect(logViewEvent).toHaveBeenCalledWith(
+        `flow.${viewName}`,
+        'back',
+        REACT_ENTRYPOINT
+      );
+    });
   });
 
-  it('renders as expected when markdown does not have an h1', () => {
-    beforeAll(() => {
-      jest.mock('../../../lib/file-utils-legal.tsx', () => ({
-        fetchLegalMd: jest
-          .fn()
-          .mockResolvedValue({ markdown: '## An h1 header does not exist' }),
-      }));
-    });
-    afterAll(() => {
-      jest.resetAllMocks();
-    });
+  it('displays a loading state', () => {
     render(<LegalTerms />);
-    testAllL10n(screen, bundle);
-
-    // heading is hidden when the markdown contains one
-    expect(
-      screen.queryByRole('heading', {
-        name: 'Terms of Service',
-      })
-    ).not.toBeInTheDocument();
+    screen.getByTestId('loading-spinner');
   });
 
-  it('shows error message', () => {
-    // const error = 'Something went wrong. Please try again later.';
-    // beforeAll(() => {
-    //   jest.mock('../../../lib/file-utils-legal.tsx', () => ({
-    //     fetchLegalMd: jest.fn().mockResolvedValue({
-    //       error,
-    //     }),
-    //   }));
-    // });
-    // afterAll(() => {
-    //   jest.resetAllMocks();
-    // });
-    render(<LegalTerms />);
-    testAllL10n(screen, bundle);
-
-    screen.getByText('Something went wrong. Please try again later.');
-  });
-
-  it('can go back, and emits expected metrics events', async () => {
-    beforeAll(() => {
-      jest.mock('../../../lib/file-utils-legal.tsx', () => ({
-        fetchLegalMd: jest
-          .fn()
-          .mockResolvedValue({ markdown: '# H1 from markdown' }),
-      }));
-      jest.mock('@reach/router', () => ({
-        navigate: jest.fn(),
+  describe('with error returned from fetchLegalMd', () => {
+    beforeEach(() => {
+      (fetchLegalMd as jest.Mock).mockImplementation(() => ({
+        error: 'boop',
       }));
     });
-    afterAll(() => {
-      jest.resetAllMocks();
+    afterEach(() => {
+      jest.clearAllMocks();
     });
 
-    console.log('viewName!!', viewName);
-
-    expect(usePageViewEvent).toHaveBeenCalledWith(viewName, REACT_ENTRYPOINT);
-    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
-    expect(navigate).toHaveBeenCalledWith(-1);
-    expect(logViewEvent).toHaveBeenCalledWith(
-      `flow.${viewName}`,
-      'back',
-      REACT_ENTRYPOINT
-    );
+    it('displays an error state', async () => {
+      render(<LegalTerms />);
+      await screen.findByText('boop');
+    });
   });
 });

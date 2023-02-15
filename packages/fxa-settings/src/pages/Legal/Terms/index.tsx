@@ -4,12 +4,11 @@
 
 import React, { useEffect, useState } from 'react';
 import AppLayout from '../../../components/AppLayout';
-import { RouteComponentProps } from '@reach/router';
+import { RouteComponentProps, navigate } from '@reach/router';
 import { FtlMsg } from 'fxa-react/lib/utils';
 import { logViewEvent, usePageViewEvent } from '../../../lib/metrics';
 import CardHeader from '../../../components/CardHeader';
 import { REACT_ENTRYPOINT } from '../../../constants';
-import { navigate } from '@reach/router';
 import { fetchLegalMd, LegalDocFile } from '../../../lib/file-utils-legal';
 import MarkdownLegal from '../../../components/MarkdownLegal';
 import Banner, { BannerType } from '../../../components/Banner';
@@ -24,19 +23,26 @@ const LegalTerms = ({ locale }: { locale?: string } & RouteComponentProps) => {
   const [hasH1, setHasH1] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     (async () => {
       const { markdown, error } = await fetchLegalMd(
         navigator.languages,
         locale,
         LegalDocFile.terms
       );
-      if (markdown) {
-        setTerms(markdown);
-      }
-      if (error) {
-        setError(error);
+      // ensure component is still mounted before trying to render (fixes state update warning)
+      if (isMounted) {
+        if (markdown) {
+          setTerms(markdown);
+        }
+        if (error) {
+          setError(error);
+        }
       }
     })();
+    return () => {
+      isMounted = false;
+    };
   }, [locale]);
 
   const buttonHandler = () => {
