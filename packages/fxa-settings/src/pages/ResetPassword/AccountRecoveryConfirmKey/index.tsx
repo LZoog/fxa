@@ -18,13 +18,6 @@ import LinkDamaged from '../../../components/LinkDamaged';
 import { MozServices } from '../../../lib/types';
 import { REACT_ENTRYPOINT } from '../../../constants';
 
-// --serviceName-- is the relying party
-
-export type AccountRecoveryConfirmKeyProps = {
-  serviceName?: MozServices;
-  linkStatus: LinkStatus;
-};
-
 type FormData = {
   recoveryKey: string;
 };
@@ -34,12 +27,12 @@ type LinkStatus = 'damaged' | 'expired' | 'valid';
 export const viewName = 'account-recovery-confirm-key';
 
 // eslint-disable-next-line no-empty-pattern
-const AccountRecoveryConfirmKey = ({
-  serviceName,
-  linkStatus,
-}: AccountRecoveryConfirmKeyProps & RouteComponentProps) => {
+const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
   // TODO: confirm event name
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
+
+  // get link status from url
+  // get servicename from relier
 
   const [recoveryKey, setRecoveryKey] = useState<string>('');
   const [recoveryKeyErrorText, setRecoveryKeyErrorText] = useState<string>('');
