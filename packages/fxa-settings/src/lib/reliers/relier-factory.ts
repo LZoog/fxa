@@ -97,24 +97,22 @@ export class RelierFactory {
     const flags = this.flags;
 
     // Keep trying until something sticks
-    let relier: Relier | undefined;
+    let relier: Relier;
     if (flags.isDevicePairingAsAuthority()) {
-      console.log('Making');
       relier = await this.createPairingAuthorityRelier(channelContext);
     } else if (flags.isDevicePairingAsSupplicant()) {
       relier = await this.createParingSupplicationRelier(context);
     } else if (flags.isOAuth()) {
       relier = await this.createOAuthRelier(context);
     } else if (flags.isSyncService() || flags.isV3DesktopContext()) {
-      console.log('Creating browser!');
       relier = await this.createBrowserRelier(context);
     } else {
-      relier = await this.creteDefaultRelier(context);
+      relier = await this.createDefaultRelier(context);
     }
 
     // Run final validation. This will ensure that the all fields decorated with an @bind are in the
     // the correct state.
-    relier?.validate();
+    relier.validate();
 
     return relier;
   }
@@ -143,7 +141,7 @@ export class RelierFactory {
     return relier;
   }
 
-  private async creteDefaultRelier(context: ModelContext) {
+  private async createDefaultRelier(context: ModelContext) {
     const relier = new BaseRelier(context);
     await this.initRelier(relier, this.delegates);
     return relier;

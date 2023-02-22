@@ -373,6 +373,15 @@ export class Account implements AccountData {
     );
   }
 
+  async getHasRecoveryKey() {
+    const { data } = await this.apolloClient.query({
+      fetchPolicy: 'network-only',
+      query: GET_RECOVERY_KEY_EXISTS,
+    });
+    const { account } = data;
+    return account.recoveryKey;
+  }
+
   async getSecurityEvents() {
     const { data } = await this.apolloClient.query({
       fetchPolicy: 'network-only',

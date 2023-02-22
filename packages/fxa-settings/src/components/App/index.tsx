@@ -20,7 +20,7 @@ import LegalPrivacy from '../../pages/Legal/Privacy';
 
 import CompleteResetPassword from '../../pages/ResetPassword/CompleteResetPassword';
 import ResetPasswordConfirmed from '../../pages/ResetPassword/ResetPasswordConfirmed';
-
+import AccountRecoveryConfirmKey from '../../pages/ResetPassword/AccountRecoveryConfirmKey';
 
 export const App = ({
   flowQueryParams,
@@ -46,11 +46,12 @@ export const App = ({
               <LegalPrivacy path="/legal/privacy/*" />
               <LegalPrivacy path="/:locale/legal/privacy/*" />
 
-             <ResetPassword path='/reset_password/*' />
-             <ConfirmResetPassword path='/confirm_reset_password/*' />
-             <CompleteResetPassword path='/complete_reset_password/*' />
-             <ResetPasswordConfirmed path='/reset_password_verified/*' />
-             <ResetPasswordWithRecoveryKeyVerified path='/reset_password_with_recovery_key_verified/*' />
+              <ResetPassword path="/reset_password/*" />
+              <ConfirmResetPassword path="/confirm_reset_password/*" />
+              <CompleteResetPassword path="/complete_reset_password/*" />
+              <ResetPasswordConfirmed path="/reset_password_verified/*" />
+              <ResetPasswordWithRecoveryKeyVerified path="/reset_password_with_recovery_key_verified/*" />
+              <AccountRecoveryConfirmKey path="/account_recovery_confirm_key/*" />
             </>
           )}
           <Settings path="/settings/*" {...{ flowQueryParams }} />

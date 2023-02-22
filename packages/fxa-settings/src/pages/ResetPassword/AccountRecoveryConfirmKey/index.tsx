@@ -3,10 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { Link, RouteComponentProps } from '@reach/router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { logViewEvent, usePageViewEvent } from '../../../lib/metrics';
-import { useAlertBar } from '../../../models';
+import { useAlertBar, useRelier } from '../../../models';
 import { FtlMsg } from 'fxa-react/lib/utils';
 import { useFtlMsgResolver } from '../../../models/hooks';
 
@@ -17,28 +17,29 @@ import LinkExpired from '../../../components/LinkExpired';
 import LinkDamaged from '../../../components/LinkDamaged';
 import { MozServices } from '../../../lib/types';
 import { REACT_ENTRYPOINT } from '../../../constants';
+import {
+  LinkStatus,
+  useAccountRecoveryConfirmKeyLinkStatus,
+} from '../../../lib/hooks/useLinkStatus';
+import AppLayout from '../../../components/AppLayout';
 
 type FormData = {
   recoveryKey: string;
 };
 
-type LinkStatus = 'damaged' | 'expired' | 'valid';
-
 export const viewName = 'account-recovery-confirm-key';
 
 // eslint-disable-next-line no-empty-pattern
 const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
-  // TODO: confirm event name
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
-
-  // get link status from url
-  // get servicename from relier
 
   const [recoveryKey, setRecoveryKey] = useState<string>('');
   const [recoveryKeyErrorText, setRecoveryKeyErrorText] = useState<string>('');
   const [isFocused, setIsFocused] = useState(false);
   const alertBar = useAlertBar();
   const ftlMsgResolver = useFtlMsgResolver();
+  const { linkStatus, setLinkStatus, token, code, email } =
+    useAccountRecoveryConfirmKeyLinkStatus();
 
   const { handleSubmit } = useForm<FormData>({
     mode: 'onBlur',
@@ -62,7 +63,7 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
 
   // --TODO: Complete onSubmit handling--
   const onSubmit = () => {
-    if (recoveryKey === '') {
+    if (!recoveryKey) {
       const errorEmptyRecoveryKeyInput = ftlMsgResolver.getMsg(
         'account-recovery-confirm-key-empty-input-error',
         'Account recovery key required'
@@ -84,12 +85,19 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
     }
   };
 
-  return (
-    <>
-      {linkStatus === 'damaged' && <LinkDamaged linkType="reset-password" />}
-      {linkStatus === 'expired' && <LinkExpired linkType="reset-password" />}
+  // TODO: grab serviceName from the relier
+  const serviceName = MozServices.Default;
 
-      {linkStatus === 'valid' && (
+  return (
+    <AppLayout>
+      {linkStatus === LinkStatus.damaged && (
+        <LinkDamaged linkType="reset-password" />
+      )}
+      {linkStatus === LinkStatus.expired && (
+        <LinkExpired linkType="reset-password" />
+      )}
+
+      {linkStatus === LinkStatus.valid && (
         <>
           <CardHeader
             headingWithDefaultServiceFtlId="account-recovery-confirm-key-heading-w-default-service"
@@ -159,7 +167,7 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
           </FtlMsg>
         </>
       )}
-    </>
+    </AppLayout>
   );
 };
 

@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { useCallback, useState, useEffect } from 'react';
-import { RouteComponentProps, useLocation, useNavigate } from '@reach/router';
+import { RouteComponentProps, useNavigate } from '@reach/router';
 import { useForm } from 'react-hook-form';
 import { logPageViewEvent } from '../../../lib/metrics';
 
@@ -18,6 +18,10 @@ import CardHeader from '../../../components/CardHeader';
 import AppLayout from '../../../components/AppLayout';
 import Banner, { BannerType } from '../../../components/Banner';
 import { FtlMsg } from 'fxa-react/lib/utils';
+import {
+  LinkStatus,
+  useCompleteResetPasswordLinkStatus,
+} from '../../../lib/hooks/useLinkStatus';
 
 // The equivalent complete_reset_password mustache file included account_recovery_reset_password
 // For React, we have opted to separate these into two pages to align with the routes.
@@ -38,8 +42,6 @@ type FormData = {
   confirmPassword: string;
 };
 
-type LinkStatus = 'expired' | 'damaged' | 'valid';
-
 const CompleteResetPassword = (_: RouteComponentProps) => {
   logPageViewEvent(viewName, REACT_ENTRYPOINT);
 
@@ -47,39 +49,49 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
     useState<string>('');
   const navigate = useNavigate();
   const account = useAccount();
-  const [linkStatus, setLinkStatus] = useState<LinkStatus>('valid');
+
+  const { linkStatus, setLinkStatus, token, code, email } =
+    useCompleteResetPasswordLinkStatus();
   const [errorCompletePwdReset, setErrorCompletePwdReset] =
     useState<boolean>(false);
 
   // TODO: Pull this information from relier, in meantime we can get from query params
   const [resetPasswordConfirm] = useState<boolean>(false);
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.href);
-  const token = searchParams.get('token');
-  const code = searchParams.get('code');
-  const email = searchParams.get('email');
-  const passwordHash = searchParams.get('emailToHashWith');
 
+  // When the user clicks the confirm password reset link from their
+  // email, we check to see if they have an account recovery key.
+  // If so, navigate to the confirm account recovery key view, else continue with
+  // a regular password reset.
   useEffect(() => {
-    if (!token || !code || !email || !passwordHash) {
-      setLinkStatus('damaged');
-    }
-  }, [token, code, email, passwordHash]);
+    const checkRecoveryKeyAndNavigate = async () => {
+      try {
+        if (await account.getHasRecoveryKey()) {
+          navigate('/account_recovery_confirm_key');
+        }
+      } catch (e) {
+        // 'Sorry, we couldn't check if you have an existing account recovery key.'?
+        // report to sentry, provide link in banner?
+      }
+    };
+
+    checkRecoveryKeyAndNavigate();
+  }, [account, navigate]);
 
   useEffect(() => {
     const checkPasswordForgotToken = async (token: string) => {
       try {
         const isValid = await account.resetPasswordStatus(token);
         if (!isValid) {
-          setLinkStatus('expired');
+          setLinkStatus(LinkStatus.expired);
         }
       } catch (e) {
-        setLinkStatus('damaged');
+        console.log('u sure its not from here', e);
+        setLinkStatus(LinkStatus.damaged);
       }
     };
 
-    checkPasswordForgotToken(token!);
-  }, [token]);
+    checkPasswordForgotToken(token);
+  }, [token, account, setLinkStatus]);
 
   const { handleSubmit, register, getValues, errors, formState, trigger } =
     useForm<FormData>({
@@ -98,13 +110,13 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
   const onSubmit = useCallback(
     async ({ newPassword }: FormData) => {
       try {
-        await account.completeResetPassword(token!, code!, email!, newPassword);
+        await account.completeResetPassword(token, code, email, newPassword);
         alertSuccessAndNavigate();
       } catch (e) {
         setErrorCompletePwdReset(true);
       }
     },
-    [token, code, email]
+    [token, code, email, account, alertSuccessAndNavigate]
   );
 
   return (
@@ -122,7 +134,7 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
       )}
 
       {/* With valid password reset link */}
-      {linkStatus === 'valid' && (
+      {linkStatus === LinkStatus.valid && (
         <>
           <CardHeader
             headingText="Create new password"
@@ -147,11 +159,11 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
            to correctly save the updated password. Without it,
            the password manager tries to save the old password
            as the username. */}
-          <input type="email" value={email!} className="hidden" readOnly />
+          <input type="email" value={email} className="hidden" readOnly />
           <section className="text-start mt-4">
             <FormPasswordWithBalloons
               {...{
-                email: email!,
+                email,
                 formState,
                 errors,
                 trigger,
@@ -169,8 +181,12 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
           <LinkRememberPassword {...{ email: email! }} />
         </>
       )}
-      {linkStatus === 'expired' && <LinkExpired linkType="reset-password" />}
-      {linkStatus === 'damaged' && <LinkDamaged linkType="reset-password" />}
+      {linkStatus === LinkStatus.expired && (
+        <LinkExpired linkType="reset-password" />
+      )}
+      {linkStatus === LinkStatus.damaged && (
+        <LinkDamaged linkType="reset-password" />
+      )}
     </AppLayout>
   );
 };

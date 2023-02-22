@@ -89,7 +89,10 @@ export function useFtlMsgResolver() {
 
 export async function useRelier() {
   const { relierFactory } = useContext(AppContext);
-  return await relierFactory?.getRelier();
+  if (!relierFactory) {
+    throw new Error('Are you forgetting an AppContext.Provider?');
+  }
+  return relierFactory.getRelier();
 }
 
 /**
@@ -114,7 +117,7 @@ export function useInterval(callback: () => void, delay: number | null) {
         savedCallback.current();
       }
     }, delay);
-    
+
     return () => window.clearInterval(id);
   }, [delay]);
 }
