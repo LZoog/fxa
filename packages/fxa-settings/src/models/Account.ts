@@ -36,6 +36,10 @@ export interface PasswordForgotSendCodePayload {
   passwordForgotToken: string;
 }
 
+export interface RecoveryKeyBundlePayload {
+  recoveryData: string;
+}
+
 // TODO: why doesn't this match fxa-graphql-api/src/lib/resolvers/types/attachedClient.ts?
 export interface AttachedClient {
   clientId: string;
@@ -202,6 +206,20 @@ export const GET_SECURITY_EVENTS = gql`
         createdAt
         verified
       }
+    }
+  }
+`;
+
+const GET_RECOVERY_BUNDLE = gql`
+  query getRecoveryKeyBundle(
+    $accountResetToken: String!
+    $recoveryKeyId: String!
+  ) {
+    accountByEmail(
+      accountResetToken: $accountResetToken
+      recoveryKeyId: $autoComplerecoveryKeyIded
+    ) {
+      recoveryData
     }
   }
 `;
@@ -374,12 +392,19 @@ export class Account implements AccountData {
   }
 
   async getHasRecoveryKey() {
-    const { data } = await this.apolloClient.query({
-      fetchPolicy: 'network-only',
-      query: GET_RECOVERY_KEY_EXISTS,
-    });
-    const { account } = data;
-    return account.recoveryKey;
+    try {
+      const { data } = await this.withLoadingStatus(
+        this.apolloClient.query({
+          fetchPolicy: 'network-only',
+          query: GET_RECOVERY_KEY_EXISTS,
+        })
+      );
+      console.log('data!!!', data);
+      const { account } = data;
+      return account.recoveryKey;
+    } catch (e) {
+      console.log('error in gethasrecoverykey', e);
+    }
   }
 
   async getSecurityEvents() {
@@ -389,6 +414,18 @@ export class Account implements AccountData {
     });
     const { account } = data;
     return account.securityEvents;
+  }
+
+  async getRecoveryBundle(accountResetToken: string, recoveryKeyId: string) {
+    const { data } = await this.apolloClient.query({
+      fetchPolicy: 'network-only',
+      query: GET_RECOVERY_BUNDLE,
+      variables: {
+        accountResetToken,
+        recoveryKeyId,
+      },
+    });
+    return data.recoveryData;
   }
 
   async changePassword(oldPassword: string, newPassword: string) {
@@ -569,6 +606,37 @@ export class Account implements AccountData {
       throw AuthUiErrors.UNEXPECTED_ERROR;
     }
   }
+
+  //   /**
+  //  * Verify a passwordForgotToken, which returns an accountResetToken that can
+  //  * be used to perform the actual password reset.
+  //  *
+  //  * @param token passwordForgotToken
+  //  * @param code code
+  //  */
+  //   async getRecoveryBundle() {
+  //     try {
+  //       const recoveryBundle = await this.apolloClient.mutate({
+  //         mutation: gql`
+  //           mutation passwordForgotVerifyCode(
+  //             $input: PasswordForgotVerifyCodeInput!
+  //           ) {
+  //             passwordForgotVerifyCode(input: $input) {
+  //               accountResetToken
+  //             }
+  //           }
+  //         `,
+  //         variables: { input: { token, code } },
+  //       });
+  //       return verifyCodeResult.data.passwordForgotVerifyCode;
+  //     } catch (err) {
+  //       const errno = (err as ApolloError).graphQLErrors[0].extensions?.errno;
+  //       if (errno && AuthUiErrorNos[errno]) {
+  //         throw AuthUiErrorNos[errno];
+  //       }
+  //       throw AuthUiErrors.UNEXPECTED_ERROR;
+  //     }
+  //   }
 
   /**
    * Complete the password reset process. When a user reset's their password,

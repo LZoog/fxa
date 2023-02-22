@@ -34,22 +34,11 @@ export function useCompleteResetPasswordLinkStatus() {
 
   useEffect(() => {
     if (!token || !code || !email || !emailToHashWith) {
-      console.log('setting to damaged');
       setLinkStatus(LinkStatus.damaged);
     } else {
-      console.log('setting to valid');
       setLinkStatus(LinkStatus.valid);
     }
   }, [token, code, email, emailToHashWith, setLinkStatus]);
-
-  console.log(
-    'in useCompleteResetPasswordLinkStatus',
-    token,
-    code,
-    email,
-    emailToHashWith,
-    linkStatus
-  );
 
   return {
     linkStatus,

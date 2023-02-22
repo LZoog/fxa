@@ -66,9 +66,11 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
     const checkRecoveryKeyAndNavigate = async () => {
       try {
         if (await account.getHasRecoveryKey()) {
-          navigate('/account_recovery_confirm_key');
+          console.log('has recovery key');
+          navigate('/account_recovery_confirm_key', { replace: true });
         }
       } catch (e) {
+        console.log('error in getHasRecoveryKey ', e);
         // 'Sorry, we couldn't check if you have an existing account recovery key.'?
         // report to sentry, provide link in banner?
       }
@@ -85,7 +87,6 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
           setLinkStatus(LinkStatus.expired);
         }
       } catch (e) {
-        console.log('u sure its not from here', e);
         setLinkStatus(LinkStatus.damaged);
       }
     };

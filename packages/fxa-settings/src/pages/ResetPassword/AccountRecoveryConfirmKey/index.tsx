@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Link, RouteComponentProps } from '@reach/router';
-import React, { useEffect, useState } from 'react';
+import { Link, navigate, RouteComponentProps } from '@reach/router';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { logViewEvent, usePageViewEvent } from '../../../lib/metrics';
-import { useAlertBar, useRelier } from '../../../models';
+import { useAccount, useAlertBar, useRelier } from '../../../models';
 import { FtlMsg } from 'fxa-react/lib/utils';
 import { useFtlMsgResolver } from '../../../models/hooks';
 
@@ -37,6 +37,7 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
   const [recoveryKeyErrorText, setRecoveryKeyErrorText] = useState<string>('');
   const [isFocused, setIsFocused] = useState(false);
   const alertBar = useAlertBar();
+  const account = useAccount();
   const ftlMsgResolver = useFtlMsgResolver();
   const { linkStatus, setLinkStatus, token, code, email } =
     useAccountRecoveryConfirmKeyLinkStatus();
@@ -56,10 +57,29 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
     }
   };
 
-  const checkRecoveryKey = () => {
-    // TODO AccountRecoveryConfirmKey function
-    console.log(recoveryKey);
-  };
+  const checkRecoveryKey = useCallback(async () => {
+    console.log('trying');
+    try {
+      const { accountResetToken } = await account.verifyPasswordForgotToken(
+        token,
+        code
+      );
+
+      if (!accountResetToken) {
+        // do stuff
+      } else {
+        const recoveryData = await account.getRecoveryBundle(
+          accountResetToken,
+          recoveryKey
+        );
+        navigate('/account_recovery_reset_password', {
+          state: { accountResetToken, email, recoveryData, recoveryKey },
+        });
+      }
+    } catch (e) {
+      console.log('error', e);
+    }
+  }, [account, code, email, recoveryKey, token]);
 
   // --TODO: Complete onSubmit handling--
   const onSubmit = () => {
