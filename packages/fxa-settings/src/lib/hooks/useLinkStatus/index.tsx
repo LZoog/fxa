@@ -50,7 +50,8 @@ export function useCompleteResetPasswordLinkStatus() {
 }
 
 export function useAccountRecoveryConfirmKeyLinkStatus() {
-  const { linkStatus, setLinkStatus, token, code, email } = useLinkStatus();
+  const { linkStatus, setLinkStatus, token, code, email, uid } =
+    useLinkStatus();
 
   useEffect(() => {
     if (!token || !code || !email) {
@@ -64,5 +65,6 @@ export function useAccountRecoveryConfirmKeyLinkStatus() {
     token,
     code,
     email,
+    uid,
   };
 }

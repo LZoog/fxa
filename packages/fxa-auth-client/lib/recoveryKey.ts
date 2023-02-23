@@ -12,6 +12,31 @@ async function randomKey() {
   return recoveryKey;
 }
 
+async function getRecoveryKeyId(
+  recoveryKey: Uint8Array,
+  salt: Uint8Array,
+  encoder: TextEncoder
+) {
+  console.log('salt', salt);
+  return uint8ToHex(
+    await hkdf(
+      recoveryKey,
+      salt,
+      encoder.encode('fxa recovery fingerprint'),
+      16
+    )
+  );
+}
+
+export async function getRecoveryKeyIdByUid(
+  recoveryKey: Uint8Array,
+  uid: hexstring
+) {
+  const encoder = new TextEncoder();
+  const salt = hexToUint8(uid);
+  return getRecoveryKeyId(recoveryKey, salt, encoder);
+}
+
 export async function generateRecoveryKey(
   uid: hexstring,
   keys: { kA?: hexstring; kB?: hexstring },
@@ -30,14 +55,8 @@ export async function generateRecoveryKey(
     encoder.encode('fxa recovery encrypt key'),
     32
   );
-  const recoveryKeyId = uint8ToHex(
-    await hkdf(
-      recoveryKey,
-      salt,
-      encoder.encode('fxa recovery fingerprint'),
-      16
-    )
-  );
+
+  const recoveryKeyId = await getRecoveryKeyId(recoveryKey, salt, encoder);
 
   const recoveryData = await jweEncrypt(
     encryptionKey,

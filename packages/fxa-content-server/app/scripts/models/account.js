@@ -1617,6 +1617,7 @@ const Account = Backbone.Model.extend(
      * @returns {Promise} resolves with response when complete.
      */
     getRecoveryBundle(uid, recoveryKey) {
+      console.log('recoverykey', recoveryKey);
       return this._fxaClient.getRecoveryBundle(
         this.get('accountResetToken'),
         uid,

@@ -35,11 +35,14 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
 
   const [recoveryKey, setRecoveryKey] = useState<string>('');
   const [recoveryKeyErrorText, setRecoveryKeyErrorText] = useState<string>('');
+  // The password forgot code can only be used once to retrieve `accountResetToken`
+  // so we set its value after the first request for subsequent requests.
+  const [accountResetToken, setAccountResetToken] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const alertBar = useAlertBar();
   const account = useAccount();
   const ftlMsgResolver = useFtlMsgResolver();
-  const { linkStatus, setLinkStatus, token, code, email } =
+  const { linkStatus, setLinkStatus, token, code, email, uid } =
     useAccountRecoveryConfirmKeyLinkStatus();
 
   const { handleSubmit } = useForm<FormData>({
@@ -58,30 +61,25 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
   };
 
   const checkRecoveryKey = useCallback(async () => {
-    console.log('trying');
     try {
-      const { accountResetToken } = await account.verifyPasswordForgotToken(
-        token,
-        code
-      );
-
       if (!accountResetToken) {
-        // do stuff
-      } else {
-        const recoveryData = await account.getRecoveryBundle(
-          accountResetToken,
-          recoveryKey
+        const { accountResetToken } = await account.verifyPasswordForgotToken(
+          token,
+          code
         );
-        navigate('/account_recovery_reset_password', {
-          state: { accountResetToken, email, recoveryData, recoveryKey },
-        });
+        setAccountResetToken(accountResetToken);
       }
+      const { recoveryData, recoveryKeyId } =
+        await account.getRecoveryKeyBundle(accountResetToken, recoveryKey, uid);
+      console.log('recoveryData', recoveryData);
+      navigate('/account_recovery_reset_password', {
+        state: { accountResetToken, email, recoveryData, recoveryKeyId },
+      });
     } catch (e) {
       console.log('error', e);
     }
-  }, [account, code, email, recoveryKey, token]);
+  }, [account, code, email, recoveryKey, token, accountResetToken, uid]);
 
-  // --TODO: Complete onSubmit handling--
   const onSubmit = () => {
     if (!recoveryKey) {
       const errorEmptyRecoveryKeyInput = ftlMsgResolver.getMsg(

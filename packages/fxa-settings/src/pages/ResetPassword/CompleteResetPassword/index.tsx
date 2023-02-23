@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { useCallback, useState, useEffect } from 'react';
-import { RouteComponentProps, useNavigate } from '@reach/router';
+import { RouteComponentProps, useLocation, useNavigate } from '@reach/router';
 import { useForm } from 'react-hook-form';
 import { logPageViewEvent } from '../../../lib/metrics';
 
@@ -49,6 +49,7 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
     useState<string>('');
   const navigate = useNavigate();
   const account = useAccount();
+  const location = useLocation();
 
   const { linkStatus, setLinkStatus, token, code, email } =
     useCompleteResetPasswordLinkStatus();
@@ -66,8 +67,9 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
     const checkRecoveryKeyAndNavigate = async () => {
       try {
         if (await account.getHasRecoveryKey()) {
-          console.log('has recovery key');
-          navigate('/account_recovery_confirm_key', { replace: true });
+          navigate(`/account_recovery_confirm_key${location.search}`, {
+            replace: true,
+          });
         }
       } catch (e) {
         console.log('error in getHasRecoveryKey ', e);
@@ -77,7 +79,7 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
     };
 
     checkRecoveryKeyAndNavigate();
-  }, [account, navigate]);
+  }, [account, navigate, location.search]);
 
   useEffect(() => {
     const checkPasswordForgotToken = async (token: string) => {
