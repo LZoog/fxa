@@ -62,6 +62,7 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
 
   const checkRecoveryKey = useCallback(async () => {
     try {
+      let accountResetTokenCheck;
       if (!accountResetToken) {
         const { accountResetToken } = await account.verifyPasswordForgotToken(
           token,
@@ -71,12 +72,12 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
       }
       const { recoveryData, recoveryKeyId } =
         await account.getRecoveryKeyBundle(accountResetToken, recoveryKey, uid);
-      console.log('recoveryData', recoveryData);
+      console.log('recoveryData + recoveryKeyId', recoveryData, recoveryKeyId);
       navigate('/account_recovery_reset_password', {
         state: { accountResetToken, email, recoveryData, recoveryKeyId },
       });
-    } catch (e) {
-      console.log('error', e);
+    } catch (error) {
+      setRecoveryKeyErrorText(error.message);
     }
   }, [account, code, email, recoveryKey, token, accountResetToken, uid]);
 
@@ -93,13 +94,13 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
       checkRecoveryKey();
       logViewEvent('flow', `${viewName}.submit`, REACT_ENTRYPOINT);
     } catch (e) {
-      const errorAccountRecoveryConfirmKey = ftlMsgResolver.getMsg(
-        'account-recovery-confirm-key-error-general',
-        // Original error message was 'invalid hex string: null'
-        // Probably should not be user-facing
-        'Invalid account recovery key'
-      );
-      alertBar.error(errorAccountRecoveryConfirmKey);
+      // const errorAccountRecoveryConfirmKey = ftlMsgResolver.getMsg(
+      //   'account-recovery-confirm-key-error-general',
+      //   // Original error message was 'invalid hex string: null'
+      //   // Probably should not be user-facing
+      //   'Invalid account recovery key'
+      // );
+      // alertBar.error(errorAccountRecoveryConfirmKey);
     }
   };
 

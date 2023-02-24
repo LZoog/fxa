@@ -1,3 +1,8 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import base32Decode from 'base32-decode';
 import { gql, ApolloClient, Reference, ApolloError } from '@apollo/client';
 import config from '../lib/config';
 import AuthClient, {
@@ -397,7 +402,7 @@ export class Account implements AccountData {
       const { account } = data;
       return account.recoveryKey;
     } catch (e) {
-      // TODO
+      // TODO... plus this only works if user is still logged in, sigh
       console.log('error in gethasrecoverykey', e);
     }
   }
@@ -416,20 +421,30 @@ export class Account implements AccountData {
     recoveryKey: string,
     uid: hexstring
   ) {
-    // @ts-ignore TODO: `recoveryKey` is set to a string but auth-client wants a Uint8Array
-    const recoveryKeyId = await getRecoveryKeyIdByUid(recoveryKey, uid);
-    const { data } = await this.apolloClient.query({
-      fetchPolicy: 'network-only',
-      query: GET_RECOVERY_BUNDLE,
-      variables: {
-        input: {
-          accountResetToken,
-          recoveryKeyId,
+    const decodedRecoveryKey = base32Decode(recoveryKey, 'Crockford');
+    const uint8RecoveryKey = new Uint8Array(decodedRecoveryKey);
+    const recoveryKeyId = await getRecoveryKeyIdByUid(uint8RecoveryKey, uid);
+
+    try {
+      const { data } = await this.apolloClient.query({
+        fetchPolicy: 'network-only',
+        query: GET_RECOVERY_BUNDLE,
+        variables: {
+          input: {
+            accountResetToken,
+            recoveryKeyId,
+          },
         },
-      },
-    });
-    const { recoveryData } = data;
-    return { recoveryData, recoveryKeyId };
+      });
+      const { recoveryData } = data.getRecoveryKeyBundle;
+      return { recoveryData, recoveryKeyId };
+    } catch (err) {
+      const errno = (err as ApolloError).graphQLErrors[0].extensions?.errno;
+      if (errno && AuthUiErrorNos[errno]) {
+        throw AuthUiErrorNos[errno];
+      }
+      throw AuthUiErrors.UNEXPECTED_ERROR;
+    }
   }
 
   async changePassword(oldPassword: string, newPassword: string) {

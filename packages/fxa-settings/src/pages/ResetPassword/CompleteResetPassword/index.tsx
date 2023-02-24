@@ -72,7 +72,7 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
           });
         }
       } catch (e) {
-        console.log('error in getHasRecoveryKey ', e);
+        console.log('error in getHasRecoveryKey useeffect', e);
         // 'Sorry, we couldn't check if you have an existing account recovery key.'?
         // report to sentry, provide link in banner?
       }
