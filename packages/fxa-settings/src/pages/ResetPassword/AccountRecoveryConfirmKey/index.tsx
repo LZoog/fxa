@@ -22,6 +22,7 @@ import {
   useAccountRecoveryConfirmKeyLinkStatus,
 } from '../../../lib/hooks/useLinkStatus';
 import AppLayout from '../../../components/AppLayout';
+import { AuthUiErrors } from '../../../lib/auth-errors/auth-errors';
 
 type FormData = {
   recoveryKey: string;
@@ -37,9 +38,8 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
   const [recoveryKeyErrorText, setRecoveryKeyErrorText] = useState<string>('');
   // The password forgot code can only be used once to retrieve `accountResetToken`
   // so we set its value after the first request for subsequent requests.
-  const [accountResetToken, setAccountResetToken] = useState('');
+  const [fetchedResetToken, setFetchedResetToken] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const alertBar = useAlertBar();
   const account = useAccount();
   const ftlMsgResolver = useFtlMsgResolver();
   const { linkStatus, setLinkStatus, token, code, email, uid } =
@@ -60,28 +60,56 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
     }
   };
 
+  const getRecoveryBundleAndNavigate = useCallback(
+    async (accountResetToken: string) => {
+      const { recoveryData, recoveryKeyId } =
+        await account.getRecoveryKeyBundle(accountResetToken, recoveryKey, uid);
+
+      logViewEvent('flow', `${viewName}.success`, REACT_ENTRYPOINT);
+      navigate('/account_recovery_reset_password', {
+        state: { accountResetToken, email, recoveryData, recoveryKeyId },
+      });
+    },
+    [account, email, recoveryKey, uid]
+  );
+
   const checkRecoveryKey = useCallback(async () => {
     try {
-      let accountResetTokenCheck;
-      if (!accountResetToken) {
+      if (!fetchedResetToken) {
         const { accountResetToken } = await account.verifyPasswordForgotToken(
           token,
           code
         );
-        setAccountResetToken(accountResetToken);
+        setFetchedResetToken(accountResetToken);
+        await getRecoveryBundleAndNavigate(accountResetToken);
       }
-      const { recoveryData, recoveryKeyId } =
-        await account.getRecoveryKeyBundle(accountResetToken, recoveryKey, uid);
-      console.log('recoveryData + recoveryKeyId', recoveryData, recoveryKeyId);
-      navigate('/account_recovery_reset_password', {
-        state: { accountResetToken, email, recoveryData, recoveryKeyId },
-      });
+      await getRecoveryBundleAndNavigate(fetchedResetToken);
     } catch (error) {
-      setRecoveryKeyErrorText(error.message);
+      if (error.errno === AuthUiErrors.INVALID_TOKEN.errno) {
+        setLinkStatus(LinkStatus.expired);
+      } else {
+        console.log('error', error);
+        const errorAccountRecoveryConfirmKey = ftlMsgResolver.getMsg(
+          'account-recovery-confirm-key-error-general',
+          // Original error message was 'invalid hex string: null'
+          // Probably should not be user-facing
+          'Invalid account recovery key'
+        );
+        setRecoveryKeyErrorText(errorAccountRecoveryConfirmKey);
+      }
     }
-  }, [account, code, email, recoveryKey, token, accountResetToken, uid]);
+  }, [
+    account,
+    code,
+    token,
+    fetchedResetToken,
+    getRecoveryBundleAndNavigate,
+    setLinkStatus,
+    ftlMsgResolver,
+  ]);
 
   const onSubmit = () => {
+    logViewEvent('flow', `${viewName}.submit`, REACT_ENTRYPOINT);
     if (!recoveryKey) {
       const errorEmptyRecoveryKeyInput = ftlMsgResolver.getMsg(
         'account-recovery-confirm-key-empty-input-error',
@@ -90,18 +118,8 @@ const AccountRecoveryConfirmKey = (_: RouteComponentProps) => {
       setRecoveryKeyErrorText(errorEmptyRecoveryKeyInput);
       return;
     }
-    try {
-      checkRecoveryKey();
-      logViewEvent('flow', `${viewName}.submit`, REACT_ENTRYPOINT);
-    } catch (e) {
-      // const errorAccountRecoveryConfirmKey = ftlMsgResolver.getMsg(
-      //   'account-recovery-confirm-key-error-general',
-      //   // Original error message was 'invalid hex string: null'
-      //   // Probably should not be user-facing
-      //   'Invalid account recovery key'
-      // );
-      // alertBar.error(errorAccountRecoveryConfirmKey);
-    }
+
+    checkRecoveryKey();
   };
 
   // TODO: grab serviceName from the relier

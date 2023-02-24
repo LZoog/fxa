@@ -66,7 +66,7 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
   useEffect(() => {
     const checkRecoveryKeyAndNavigate = async () => {
       try {
-        if (await account.getHasRecoveryKey()) {
+        if (await account.hasRecoveryKey(email)) {
           navigate(`/account_recovery_confirm_key${location.search}`, {
             replace: true,
           });
@@ -79,7 +79,7 @@ const CompleteResetPassword = (_: RouteComponentProps) => {
     };
 
     checkRecoveryKeyAndNavigate();
-  }, [account, navigate, location.search]);
+  }, [account, navigate, location.search, email]);
 
   useEffect(() => {
     const checkPasswordForgotToken = async (token: string) => {

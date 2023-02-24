@@ -393,18 +393,11 @@ export class Account implements AccountData {
     );
   }
 
-  async getHasRecoveryKey() {
-    try {
-      const { data } = await this.apolloClient.query({
-        fetchPolicy: 'network-only',
-        query: GET_RECOVERY_KEY_EXISTS,
-      });
-      const { account } = data;
-      return account.recoveryKey;
-    } catch (e) {
-      // TODO... plus this only works if user is still logged in, sigh
-      console.log('error in gethasrecoverykey', e);
-    }
+  async hasRecoveryKey(email: string) {
+    // Users may not have a session token here so we currently can't use GQL
+    return this.withLoadingStatus(
+      await this.authClient.recoveryKeyExists(sessionToken()!, email)
+    );
   }
 
   async getSecurityEvents() {
