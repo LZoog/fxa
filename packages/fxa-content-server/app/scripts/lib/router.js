@@ -365,7 +365,11 @@ Router = Router.extend({
     'signin_verified(/)': createViewHandler(ReadyView, {
       type: VerificationReasons.SIGN_IN,
     }),
-    'signup(/)': createViewHandler(SignUpPasswordView),
+    'signup(/)': function () {
+      this.createReactOrBackboneViewHandler('signup', SignUpPasswordView, {
+        email: this.user.get('emailFromIndex'),
+      });
+    },
     'signup_confirmed(/)': function () {
       this.createReactOrBackboneViewHandler(
         'signup_confirmed',

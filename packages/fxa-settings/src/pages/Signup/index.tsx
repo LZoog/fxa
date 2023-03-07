@@ -2,11 +2,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React, { useCallback, useState } from 'react';
-import { Link, RouteComponentProps } from '@reach/router';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  Link,
+  navigate,
+  RouteComponentProps,
+  useLocation,
+} from '@reach/router';
 import { useForm } from 'react-hook-form';
 import { useFtlMsgResolver } from '../../models';
 import { logViewEvent, usePageViewEvent } from '../../lib/metrics';
+import { getSearchParams } from '../../lib/utilities';
 import { MozServices } from '../../lib/types';
 import { FtlMsg } from 'fxa-react/lib/utils';
 import LinkExternal from 'fxa-react/components/LinkExternal';
@@ -21,30 +27,26 @@ import Banner, { BannerType } from '../../components/Banner';
 import CardHeader from '../../components/CardHeader';
 import { REACT_ENTRYPOINT } from '../../constants';
 
-interface SharedProps {
-  email: string;
-  // canChangeEmail is true if not from relying party or force_auth
-  canChangeEmail?: boolean;
-  serviceName?: MozServices;
-}
+// interface SharedProps {
+//   email: string;
+//   serviceName?: MozServices;
+// }
 
 // CWTS is enabled if relier is sync or multiService, broker is OAuth
 // CWTS and newsletters cannot both be enabled
-type ConditionalProps =
-  | {
-      isCWTSEnabled?: boolean;
-      areNewslettersEnabled?: never;
-    }
-  | {
-      isCWTSEnabled?: never;
-      areNewslettersEnabled?: boolean;
-    }
-  | {
-      isCWTSEnabled?: never;
-      areNewslettersEnabled?: never;
-    };
-
-export type SignupProps = SharedProps & ConditionalProps;
+// type ConditionalProps =
+//   | {
+//       isCWTSEnabled?: boolean;
+//       areNewslettersEnabled?: never;
+//     }
+//   | {
+//       isCWTSEnabled?: never;
+//       areNewslettersEnabled?: boolean;
+//     }
+//   | {
+//       isCWTSEnabled?: never;
+//       areNewslettersEnabled?: never;
+//     };
 
 type FormData = {
   newPassword: string;
@@ -54,16 +56,32 @@ type FormData = {
 
 export const viewName = 'signup';
 
-const Signup = ({
-  email,
-  canChangeEmail = true,
-  serviceName,
-  isCWTSEnabled,
-  areNewslettersEnabled,
-}: SignupProps & RouteComponentProps) => {
+const Signup = (_: RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
+  // TODO when 'signup' and 'confirm' are both finished, we can convert the
+  // index page over and pass this along with reach-router instead of param
+  const { email } = getSearchParams(['email'], useLocation().href);
+
+  // TODO: pull this from Relier
+  const serviceName = MozServices.Default;
+
+  // TODO: Redirect to signin if has email
+  // otherwise, redirect to home page (this should not be hit directly)
+
+  // const isForceAuth = ? // TODO: set this
+  // const canChangeEmail = serviceName !== MozServices.Default && !!isForceAuth;
+  const canChangeEmail = true;
+
+  // const isOAuth = ? // TODO: set this
+  // const isCWTSEnabled = serviceName === MozServices.FirefoxSync && isOAuth;
+  const isCWTSEnabled = false;
+
+  // TODO: set this
+  const areNewslettersEnabled = false;
+
   const onFocusMetricsEvent = `${viewName}.engage`;
+  // @ts-ignore; // remove this when serviceName is pulled from Relier
   const isPocketClient = serviceName === MozServices.Pocket;
 
   const [ageCheckErrorText, setAgeCheckErrorText] = useState<string>('');
@@ -74,6 +92,13 @@ const Signup = ({
     isAccountSuggestionBannerVisible,
     setIsAccountSuggestionBannerVisible,
   ] = useState<boolean>(isPocketClient);
+
+  useEffect(() => {
+    if (!email) {
+      // Perform a hard navigate back to the Backbone app until the index page is done
+      window.location.href = '/';
+    }
+  }, [email]);
 
   // prefill selected sync engines based on defaultChecked state
   const initialSyncEnginesList: string[] = engines
@@ -197,6 +222,7 @@ const Signup = ({
       </div>
 
       <FormPasswordWithBalloons
+        email={email || ''}
         {...{
           formState,
           errors,
@@ -204,7 +230,6 @@ const Signup = ({
           register,
           getValues,
           onFocus,
-          email,
           onFocusMetricsEvent,
           passwordMatchErrorText,
           setPasswordMatchErrorText,
@@ -260,11 +285,7 @@ const Signup = ({
         )}
       </FormPasswordWithBalloons>
 
-      {isPocketClient ? (
-        <TermsPrivacyAgreement isPocketClient />
-      ) : (
-        <TermsPrivacyAgreement />
-      )}
+      <TermsPrivacyAgreement {...{ isPocketClient }} />
     </>
   );
 };

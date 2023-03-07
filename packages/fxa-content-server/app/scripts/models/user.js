@@ -52,6 +52,7 @@ var User = Backbone.Model.extend({
   defaults: {
     // uniqueUserId is a stable identifier for this User on this computer.
     uniqueUserId: null,
+    emailFromIndex: null,
   },
 
   resumeTokenFields: ['uniqueUserId'],
@@ -129,6 +130,7 @@ var User = Backbone.Model.extend({
   // raw account data.
   initAccount(accountData) {
     if (accountData instanceof Account) {
+      this.set({ emailFromIndex: accountData.get('email') });
       // we already have an account instance
       return accountData;
     }

@@ -3,12 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from 'react';
-import Signup, { SignupProps } from '.';
+import Signup from '.';
 import AppLayout from '../../components/AppLayout';
 import { LocationProvider } from '@reach/router';
 import { Meta } from '@storybook/react';
 import { MozServices } from '../../lib/types';
-import { MOCK_ACCOUNT } from '../../models/mocks';
 import { withLocalization } from '../../../.storybook/decorators';
 
 export default {
@@ -17,11 +16,11 @@ export default {
   decorators: [withLocalization],
 } as Meta;
 
-const storyWithProps = (props?: Partial<SignupProps>) => {
+const storyWithProps = (props?: any) => {
   const story = () => (
     <LocationProvider>
       <AppLayout>
-        <Signup email={MOCK_ACCOUNT.primaryEmail.email} />
+        <Signup />
       </AppLayout>
     </LocationProvider>
   );
