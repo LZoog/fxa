@@ -12,3 +12,5 @@ choose-newsletters-option-take-action-for-the-internet =
 # Newsletter checklist item
 choose-newsletters-option-knowledge-is-power =
   .label = Be safer and smarter online
+choose-newsletters-option-test-products =
+  .label = Test new { -brand-firefox } products

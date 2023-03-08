@@ -16,18 +16,18 @@ export type Newsletter = {
 
 export const newsletters: Newsletter[] = [
   {
-    label: 'Get the latest news about Mozilla and Firefox',
-    slug: 'firefox-accounts-journey',
-    ftlId: 'choose-newsletters-option-firefox-accounts-journey',
+    label: 'Be safer and smarter online',
+    slug: 'knowledge-is-power',
+    ftlId: 'choose-newsletters-option-knowledge-is-power',
+  },
+  {
+    label: 'Test new Firefox products',
+    slug: 'test-pilot',
+    ftlId: 'choose-newsletters-option-test-products',
   },
   {
     label: 'Take action to keep the internet healthy',
     slug: 'take-action-for-the-internet',
     ftlId: 'choose-newsletters-option-take-action-for-the-internet',
-  },
-  {
-    label: 'Be safer and smarter online',
-    slug: 'knowledge-is-power',
-    ftlId: 'choose-newsletters-option-knowledge-is-power',
   },
 ];

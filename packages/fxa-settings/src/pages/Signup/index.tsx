@@ -26,6 +26,7 @@ import TermsPrivacyAgreement from '../../components/TermsPrivacyAgreement';
 import Banner, { BannerType } from '../../components/Banner';
 import CardHeader from '../../components/CardHeader';
 import { REACT_ENTRYPOINT } from '../../constants';
+import AppLayout from '../../components/AppLayout';
 
 // interface SharedProps {
 //   email: string;
@@ -170,7 +171,7 @@ const Signup = (_: RouteComponentProps) => {
   return (
     // TODO: if force_auth && AuthErrors.is(error, 'DELETED_ACCOUNT') :
     //       - forceMessage('Account no longer exists. Recreate it?')
-    <>
+    <AppLayout>
       <CardHeader
         headingText="Set your password"
         headingTextFtlId="signup-heading"
@@ -209,7 +210,7 @@ const Signup = (_: RouteComponentProps) => {
         </Banner>
       )}
 
-      <div className="mt-4 mb-6">
+      <div className="mt-4 mb-9">
         <p className="break-all">{email}</p>
 
         {canChangeEmail && (
@@ -272,21 +273,22 @@ const Signup = (_: RouteComponentProps) => {
           </LinkExternal>
         </FtlMsg>
 
-        {isCWTSEnabled && (
+        {isCWTSEnabled ? (
           <ChooseWhatToSync
             {...{ engines, selectedEngines, setSelectedEngines }}
           />
-        )}
-
-        {areNewslettersEnabled && (
+        ) : !isPocketClient ? (
           <ChooseNewsletters
             {...{ newsletters, selectedNewsletters, setSelectedNewsletters }}
           />
-        )}
+        ) : null}
       </FormPasswordWithBalloons>
 
-      <TermsPrivacyAgreement {...{ isPocketClient }} />
-    </>
+      <TermsPrivacyAgreement
+        {...{ isPocketClient }}
+        className="text-grey-500 mt-5 text-xs"
+      />
+    </AppLayout>
   );
 };
 

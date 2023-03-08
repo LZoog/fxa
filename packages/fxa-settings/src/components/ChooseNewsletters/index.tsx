@@ -33,14 +33,14 @@ const ChooseNewsletters = ({
   return (
     <>
       <FtlMsg id="choose-newsletters-prompt">
-        <p className="text-start mb-1">
+        <h2 className="mb-5 text-start">
           Practical knowledge is coming to your inbox. Sign up for more:
-        </p>
+        </h2>
       </FtlMsg>
       <ul className="flex flex-wrap text-start text-sm mb-4">
         {newsletters.map((newsletter) => {
           return (
-            <li key={newsletter.ftlId}>
+            <li key={newsletter.ftlId} className="basis-full">
               <FtlMsg id={newsletter.ftlId} attrs={{ label: true }}>
                 <InputCheckboxBlue
                   label={newsletter.label}

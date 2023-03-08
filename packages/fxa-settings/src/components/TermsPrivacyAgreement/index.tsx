@@ -9,13 +9,15 @@ import LinkExternal from 'fxa-react/components/LinkExternal';
 
 export type TermsPrivacyAgreementProps = {
   isPocketClient?: boolean;
+  className?: string;
 };
 
 const TermsPrivacyAgreement = ({
   isPocketClient = false,
+  className = 'text-grey-500 my-5 text-xs',
 }: TermsPrivacyAgreementProps) => {
   return (
-    <div className="text-grey-500 my-5 text-xs">
+    <div {...{ className }}>
       {isPocketClient ? (
         <>
           <FtlMsg id="terms-privacy-agreement-intro">
