@@ -217,7 +217,7 @@ const AccountRecoveryResetPassword = ({
             }
           )}
           email={state.email}
-          onFocusMetricsEvent={`${viewName}.engage`}
+          onEngageMetricsEvent={`${viewName}.engage`}
         />
       </section>
 

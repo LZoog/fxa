@@ -267,7 +267,7 @@ const CompleteResetPassword = ({
               emailToHashWith: params.emailToHashWith,
             })
           )}
-          onFocusMetricsEvent={`${viewName}.engage`}
+          onEngageMetricsEvent={`${viewName}.engage`}
         />
       </section>
       <LinkRememberPassword email={params.email} />

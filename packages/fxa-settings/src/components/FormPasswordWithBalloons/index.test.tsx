@@ -36,14 +36,14 @@ describe('FormPasswordWithBalloons component', () => {
     screen.getByRole('button', { name: 'Create account' });
   });
 
-  // this isn't passing?
   it('displays the PasswordStrengthBalloon on render and when the new password field is in focus', async () => {
     render(<Subject passwordFormType="reset" />);
     screen.getByText('Password requirements');
 
     typeByLabelText('New password')('testo123');
+    const newPasswordField = screen.getByLabelText('New password');
 
-    fireEvent.blur(screen.getByLabelText('Re-enter password'));
+    fireEvent.blur(newPasswordField);
 
     await waitFor(
       () => {
@@ -52,11 +52,11 @@ describe('FormPasswordWithBalloons component', () => {
         ).not.toBeInTheDocument();
       },
       {
-        timeout: 3000,
+        timeout: SHOW_BALLOON_TIMEOUT,
       }
     );
 
-    fireEvent.focus(screen.getByLabelText('New password'));
+    fireEvent.focus(newPasswordField);
 
     await waitFor(
       () => expect(screen.getByText('Password requirements')).toBeVisible(),

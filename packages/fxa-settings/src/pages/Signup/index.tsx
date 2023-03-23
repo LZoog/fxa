@@ -63,7 +63,7 @@ const Signup = ({
 }: SignupProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
-  const onFocusMetricsEvent = `${viewName}.engage`;
+  const onEngageMetricsEvent = `${viewName}.engage`;
   const isPocketClient = serviceName === MozServices.Pocket;
 
   const [ageCheckErrorText, setAgeCheckErrorText] = useState<string>('');
@@ -113,7 +113,7 @@ const Signup = ({
 
   const onFocus = () => {
     if (!isFocused) {
-      logViewEvent('flow', onFocusMetricsEvent, REACT_ENTRYPOINT);
+      logViewEvent('flow', onEngageMetricsEvent, REACT_ENTRYPOINT);
       setIsFocused(true);
     }
   };
@@ -212,7 +212,7 @@ const Signup = ({
           watch,
           onFocus,
           email,
-          onFocusMetricsEvent,
+          onEngageMetricsEvent,
           passwordMatchErrorText,
           setPasswordMatchErrorText,
         }}

@@ -24,7 +24,7 @@ export type FormPasswordWithBalloonsProps = {
   register: UseFormMethods['register'];
   watch: UseFormMethods['watch'];
   email: string;
-  onFocusMetricsEvent?: string;
+  onEngageMetricsEvent?: string;
   passwordMatchErrorText: string;
   setPasswordMatchErrorText: React.Dispatch<React.SetStateAction<string>>;
   children?: React.ReactNode;
@@ -72,7 +72,7 @@ export const FormPasswordWithBalloons = ({
   trigger,
   register,
   watch,
-  onFocusMetricsEvent,
+  onEngageMetricsEvent,
   passwordMatchErrorText,
   setPasswordMatchErrorText,
   children,
@@ -144,8 +144,8 @@ export const FormPasswordWithBalloons = ({
 
   const onNewPwdFocus = () => {
     showNewPwdBalloon();
-    if (!hasNewPwdFocused && onFocusMetricsEvent) {
-      logViewEvent(settingsViewName, onFocusMetricsEvent);
+    if (!hasNewPwdFocused && onEngageMetricsEvent) {
+      logViewEvent(settingsViewName, onEngageMetricsEvent);
       setHasNewPwdFocused(true);
     }
   };
@@ -158,6 +158,17 @@ export const FormPasswordWithBalloons = ({
     if (newPassword !== '' && !errors.newPassword) {
       hideNewPwdBalloon();
     }
+  };
+
+  const onNewPwdChange = () => {
+    if (!hasUserTakenAction) {
+      setHasUserTakenAction(true);
+
+      if (onEngageMetricsEvent) {
+        logViewEvent(settingsViewName, onEngageMetricsEvent);
+      }
+    }
+    newPassword === confirmPassword && setPasswordMatchErrorText('');
   };
 
   const onBlurConfirmPassword = () => {
@@ -184,13 +195,9 @@ export const FormPasswordWithBalloons = ({
               autoFocus
               className="text-start"
               label={templateValues.passwordLabel}
-              onFocusCb={onFocusMetricsEvent ? onNewPwdFocus : undefined}
+              onFocusCb={onNewPwdFocus}
               onBlurCb={onNewPwdBlur}
-              onChange={() => {
-                !hasUserTakenAction && setHasUserTakenAction(true);
-                newPassword === confirmPassword &&
-                  setPasswordMatchErrorText('');
-              }}
+              onChange={onNewPwdChange}
               hasErrors={
                 formState.dirtyFields.newPassword ? errors.newPassword : false
               }
