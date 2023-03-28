@@ -32,12 +32,14 @@ import {
   setUserPreference,
   usePageViewEvent,
 } from '../../../lib/metrics';
-import { useNotifier, useBroker, useAccount } from '../../../models/hooks';
+import { useNotifier, useAccount } from '../../../models/hooks';
 import { LinkStatus } from '../../../lib/types';
 import {
   CreateAccountRecoveryKeyInfo,
   CreateRelier,
   CreateVerificationInfo,
+  CreateIntegration,
+  IntegrationType,
 } from '../../../models';
 
 // This page is based on complete_reset_password but has been separated to align with the routes.
@@ -78,11 +80,11 @@ const AccountRecoveryResetPassword = ({
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
   const notifier = useNotifier();
-  const broker = useBroker();
   const account = useAccount();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const integration = CreateIntegration();
   const relier = CreateRelier();
   const verificationInfo = CreateVerificationInfo();
   const accountRecoveryKeyInfo = CreateAccountRecoveryKeyInfo();
@@ -259,7 +261,77 @@ const AccountRecoveryResetPassword = ({
       logViewEvent(viewName, 'verification.success');
 
       // FOLLOW-UP: Functionality not yet available.
-      await broker.invokeBrokerMethod('afterCompleteResetPassword', account);
+      // await broker.invokeBrokerMethod('afterCompleteResetPassword', account);
+
+      switch (integration.type) {
+        case IntegrationType.Web:
+          // navigate to Settings w/message
+
+          // const redirectToSettingsAfterResetBehavior = new NavigateBehavior('settings', {
+          //   success: t('Password reset successfully'),
+          // });
+          break;
+        case IntegrationType.SyncWebChannel:
+          // This method is not in the fx-sync-channel because only the initiating
+          // tab can send a login message for fx-desktop-v1 and it's descendents.
+          // Messages from other tabs are ignored.
+          // return Promise.resolve()
+          //   .then(() => {
+          //     if (
+          //       account.get('verified') &&
+          //       !account.get('verificationReason') &&
+          //       !account.get('verificationMethod')
+          //     ) {
+          //       // only notify the browser of the login if the user does not have
+          //       // to verify their account/session
+          //       return this._notifyRelierOfLogin(account);
+          //     }
+          //   })
+          //   .then(() => proto.afterCompleteResetPassword.call(this, account));
+          break;
+        case IntegrationType.OAuthRedirect:
+          // return proto.afterCompleteResetPassword
+          // .call(this, account)
+          // .then((behavior) => {
+          //   // a user can only redirect back to the relier from the original tab, this avoids
+          //   // two tabs redirecting.
+          //   if (
+          //     account.get('verified') &&
+          //     !account.get('verificationReason') &&
+          //     !account.get('verificationMethod') &&
+          //     this.isOriginalTab()
+          //   ) {
+          //     return this.finishOAuthSignInFlow(account);
+          //   } else if (!this.isOriginalTab()) {
+          //     // allows a navigation to a "complete" screen or TOTP screen if it is setup
+          //     if (
+          //       account.get('verificationMethod') ===
+          //         VerificationMethods.TOTP_2FA &&
+          //       account.get('verificationReason') === VerificationReasons.SIGN_IN &&
+          //       this.relier.has('state')
+          //     ) {
+          //       return new NavigateBehavior('signin_totp_code', { account });
+          //     }
+
+          //     return new NullBehavior();
+          //   }
+
+          //   return behavior;
+          // });
+          break;
+        default:
+        //   return this.unpersistVerificationData(account).then(() => {
+        // Users with TOTP enabled need to enter a TOTP code to complete password reset.
+        //   if (
+        //     account.get('verificationMethod') === VerificationMethods.TOTP_2FA &&
+        //     account.get('verificationReason') === VerificationReasons.SIGN_IN
+        //   ) {
+        //     return new NavigateBehavior('signin_totp_code', { account });
+        //   }
+
+        //   return this.getBehavior('afterCompleteResetPassword');
+        // });
+      }
 
       alertSuccess();
       navigateAway();
