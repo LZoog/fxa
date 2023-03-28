@@ -9,7 +9,7 @@ import {
   useLocation,
   useNavigate,
 } from '@reach/router';
-import { FtlMsg } from 'fxa-react/lib/utils';
+import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
 import { useForm } from 'react-hook-form';
 
 import AppLayout from '../../../components/AppLayout';
@@ -32,13 +32,17 @@ import {
   setUserPreference,
   usePageViewEvent,
 } from '../../../lib/metrics';
-import { useNotifier, useBroker, useAccount } from '../../../models/hooks';
+import { useNotifier, useAccount, useSession } from '../../../models/hooks';
 import { LinkStatus } from '../../../lib/types';
 import {
   CreateAccountRecoveryKeyInfo,
   CreateRelier,
   CreateVerificationInfo,
+  CreateIntegration,
+  IntegrationType,
 } from '../../../models';
+import { notifyFirefoxOfLogin } from '../../../lib/channels/helpers';
+import { isOriginalTab } from '../../../lib/storage-utils';
 
 // This page is based on complete_reset_password but has been separated to align with the routes.
 
@@ -78,11 +82,12 @@ const AccountRecoveryResetPassword = ({
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
   const notifier = useNotifier();
-  const broker = useBroker();
   const account = useAccount();
   const navigate = useNavigate();
+  const session = useSession();
   const location = useLocation();
 
+  const integration = CreateIntegration();
   const relier = CreateRelier();
   const verificationInfo = CreateVerificationInfo();
   const accountRecoveryKeyInfo = CreateAccountRecoveryKeyInfo();
@@ -124,6 +129,10 @@ const AccountRecoveryResetPassword = ({
   if (linkStatus === 'expired') {
     return <LinkExpiredResetPassword email={state.email} {...{ viewName }} />;
   }
+
+  // TODO: implement persistVerificationData,
+  // _finishPasswordResetDifferentBrowser + finishPasswordResetSameBrowser
+  // + check afterResetPasswordConfirmationPoll (maybe this was done with `useInterval`?)
 
   return (
     <AppLayout>
@@ -258,8 +267,29 @@ const AccountRecoveryResetPassword = ({
       relier.resetPasswordConfirm = true;
       logViewEvent(viewName, 'verification.success');
 
-      // FOLLOW-UP: Functionality not yet available.
-      await broker.invokeBrokerMethod('afterCompleteResetPassword', account);
+      switch (integration.type) {
+        case IntegrationType.SyncDesktop:
+          notifyFirefoxOfLogin(account, session.verified);
+          break;
+        case IntegrationType.OAuth:
+          if (
+            session.verified &&
+            // a user can only redirect back to the relier from the original tab
+            // to avoid two tabs redirecting.
+            isOriginalTab()
+          ) {
+            // TODO: this.finishOAuthSignInFlow(account))
+            // Handle this in the OAuth React epic, and remove the `!this.relier.isOAuth`
+            // check from router.js
+            return;
+          }
+          break;
+        case IntegrationType.Web:
+          // no-op, don't run default
+          break;
+        default:
+        // TODO: run unpersistVerificationData when reliers are combined
+      }
 
       alertSuccess();
       navigateAway();
@@ -290,6 +320,13 @@ const AccountRecoveryResetPassword = ({
     setUserPreference('account-recovery', account.recoveryKey);
     logViewEvent(viewName, 'recovery-key-consume.success');
 
+    // When users reset a PW with their recovery key we always want to navigate to
+    // the page encouraging them to generate another. If they don't have a verified
+    // session, clicking on any link taking them into Settings should take them to
+    // `signin_token_code` to verify their session first, then take them to Settings.
+    // We don't prompt them for a TOTP code if enabled, unlike a regular password reset,
+    // because posession of the primary email to use the reset link while using a
+    // recovery key is sufficient proof of ownership.
     navigate(`/reset_password_with_recovery_key_verified?${location.search}`);
   }
 
