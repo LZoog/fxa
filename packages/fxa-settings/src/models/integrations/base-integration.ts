@@ -7,11 +7,15 @@ import { SyncIntegrationFeatures } from './base-sync-integration';
 // import { ModelDataProvider } from '../../lib/model-data';
 
 // TODO: account for 'pairing' auth-brokers
-export enum IntegrationType {
+
+export enum IntegrationBaseType {
   Base,
+  Sync,
+}
+
+export enum IntegrationType {
   OAuthRedirect,
   OAuthWebChannel,
-  Sync,
   SyncChannel,
   SyncWebChannel,
   V3Desktop,
@@ -20,11 +24,15 @@ export enum IntegrationType {
 
 export abstract class Integration {
   type: IntegrationType;
-  abstract features: Partial<IntegrationFeatures | SyncIntegrationFeatures>;
+  abstract features: Partial<IntegrationFeatures>;
 
   constructor(type: IntegrationType) {
     this.type = type;
   }
+}
+
+export abstract class SyncIntegration extends Integration {
+  abstract features: Partial<SyncIntegrationFeatures>;
 }
 
 export type IntegrationFeatures = {
