@@ -3,9 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { IntegrationType } from './base-integration';
-import { BaseSyncIntegration } from './sync-basic-integration';
+import { SyncBasicIntegration } from './sync-basic-integration';
 
-export class SyncDesktopIntegration extends BaseSyncIntegration {
+export class SyncDesktopIntegration extends SyncBasicIntegration {
   constructor() {
     super(IntegrationType.SyncDesktop);
   }
