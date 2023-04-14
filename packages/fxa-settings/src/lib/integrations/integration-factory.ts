@@ -2,11 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { OAuthIntegration } from '../../models';
 import {
-  Integration,
-  OAuthRedirectIntegration,
-} from '../../models/integrations/base-integration';
+  OAuthIntegration,
+  PairingAuthorityIntegration,
+  PairingSupplicantIntegration,
+  SyncBasicIntegration,
+  SyncDesktopIntegration,
+  WebIntegration,
+} from '../../models';
+import { Integration } from '../../models/integrations/base-integration';
 import { ModelDataStore, UrlQueryData } from '../model-data';
 import { ReachRouterWindow } from '../window';
 import { DefaultIntegrationFlags } from './integration-factory-flags';
@@ -27,6 +31,8 @@ export class IntegrationFactory {
       opts.flags || new DefaultIntegrationFlags(new UrlQueryData(window));
   }
 
+  private chooseIntegration() {}
+
   /**
    * Produces an integration object given the current data store's state.
    * @returns An integration implementation.
@@ -37,18 +43,24 @@ export class IntegrationFactory {
 
     let integration: Integration;
 
-    // covers OAuth, PairingSupplicant, PairingAuthority (even though pairing authority extends from base?)
     if (flags.isOAuth()) {
+      if (flags.isDevicePairingAsAuthority()) {
+        return new PairingAuthorityIntegration();
+      }
+      if (flags.isDevicePairingAsSupplicant()) {
+        return new PairingSupplicantIntegration();
+      }
       integration = this.createOAuthIntegration(data);
+    } else if (this.isVerification()) {
+      integration = this.getVerificationIntegration();
 
-      // SyncBase
-    } else if (flags.isVerification()) {
-      // if isVerification: getVerificationContext
-    } else {
       // must bind this data or... somehow combine with or read from relier.
-      const contextParam = this._searchParam('context');
+      // const contextParam = this._searchParam('context');
       // if context is v3desktop, return SyncDesktop
-      // else, return Web
+    } else if (this._searchParam('context') === 'fx_desktop_v3') {
+      integration = new SyncDesktopIntegration();
+    } else {
+      integration = new WebIntegration();
     }
 
     // Run final validation. This will ensure that the all fields decorated with an @bind are in the
@@ -75,7 +87,7 @@ export class IntegrationFactory {
     // },
   }
 
-  private getVerificationContext() {
+  private getVerificationIntegration() {
     // If the user verifies in the same browser, use the same context that
     // was used to sign up to allow the verification tab to have the same
     // capabilities as the signup tab.
@@ -92,31 +104,34 @@ export class IntegrationFactory {
       return sameBrowserVerificationContext;
     } else if (this._isServiceSync()) {
       // user is verifying in a different browser.
-      return Constants.FX_SYNC_CONTEXT;
+      return new SyncBasicIntegration();
     } else if (this._isServiceOAuth()) {
       // oauth, user is verifying in a different browser.
-      return Constants.OAUTH_CONTEXT;
+      return new OAuthIntegration();
     }
-    return Constants.CONTENT_SERVER_CONTEXT;
+    return new WebIntegration();
   }
 
   private createOAuthIntegration(data: ModelDataStore) {
     const flags = this.flags;
 
-    // TODO: pairing integrations
-    // if (flags.isDevicePairingAsAuthority()) {
-    //   return new PairingAuthorityIntegration(data);
-    // }
+    if (flags.isDevicePairingAsAuthority()) {
+      return new PairingAuthorityIntegration();
+    }
+    if (flags.isDevicePairingAsSupplicant()) {
+      return new PairingSupplicantIntegration();
+    }
+
     // if (flags.isOAuthWebChannel() && flags.isDevicePairingAsSupplicant()) {
-    //   return new PairingWebChannelSupplicantIntegration(data);
+    //   return new PairingWebChannelSupplicantIntegration();
     // }
 
     // if (flags.isDevicePairingAsSupplicant()) {
     //   return new PairingSupplicantIntegration(data);
     // }
-    if (flags.isOAuthWebChannel()) {
-      return new OAuthIntegration();
-    }
+    // if (flags.isOAuthWebChannel()) {
+    //   return new OAuthIntegration();
+    // }
 
     // TODO: do we still need this? Can't find anything about Chrome for Android disabling
     // redirects and forcing a user action instead unless users manually turn it off
@@ -124,6 +139,6 @@ export class IntegrationFactory {
     //   return new ChromeAndroidIntegration(data);
     // }
 
-    return new OAuthRedirectIntegration(data);
+    return new OAuthIntegration();
   }
 }
