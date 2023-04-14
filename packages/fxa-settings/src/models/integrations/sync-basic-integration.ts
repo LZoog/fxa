@@ -8,15 +8,25 @@ import {
   IntegrationType,
 } from './base-integration';
 
-export type SyncIntegrationFeatures = IntegrationFeatures & {
+type SyncIntegrationFeatures = IntegrationFeatures & {
   sendChangePasswordNotice: boolean;
 };
 
-export class BaseSyncIntegration extends BaseIntegration {
+type SyncIntegrationTypes =
+  | IntegrationType.SyncBasic
+  | IntegrationType.SyncDesktop;
+
+/**
+ * This integration offers very basic Sync page support _without_ browser communication
+ * via webchannels. Currently it is only used 1) when a user is on a verification page
+ * through Sync in a different browser, and 2) as a base class for desktop Sync support,
+ * which has webchannel support.
+ */
+export class SyncBasicIntegration extends BaseIntegration {
   protected integrationFeatures: SyncIntegrationFeatures;
 
   constructor(
-    type: IntegrationType = IntegrationType.Sync,
+    type: SyncIntegrationTypes = IntegrationType.SyncBasic,
     features: Partial<SyncIntegrationFeatures> = {}
   ) {
     super(type);

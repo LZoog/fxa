@@ -2,25 +2,31 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { SyncIntegrationFeatures } from './base-sync-integration';
-
-// import { ModelDataProvider } from '../../lib/model-data';
-
-// TODO: account for 'pairing' auth-brokers
-
-export enum IntegrationBaseType {
-  Base,
-  Sync,
-}
+// export enum IntegrationBaseType {
+//   Base,
+//   Sync,
+// }
 
 export enum IntegrationType {
-  OAuthRedirect,
-  OAuthWebChannel,
-  SyncChannel,
-  SyncWebChannel,
-  V3Desktop,
-  Web,
+  OAuth, // should check for this._searchParam('context') === Constants.OAUTH_WEBCHANNEL_CONTEXT? (oauth_webchannel_v1) for web channel support
+  PairingAuthority, // TODO
+  PairingSupplicant, // TODO
+  SyncBasic, // only used when user is on a verification page through sync & verifying in a different browser (🥴)
+  SyncDesktop,
+  Web, // default
 }
+
+// pairing authority just needs base
+// pairing supplicant will need oauth webchannel support (extend from oauth)
+
+// export enum IntegrationType {
+//   OAuthRedirect,
+//   OAuthWebChannel,
+//   SyncChannel,
+//   SyncWebChannel,
+//   V3Desktop,
+//   Web, // default
+// }
 
 export abstract class Integration {
   type: IntegrationType;
@@ -29,10 +35,6 @@ export abstract class Integration {
   constructor(type: IntegrationType) {
     this.type = type;
   }
-}
-
-export abstract class SyncIntegration extends Integration {
-  abstract features: Partial<SyncIntegrationFeatures>;
 }
 
 export type IntegrationFeatures = {
@@ -54,7 +56,6 @@ export type IntegrationFeatures = {
    * subsequent signin attempts rather than generating a new token each time?
    */
   reuseExistingSession: boolean;
-
   /**
    * Does this environment support pairing?
    */
@@ -76,7 +77,7 @@ export class BaseIntegration extends Integration {
   protected integrationFeatures: IntegrationFeatures;
 
   constructor(
-    type: IntegrationType = IntegrationType.Base,
+    type: IntegrationType,
     features: Partial<IntegrationFeatures> = {}
   ) {
     super(type);
