@@ -11,7 +11,7 @@ export enum IntegrationType {
   OAuth, // should check for this._searchParam('context') === Constants.OAUTH_WEBCHANNEL_CONTEXT? (oauth_webchannel_v1) for web channel support
   PairingAuthority, // TODO
   PairingSupplicant, // TODO
-  SyncBasic, // only used when user is on a verification page through sync & verifying in a different browser (🥴)
+  SyncBasic,
   SyncDesktop,
   Web, // default
 }

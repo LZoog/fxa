@@ -8,20 +8,33 @@ import {
   IntegrationType,
 } from './base-integration';
 
+type OAuthIntegrationFeatures = IntegrationFeatures & {
+  channelSupport: boolean;
+};
+
 type OAuthIntegrationTypes =
   | IntegrationType.OAuth
   | IntegrationType.PairingSupplicant;
 
 export class OAuthIntegration extends BaseIntegration {
+  protected integrationFeatures: OAuthIntegrationFeatures;
+
   constructor(type: OAuthIntegrationTypes = IntegrationType.OAuth) {
     super(type);
-  }
-
-  get features(): IntegrationFeatures {
-    return {
+    this.integrationFeatures = {
       ...super.features,
       handleSignedInNotification: false,
       reuseExistingSession: true,
+      channelSupport: this.hasChannelSupport(),
     };
+  }
+
+  get features(): OAuthIntegrationFeatures {
+    return this.integrationFeatures;
+  }
+
+  private hasChannelSupport(): boolean {
+    // TODO: check for this._searchParam('context') === Constants.OAUTH_WEBCHANNEL_CONTEXT (`oauth_webchannel_v1`)
+    return false;
   }
 }

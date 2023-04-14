@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { OAuthIntegration } from '../../models';
 import {
   Integration,
   OAuthRedirectIntegration,
@@ -34,12 +35,20 @@ export class IntegrationFactory {
     const data = this.data;
     const flags = this.flags;
 
-    let integration: Integration | undefined;
+    let integration: Integration;
 
+    // covers OAuth, PairingSupplicant, PairingAuthority (even though pairing authority extends from base?)
     if (flags.isOAuth()) {
       integration = this.createOAuthIntegration(data);
+
+      // SyncBase
+    } else if (flags.isVerification()) {
+      // if isVerification: getVerificationContext
     } else {
-      // TODO, port over `_getVerificationContext` and `_getContext` from app-start
+      // must bind this data or... somehow combine with or read from relier.
+      const contextParam = this._searchParam('context');
+      // if context is v3desktop, return SyncDesktop
+      // else, return Web
     }
 
     // Run final validation. This will ensure that the all fields decorated with an @bind are in the
@@ -49,6 +58,46 @@ export class IntegrationFactory {
     // integration?.validate();
 
     return integration;
+  }
+
+  private isVerification() {
+    // return this._isSignUpVerification() ||
+    // this._isPasswordResetVerification() ||
+    // this._isReportSignIn()
+    // _isSignUpVerification() {
+    //   return this._searchParam('code') && this._searchParam('uid');
+    // },
+    // _isPasswordResetVerification() {
+    //   return this._searchParam('code') && this._searchParam('token');
+    // },
+    // _isReportSignIn() {
+    //   return this._window.location.pathname === '/report_signin';
+    // },
+  }
+
+  private getVerificationContext() {
+    // If the user verifies in the same browser, use the same context that
+    // was used to sign up to allow the verification tab to have the same
+    // capabilities as the signup tab.
+    // For users that verify in a 2nd browser, choose the most appropriate
+    // broker based on the service to allow the verification tab to have
+    // service specific behaviors and messaging. For Sync, use the generic
+    // Sync broker, for OAuth, use the OAuth broker.
+    // If no service is specified and the user is verifies in a 2nd browser,
+    // then fall back to the default content server context.
+    const sameBrowserVerificationContext =
+      this._getSameBrowserVerificationModel('context').get('context');
+    if (sameBrowserVerificationContext) {
+      // user is verifying in the same browser, use the same context they signed up with.
+      return sameBrowserVerificationContext;
+    } else if (this._isServiceSync()) {
+      // user is verifying in a different browser.
+      return Constants.FX_SYNC_CONTEXT;
+    } else if (this._isServiceOAuth()) {
+      // oauth, user is verifying in a different browser.
+      return Constants.OAUTH_CONTEXT;
+    }
+    return Constants.CONTENT_SERVER_CONTEXT;
   }
 
   private createOAuthIntegration(data: ModelDataStore) {
@@ -61,11 +110,12 @@ export class IntegrationFactory {
     // if (flags.isOAuthWebChannel() && flags.isDevicePairingAsSupplicant()) {
     //   return new PairingWebChannelSupplicantIntegration(data);
     // }
+
     // if (flags.isDevicePairingAsSupplicant()) {
     //   return new PairingSupplicantIntegration(data);
     // }
     if (flags.isOAuthWebChannel()) {
-      return new OAuthWebChannelIntegration(data);
+      return new OAuthIntegration();
     }
 
     // TODO: do we still need this? Can't find anything about Chrome for Android disabling
