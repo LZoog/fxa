@@ -11,37 +11,37 @@ import {
   WebIntegration,
 } from '../../models';
 import { Integration } from '../../models/integrations/base-integration';
-import { ModelDataStore, UrlQueryData } from '../model-data';
+import { Constants } from '../constants';
+import { ModelDataStore, StorageData, UrlQueryData } from '../model-data';
+import { DefaultRelierFlags, RelierFlags } from '../reliers';
 import { ReachRouterWindow } from '../window';
-import { DefaultIntegrationFlags } from './integration-factory-flags';
-import { IntegrationFlags } from './interfaces/integration-flags';
 
 export class IntegrationFactory {
   protected readonly data: ModelDataStore;
-  public readonly flags: IntegrationFlags;
+  // TODO: Using Relier flags is temporary.
+  // In a follow up we will combine integrations with reliers, or clean this up.
+  public readonly flags: RelierFlags;
 
   constructor(opts: {
     data?: ModelDataStore;
-    flags?: IntegrationFlags;
+    flags?: RelierFlags;
     window: ReachRouterWindow;
   }) {
     const { window } = opts;
     this.data = opts.data || new UrlQueryData(window);
+    // TODO: Using Relier flags is temporary.
+    // In a follow up we will combine integrations with reliers, or clean this up.
     this.flags =
-      opts.flags || new DefaultIntegrationFlags(new UrlQueryData(window));
+      opts.flags ||
+      new DefaultRelierFlags(new UrlQueryData(window), new StorageData(window));
   }
-
-  private chooseIntegration() {}
 
   /**
    * Produces an integration object given the current data store's state.
    * @returns An integration implementation.
    */
-  getIntegration() {
-    const data = this.data;
+  getIntegration(): Integration {
     const flags = this.flags;
-
-    let integration: Integration;
 
     if (flags.isOAuth()) {
       if (flags.isDevicePairingAsAuthority()) {
@@ -50,41 +50,15 @@ export class IntegrationFactory {
       if (flags.isDevicePairingAsSupplicant()) {
         return new PairingSupplicantIntegration();
       }
-      integration = this.createOAuthIntegration(data);
-    } else if (this.isVerification()) {
-      integration = this.getVerificationIntegration();
-
-      // must bind this data or... somehow combine with or read from relier.
-      // const contextParam = this._searchParam('context');
-      // if context is v3desktop, return SyncDesktop
-    } else if (this._searchParam('context') === 'fx_desktop_v3') {
-      integration = new SyncDesktopIntegration();
-    } else {
-      integration = new WebIntegration();
+      return this.createOAuthIntegration();
+    } else if (flags.isVerification()) {
+      return this.getVerificationIntegration();
+    } else if (
+      flags.searchParam('context') === Constants.FX_DESKTOP_V3_CONTEXT
+    ) {
+      return new SyncDesktopIntegration();
     }
-
-    // Run final validation. This will ensure that the all fields decorated with an @bind are in the
-    // the correct state.
-    // Commenting this out so that pages will stop erroring out when we don't have sufficient query params.
-    // This might be a TODO to restore this once we have all the data we need in the React app.
-    // integration?.validate();
-
-    return integration;
-  }
-
-  private isVerification() {
-    // return this._isSignUpVerification() ||
-    // this._isPasswordResetVerification() ||
-    // this._isReportSignIn()
-    // _isSignUpVerification() {
-    //   return this._searchParam('code') && this._searchParam('uid');
-    // },
-    // _isPasswordResetVerification() {
-    //   return this._searchParam('code') && this._searchParam('token');
-    // },
-    // _isReportSignIn() {
-    //   return this._window.location.pathname === '/report_signin';
-    // },
+    return new WebIntegration();
   }
 
   private getVerificationIntegration() {
@@ -97,22 +71,43 @@ export class IntegrationFactory {
     // Sync broker, for OAuth, use the OAuth broker.
     // If no service is specified and the user is verifies in a 2nd browser,
     // then fall back to the default content server context.
-    const sameBrowserVerificationContext =
-      this._getSameBrowserVerificationModel('context').get('context');
+
+    // const sameBrowserVerificationContext =
+    //   this._getSameBrowserVerificationModel('context').get('context');
+    const sameBrowserVerificationContext = false;
     if (sameBrowserVerificationContext) {
       // user is verifying in the same browser, use the same context they signed up with.
-      return sameBrowserVerificationContext;
-    } else if (this._isServiceSync()) {
+
+      // TODO, dive into localStorage and check/set this value. Return the default for now
+      return new WebIntegration();
+    } else if (this.flags.isServiceSync()) {
       // user is verifying in a different browser.
       return new SyncBasicIntegration();
-    } else if (this._isServiceOAuth()) {
+    } else if (this.flags.isServiceOAuth()) {
       // oauth, user is verifying in a different browser.
       return new OAuthIntegration();
     }
     return new WebIntegration();
   }
 
-  private createOAuthIntegration(data: ModelDataStore) {
+  // TODO
+  // private _getSameBrowserVerificationModel(namespace) {
+  //   const urlVerificationInfo = Url.searchParams(this._window.location.search);
+
+  //   const verificationInfo = new SameBrowserVerificationModel(
+  //     {},
+  //     {
+  //       email: urlVerificationInfo.email,
+  //       namespace: namespace,
+  //       uid: urlVerificationInfo.uid,
+  //     }
+  //   );
+  //   verificationInfo.load();
+
+  //   return verificationInfo;
+  // }
+
+  private createOAuthIntegration() {
     const flags = this.flags;
 
     if (flags.isDevicePairingAsAuthority()) {
@@ -121,17 +116,6 @@ export class IntegrationFactory {
     if (flags.isDevicePairingAsSupplicant()) {
       return new PairingSupplicantIntegration();
     }
-
-    // if (flags.isOAuthWebChannel() && flags.isDevicePairingAsSupplicant()) {
-    //   return new PairingWebChannelSupplicantIntegration();
-    // }
-
-    // if (flags.isDevicePairingAsSupplicant()) {
-    //   return new PairingSupplicantIntegration(data);
-    // }
-    // if (flags.isOAuthWebChannel()) {
-    //   return new OAuthIntegration();
-    // }
 
     // TODO: do we still need this? Can't find anything about Chrome for Android disabling
     // redirects and forcing a user action instead unless users manually turn it off

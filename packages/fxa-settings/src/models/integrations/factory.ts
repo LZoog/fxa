@@ -8,13 +8,13 @@ import { IntegrationFactory } from '../../lib/integrations/integration-factory';
 import { DefaultIntegrationFlags } from '../../lib/integrations/integration-factory-flags';
 
 export function CreateIntegrationFlags() {
-  const { urlQueryData } = useContext(AppContext);
+  const { urlQueryData, storageData } = useContext(AppContext);
 
-  if (!urlQueryData) {
+  if (!urlQueryData || !storageData) {
     throw new Error('Are you forgetting an AppContext.Provider?');
   }
 
-  return new DefaultIntegrationFlags(urlQueryData);
+  return new DefaultIntegrationFlags(urlQueryData, storageData);
 }
 
 export function CreateIntegrationFactory() {
