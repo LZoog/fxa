@@ -32,7 +32,7 @@ import {
   setUserPreference,
   usePageViewEvent,
 } from '../../../lib/metrics';
-import { useNotifier, useAccount } from '../../../models/hooks';
+import { useNotifier, useAccount, useSession } from '../../../models/hooks';
 import { LinkStatus } from '../../../lib/types';
 import {
   CreateAccountRecoveryKeyInfo,
@@ -40,7 +40,10 @@ import {
   CreateVerificationInfo,
   CreateIntegration,
   IntegrationType,
+  isSyncDesktopIntegration,
+  isOAuthIntegration,
 } from '../../../models';
+import { notifyFirefoxOfLogin } from '../../../lib/channels/helpers';
 
 // This page is based on complete_reset_password but has been separated to align with the routes.
 
@@ -83,6 +86,7 @@ const AccountRecoveryResetPassword = ({
   const account = useAccount();
   const navigate = useNavigate();
   const location = useLocation();
+  const session = useSession();
 
   const integration = CreateIntegration();
   const relier = CreateRelier();
@@ -260,66 +264,42 @@ const AccountRecoveryResetPassword = ({
       relier.resetPasswordConfirm = true;
       logViewEvent(viewName, 'verification.success');
 
-      // FOLLOW-UP: Functionality not yet available.
-      // await broker.invokeBrokerMethod('afterCompleteResetPassword', account);
-
       switch (integration.type) {
-        case IntegrationType.Web:
-          // navigate to Settings w/message
-
-          // const redirectToSettingsAfterResetBehavior = new NavigateBehavior('settings', {
-          //   success: t('Password reset successfully'),
-          // });
+        case IntegrationType.SyncDesktop:
+          if (session.verified) {
+            // only notify the browser of the login if the user does not have
+            // to verify their account/session
+            // this._notifyRelierOfLogin(account);
+            notifyFirefoxOfLogin(account);
+          }
+          // then default behavior of showing TOTP page
           break;
-        case IntegrationType.SyncWebChannel:
-          // This method is not in the fx-sync-channel because only the initiating
-          // tab can send a login message for fx-desktop-v1 and it's descendents.
-          // Messages from other tabs are ignored.
-          // return Promise.resolve()
-          //   .then(() => {
-          //     if (
-          //       account.get('verified') &&
-          //       !account.get('verificationReason') &&
-          //       !account.get('verificationMethod')
-          //     ) {
-          //       // only notify the browser of the login if the user does not have
-          //       // to verify their account/session
-          //       return this._notifyRelierOfLogin(account);
-          //     }
-          //   })
-          //   .then(() => proto.afterCompleteResetPassword.call(this, account));
-          break;
-        case IntegrationType.OAuthRedirect:
-          // return proto.afterCompleteResetPassword
-          // .call(this, account)
-          // .then((behavior) => {
-          //   // a user can only redirect back to the relier from the original tab, this avoids
-          //   // two tabs redirecting.
-          //   if (
-          //     account.get('verified') &&
-          //     !account.get('verificationReason') &&
-          //     !account.get('verificationMethod') &&
-          //     this.isOriginalTab()
-          //   ) {
-          //     return this.finishOAuthSignInFlow(account);
-          //   } else if (!this.isOriginalTab()) {
-          //     // allows a navigation to a "complete" screen or TOTP screen if it is setup
-          //     if (
-          //       account.get('verificationMethod') ===
-          //         VerificationMethods.TOTP_2FA &&
-          //       account.get('verificationReason') === VerificationReasons.SIGN_IN &&
-          //       this.relier.has('state')
-          //     ) {
-          //       return new NavigateBehavior('signin_totp_code', { account });
-          //     }
-
-          //     return new NullBehavior();
-          //   }
-
-          //   return behavior;
-          // });
+        case IntegrationType.OAuth:
+          // TODO: is there a better way to make TS happy? Should we just use if/elses on the guards instead of switch?
+          if (isOAuthIntegration(integration)) {
+            if (
+              // TODO: !account.get('verificationReason') && !account.get('verificationMethod') checks
+              session.verified &&
+              // a user can only redirect back to the relier from the original tab
+              // to avoid two tabs redirecting.
+              integration.isOriginalTab()
+            ) {
+              // finish OAuth Signin Flow (this.finishOAuthSignInFlow(account))
+            } else if (!integration.isOriginalTab()) {
+              // TODO: check if relier has state, and VerificationReasons
+              // signin_TOTP_Code
+            } else {
+              // new null behavior
+            }
+          }
           break;
         default:
+        // IntegrationType.Web is default
+        // Take user to TOTP and after they verify, take them to Settings
+        // const redirectToSettingsAfterResetBehavior = new NavigateBehavior('settings', {
+        //   success: t('Password reset successfully'),
+        // });
+
         //   return this.unpersistVerificationData(account).then(() => {
         // Users with TOTP enabled need to enter a TOTP code to complete password reset.
         //   if (

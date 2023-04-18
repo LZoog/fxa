@@ -2,20 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { IntegrationFlags } from '../../integrations/interfaces/integration-flags';
+
 /**
  * Creation flags interface, controls the type of relier that is ultimately produced.
  */
 
-// TODO: Extending integration flags for reliers is temporary, these used to be `private` methods
-// on the relier factory flags.
-// In a follow up we will combine integrations with reliers, or clean this up
-export interface IntegrationFlags {
-  isServiceOAuth(): boolean;
-  isServiceSync(): boolean;
-  isVerification(): boolean;
-  // TODO: fix return type
-  searchParam(key: string): unknown;
-}
+// TODO: Extending integration flags for reliers is temporary, we will
+// combine integrations + reliers in a follow up
 export interface RelierFlags extends IntegrationFlags {
   isDevicePairingAsAuthority(): boolean;
   isDevicePairingAsSupplicant(): boolean;

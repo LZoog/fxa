@@ -2,31 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// export enum IntegrationBaseType {
-//   Base,
-//   Sync,
-// }
-
 export enum IntegrationType {
-  OAuth, // should check for this._searchParam('context') === Constants.OAUTH_WEBCHANNEL_CONTEXT? (oauth_webchannel_v1) for web channel support
+  OAuth,
   PairingAuthority, // TODO
   PairingSupplicant, // TODO
   SyncBasic,
   SyncDesktop,
   Web, // default
 }
-
-// pairing authority just needs base
-// pairing supplicant will need oauth webchannel support (extend from oauth)
-
-// export enum IntegrationType {
-//   OAuthRedirect,
-//   OAuthWebChannel,
-//   SyncChannel,
-//   SyncWebChannel,
-//   V3Desktop,
-//   Web, // default
-// }
 
 export abstract class Integration {
   type: IntegrationType;

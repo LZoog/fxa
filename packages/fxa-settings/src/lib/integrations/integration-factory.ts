@@ -18,9 +18,9 @@ import { ReachRouterWindow } from '../window';
 
 export class IntegrationFactory {
   protected readonly data: ModelDataStore;
-  // TODO: Using Relier flags is temporary.
-  // In a follow up we will combine integrations with reliers, or clean this up.
+  // TODO: Using Relier flags is temporary, we will combine them in a follow up.
   public readonly flags: RelierFlags;
+  public readonly storageData: StorageData;
 
   constructor(opts: {
     data?: ModelDataStore;
@@ -28,12 +28,12 @@ export class IntegrationFactory {
     window: ReachRouterWindow;
   }) {
     const { window } = opts;
+    this.storageData = new StorageData(window);
     this.data = opts.data || new UrlQueryData(window);
-    // TODO: Using Relier flags is temporary.
-    // In a follow up we will combine integrations with reliers, or clean this up.
+    // TODO: Using Relier flags is temporary, we will combine them in a follow up.
     this.flags =
       opts.flags ||
-      new DefaultRelierFlags(new UrlQueryData(window), new StorageData(window));
+      new DefaultRelierFlags(new UrlQueryData(window), this.storageData);
   }
 
   /**
@@ -48,7 +48,10 @@ export class IntegrationFactory {
         return new PairingAuthorityIntegration();
       }
       if (flags.isDevicePairingAsSupplicant()) {
-        return new PairingSupplicantIntegration();
+        return new PairingSupplicantIntegration(
+          this.storageData,
+          this.flags.searchParam
+        );
       }
       return this.createOAuthIntegration();
     } else if (flags.isVerification()) {
@@ -85,7 +88,7 @@ export class IntegrationFactory {
       return new SyncBasicIntegration();
     } else if (this.flags.isServiceOAuth()) {
       // oauth, user is verifying in a different browser.
-      return new OAuthIntegration();
+      return new OAuthIntegration(this.storageData, this.flags.searchParam);
     }
     return new WebIntegration();
   }
@@ -114,7 +117,10 @@ export class IntegrationFactory {
       return new PairingAuthorityIntegration();
     }
     if (flags.isDevicePairingAsSupplicant()) {
-      return new PairingSupplicantIntegration();
+      return new PairingSupplicantIntegration(
+        this.storageData,
+        this.flags.searchParam
+      );
     }
 
     // TODO: do we still need this? Can't find anything about Chrome for Android disabling
@@ -123,6 +129,6 @@ export class IntegrationFactory {
     //   return new ChromeAndroidIntegration(data);
     // }
 
-    return new OAuthIntegration();
+    return new OAuthIntegration(this.storageData, this.flags.searchParam);
   }
 }

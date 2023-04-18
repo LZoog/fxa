@@ -4,6 +4,7 @@
 
 import {
   BaseIntegration,
+  Integration,
   IntegrationFeatures,
   IntegrationType,
 } from './base-integration';
@@ -15,6 +16,12 @@ type SyncIntegrationFeatures = IntegrationFeatures & {
 type SyncIntegrationTypes =
   | IntegrationType.SyncBasic
   | IntegrationType.SyncDesktop;
+
+export function isSyncBasicIntegration(
+  integration: Integration
+): integration is SyncBasicIntegration {
+  return integration.type === IntegrationType.SyncBasic;
+}
 
 /**
  * This integration offers very basic Sync page support _without_ browser communication
@@ -38,12 +45,12 @@ export class SyncBasicIntegration extends BaseIntegration {
     };
   }
 
+  get features(): SyncIntegrationFeatures {
+    return this.integrationFeatures;
+  }
+
   private isSyncOptional(): boolean {
     // TODO: check if multiService + service not being sync
     return false;
-  }
-
-  get features(): SyncIntegrationFeatures {
-    return this.integrationFeatures;
   }
 }

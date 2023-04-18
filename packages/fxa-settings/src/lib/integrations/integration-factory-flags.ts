@@ -4,13 +4,5 @@
 
 import { DefaultRelierFlags } from '../reliers';
 
-/**
- * Extrapolates flags from the state of the current data store. The collective state of these flags are used by
- * the factory to determine what underlying type of integration to create.
- *
- * Note: this logic was ported from fxa-content-server app-start.js.
- */
-
-// TODO: Extending from Relier flags is temporary.
-// In a follow up we will combine integrations with reliers, or clean this up.
+// TODO: Using Relier flags is temporary, we will combine them in a follow up.
 export class DefaultIntegrationFlags extends DefaultRelierFlags {}

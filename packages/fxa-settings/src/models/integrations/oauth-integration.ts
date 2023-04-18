@@ -2,30 +2,52 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { Constants } from '../../lib/constants';
+import { IntegrationFlags } from '../../lib/integrations/interfaces/integration-flags';
+import { StorageData } from '../../lib/model-data';
+
 import {
   BaseIntegration,
+  Integration,
   IntegrationFeatures,
   IntegrationType,
 } from './base-integration';
 
+// TODO: type guard for PairingSupplicant
+export function isOAuthIntegration(
+  integration: Integration
+): integration is OAuthIntegration {
+  return integration.type === IntegrationType.OAuth;
+}
+
 type OAuthIntegrationFeatures = IntegrationFeatures & {
-  channelSupport: boolean;
+  webChannelSupport: boolean;
 };
 
 type OAuthIntegrationTypes =
   | IntegrationType.OAuth
   | IntegrationType.PairingSupplicant;
 
+export type SearchParam = IntegrationFlags['searchParam'];
+
 export class OAuthIntegration extends BaseIntegration {
   protected integrationFeatures: OAuthIntegrationFeatures;
+  private storageData: StorageData;
+  private searchParam: SearchParam;
 
-  constructor(type: OAuthIntegrationTypes = IntegrationType.OAuth) {
+  constructor(
+    storageData: StorageData,
+    searchParam: SearchParam,
+    type: OAuthIntegrationTypes = IntegrationType.OAuth
+  ) {
     super(type);
+    this.storageData = storageData;
+    this.searchParam = searchParam;
     this.integrationFeatures = {
       ...super.features,
       handleSignedInNotification: false,
       reuseExistingSession: true,
-      channelSupport: this.hasChannelSupport(),
+      webChannelSupport: this.hasWebChannelSupport(),
     };
   }
 
@@ -33,8 +55,11 @@ export class OAuthIntegration extends BaseIntegration {
     return this.integrationFeatures;
   }
 
-  private hasChannelSupport(): boolean {
-    // TODO: check for this._searchParam('context') === Constants.OAUTH_WEBCHANNEL_CONTEXT (`oauth_webchannel_v1`)
-    return false;
+  private hasWebChannelSupport() {
+    return this.searchParam('context') === Constants.OAUTH_WEBCHANNEL_CONTEXT;
+  }
+
+  isOriginalTab() {
+    return this.storageData.get('originalTab');
   }
 }
