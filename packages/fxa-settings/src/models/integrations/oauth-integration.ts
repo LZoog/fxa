@@ -32,16 +32,13 @@ export type SearchParam = IntegrationFlags['searchParam'];
 
 export class OAuthIntegration extends BaseIntegration {
   protected integrationFeatures: OAuthIntegrationFeatures;
-  private storageData: StorageData;
   private searchParam: SearchParam;
 
   constructor(
-    storageData: StorageData,
     searchParam: SearchParam,
     type: OAuthIntegrationTypes = IntegrationType.OAuth
   ) {
     super(type);
-    this.storageData = storageData;
     this.searchParam = searchParam;
     this.integrationFeatures = {
       ...super.features,
@@ -57,9 +54,5 @@ export class OAuthIntegration extends BaseIntegration {
 
   private hasWebChannelSupport() {
     return this.searchParam('context') === Constants.OAUTH_WEBCHANNEL_CONTEXT;
-  }
-
-  isOriginalTab() {
-    return this.storageData.get('originalTab');
   }
 }

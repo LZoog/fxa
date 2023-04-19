@@ -9,7 +9,7 @@ import {
   useLocation,
   useNavigate,
 } from '@reach/router';
-import { FtlMsg } from 'fxa-react/lib/utils';
+import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
 import { useForm } from 'react-hook-form';
 
 import AppLayout from '../../../components/AppLayout';
@@ -40,10 +40,9 @@ import {
   CreateVerificationInfo,
   CreateIntegration,
   IntegrationType,
-  isSyncDesktopIntegration,
-  isOAuthIntegration,
 } from '../../../models';
 import { notifyFirefoxOfLogin } from '../../../lib/channels/helpers';
+import { isOriginalTab } from '../../../lib/storage-utils';
 
 // This page is based on complete_reset_password but has been separated to align with the routes.
 
@@ -85,8 +84,8 @@ const AccountRecoveryResetPassword = ({
   const notifier = useNotifier();
   const account = useAccount();
   const navigate = useNavigate();
-  const location = useLocation();
   const session = useSession();
+  const location = useLocation();
 
   const integration = CreateIntegration();
   const relier = CreateRelier();
@@ -130,6 +129,10 @@ const AccountRecoveryResetPassword = ({
   if (linkStatus === 'expired') {
     return <LinkExpiredResetPassword email={state.email} {...{ viewName }} />;
   }
+
+  // TODO: implement persistVerificationData,
+  // _finishPasswordResetDifferentBrowser + finishPasswordResetSameBrowser
+  // + check afterResetPasswordConfirmationPoll (maybe this was done with `useInterval`?)
 
   return (
     <AppLayout>
@@ -269,48 +272,27 @@ const AccountRecoveryResetPassword = ({
           if (session.verified) {
             // only notify the browser of the login if the user does not have
             // to verify their account/session
-            // this._notifyRelierOfLogin(account);
             notifyFirefoxOfLogin(account);
           }
-          // then default behavior of showing TOTP page
           break;
         case IntegrationType.OAuth:
-          // TODO: is there a better way to make TS happy? Should we just use if/elses on the guards instead of switch?
-          if (isOAuthIntegration(integration)) {
-            if (
-              // TODO: !account.get('verificationReason') && !account.get('verificationMethod') checks
-              session.verified &&
-              // a user can only redirect back to the relier from the original tab
-              // to avoid two tabs redirecting.
-              integration.isOriginalTab()
-            ) {
-              // finish OAuth Signin Flow (this.finishOAuthSignInFlow(account))
-            } else if (!integration.isOriginalTab()) {
-              // TODO: check if relier has state, and VerificationReasons
-              // signin_TOTP_Code
-            } else {
-              // new null behavior
-            }
+          if (
+            session.verified &&
+            // a user can only redirect back to the relier from the original tab
+            // to avoid two tabs redirecting.
+            isOriginalTab()
+          ) {
+            // TODO: this.finishOAuthSignInFlow(account))
+            // Handle this in the OAuth React epic, and remove the `!this.relier.isOAuth`
+            // check from router.js
+            return;
           }
           break;
+        case IntegrationType.Web:
+          // no-op, don't run default
+          break;
         default:
-        // IntegrationType.Web is default
-        // Take user to TOTP and after they verify, take them to Settings
-        // const redirectToSettingsAfterResetBehavior = new NavigateBehavior('settings', {
-        //   success: t('Password reset successfully'),
-        // });
-
-        //   return this.unpersistVerificationData(account).then(() => {
-        // Users with TOTP enabled need to enter a TOTP code to complete password reset.
-        //   if (
-        //     account.get('verificationMethod') === VerificationMethods.TOTP_2FA &&
-        //     account.get('verificationReason') === VerificationReasons.SIGN_IN
-        //   ) {
-        //     return new NavigateBehavior('signin_totp_code', { account });
-        //   }
-
-        //   return this.getBehavior('afterCompleteResetPassword');
-        // });
+        // TODO: run unpersistVerificationData when reliers are combined
       }
 
       alertSuccess();
@@ -342,6 +324,13 @@ const AccountRecoveryResetPassword = ({
     setUserPreference('account-recovery', account.recoveryKey);
     logViewEvent(viewName, 'recovery-key-consume.success');
 
+    // When users reset a PW with their recovery key we always want to navigate to
+    // the page encouraging them to generate another. If they don't have a verified
+    // session, clicking on any link taking them into Settings should take them to
+    // `signin_token_code` to verify their session first, then take them to Settings.
+    // We don't prompt them for a TOTP code if enabled, unlike a regular password reset,
+    // because posession of the primary email to use the reset link while using a
+    // recovery key is sufficient proof of ownership.
     navigate(`/reset_password_with_recovery_key_verified?${location.search}`);
   }
 

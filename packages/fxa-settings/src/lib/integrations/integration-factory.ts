@@ -75,6 +75,7 @@ export class IntegrationFactory {
     // If no service is specified and the user is verifies in a 2nd browser,
     // then fall back to the default content server context.
 
+    // TODO
     // const sameBrowserVerificationContext =
     //   this._getSameBrowserVerificationModel('context').get('context');
     const sameBrowserVerificationContext = false;
@@ -88,7 +89,7 @@ export class IntegrationFactory {
       return new SyncBasicIntegration();
     } else if (this.flags.isServiceOAuth()) {
       // oauth, user is verifying in a different browser.
-      return new OAuthIntegration(this.storageData, this.flags.searchParam);
+      return new OAuthIntegration(this.flags.searchParam);
     }
     return new WebIntegration();
   }
@@ -123,12 +124,6 @@ export class IntegrationFactory {
       );
     }
 
-    // TODO: do we still need this? Can't find anything about Chrome for Android disabling
-    // redirects and forcing a user action instead unless users manually turn it off
-    // if (flags.isChromeAndroid()) {
-    //   return new ChromeAndroidIntegration(data);
-    // }
-
-    return new OAuthIntegration(this.storageData, this.flags.searchParam);
+    return new OAuthIntegration(this.flags.searchParam);
   }
 }
