@@ -190,9 +190,8 @@ const CompleteResetPassword = ({
               // to avoid two tabs redirecting.
               isOriginalTab()
             ) {
-              // TODO: this.finishOAuthSignInFlow(account))
-              // Handle this in the OAuth React epic, and remove the `!this.relier.isOAuth`
-              // check from router.js
+              // TODO: this.finishOAuthSignInFlow(account)) in FXA-6518 and possibly
+              // remove the !OAuth check from the React experiment in router.js
               return;
             } else if (!isOriginalTab()) {
               // allows a navigation to a "complete" screen or TOTP screen if it is setup
@@ -211,12 +210,13 @@ const CompleteResetPassword = ({
               hardNavigateToContentServer(
                 `/signin_totp_code${location.search}`
               );
+            } else {
+              // TODO: if no TOTP, navigate users to /settings with the alert bar message
+              // for now, just navigate to reset_password_verified
             }
-            // TODO: if no TOTP, navigate users to /settings with the alert bar message
-            // for now, just navigate to reset_password_verified
             break;
           default:
-          // TODO: run unpersistVerificationData when reliers are combined
+          // TODO: run unpersistVerificationData in FXA-7308
         }
 
         alertSuccessAndNavigate();

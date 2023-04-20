@@ -43,7 +43,7 @@ export class SyncBasicIntegration extends BaseIntegration {
   }
 
   private isSyncOptional(): boolean {
-    // TODO: check if multiService + service not being sync when combined with reliers
+    // TODO: check if multiService + service not being sync when in FXA-7308
     return false;
   }
 }

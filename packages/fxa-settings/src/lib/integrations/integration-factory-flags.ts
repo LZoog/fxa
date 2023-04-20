@@ -4,7 +4,7 @@
 
 import { DefaultRelierFlags, RelierFlags } from '../reliers';
 
-// TODO: Using Relier flags is temporary, we will combine them in a follow up.
+// TODO: Using Relier flags is temporary, we will combine them in FXA-7308
 export class DefaultIntegrationFlags
   extends DefaultRelierFlags
   implements RelierFlags {}

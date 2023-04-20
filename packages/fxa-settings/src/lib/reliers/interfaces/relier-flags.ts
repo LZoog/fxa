@@ -9,7 +9,7 @@ import { IntegrationFlags } from '../../integrations/interfaces/integration-flag
  */
 
 // TODO: Extending integration flags for reliers is temporary, we will
-// combine integrations + reliers in a follow up
+// combine integrations + reliers in FXA-7308
 export interface RelierFlags extends IntegrationFlags {
   isDevicePairingAsAuthority(): boolean;
   isDevicePairingAsSupplicant(): boolean;

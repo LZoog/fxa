@@ -278,9 +278,8 @@ const AccountRecoveryResetPassword = ({
             // to avoid two tabs redirecting.
             isOriginalTab()
           ) {
-            // TODO: this.finishOAuthSignInFlow(account))
-            // Handle this in the OAuth React epic, and remove the `!this.relier.isOAuth`
-            // check from router.js
+            // TODO: this.finishOAuthSignInFlow(account)) in FXA-6518 and possibly
+            // remove the !OAuth check from the React experiment in router.js
             return;
           }
           break;

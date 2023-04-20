@@ -11,7 +11,7 @@ export type FtlMsgProps = {
   children: React.ReactNode;
 } & LocalizedProps;
 
-// TODO: Going from react page to non-react page requires a hard navigate. This temp
+// Going from react page to non-react page requires a hard navigate. This temporary
 // function is an easy way to reference what needs updating when applicable flows have
 // been fully converted - we should remove references to this function as we go and use
 // our regular navigate. We can remove this entirely when we're fully converted to React.

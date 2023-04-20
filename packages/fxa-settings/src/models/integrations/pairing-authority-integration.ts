@@ -4,7 +4,8 @@
 
 import { BaseIntegration, IntegrationType } from './base-integration';
 
-// TODO!
+// TODO in the 'Pairing' React epic. This shouldn't have any `feature` overrides but feel
+// free to look at all of that logic with fresh eyes in case we want to do it differently.
 export class PairingAuthorityIntegration extends BaseIntegration {
   constructor() {
     super(IntegrationType.PairingAuthority);

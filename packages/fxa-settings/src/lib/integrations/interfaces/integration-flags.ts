@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // TODO: These used to be `private` methods on the relier factory flags.
-// We will combine integrations + reliers in a follow up.
+// We will combine integrations + reliers in FXA-7308
 export interface IntegrationFlags {
   isServiceOAuth(): boolean;
   isServiceSync(): boolean;

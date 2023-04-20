@@ -5,7 +5,8 @@
 import { IntegrationType } from './base-integration';
 import { OAuthIntegration, SearchParam } from './oauth-integration';
 
-// TODO!
+// TODO in the 'Pairing' React epic. This shouldn't have any `feature` overrides but feel
+// free to look at all of that logic with fresh eyes in case we want to do it differently.
 export class PairingSupplicantIntegration extends OAuthIntegration {
   constructor(searchParam: SearchParam) {
     super(searchParam, IntegrationType.PairingSupplicant);

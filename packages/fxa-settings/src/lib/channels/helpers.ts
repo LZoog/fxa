@@ -25,40 +25,40 @@ const REQUIRED_LOGIN_FIELDS = [
   'verified',
 ];
 
-// TODO, this might need to go on the integration
-let uidOfLoginNotification: hexstring = '';
+// Might need to go on the Integration?
+// let uidOfLoginNotification: hexstring = '';
 
-function hasRequiredLoginFields(loginData) {
-  const loginFields = Object.keys(loginData);
-  return (
-    REQUIRED_LOGIN_FIELDS.filter((field) => !loginFields.includes(field))
-      .length === 0
-  );
-}
+// function hasRequiredLoginFields(loginData) {
+//   const loginFields = Object.keys(loginData);
+//   return (
+//     REQUIRED_LOGIN_FIELDS.filter((field) => !loginFields.includes(field))
+//       .length === 0
+//   );
+// }
 
 /**
  * Get login data from `account` to send to the browser.
  * All returned keys have a defined value.
  */
-function getLoginData(account: AccountData) {
-  // TODO...
-  // let loginData: Partial<AccountData> = {};
-  // for (const key of ALLOWED_LOGIN_FIELDS) {
-  //   loginData[key] = account[key];
-  // }
-  //   // TODO: account for multiservice when we combine reliers
-  //   // const isMultiService = this.relier && this.relier.get('multiService');
-  //   // if (isMultiService) {
-  //   //   loginData = this._formatForMultiServiceBrowser(loginData);
-  //   // }
-  //   loginData.verified = !!loginData.verified;
-  //   // TODO: this is set in the `beforeSignIn` auth-broker method
-  //   // loginData.verifiedCanLinkAccount = !!this._verifiedCanLinkEmail;
-  //   return Object.fromEntries(
-  //     Object.entries(loginData).filter(([key, value]) => value !== undefined)
-  //   );
-}
+// function getLoginData(account: AccountData) {
+// let loginData: Partial<AccountData> = {};
+// for (const key of ALLOWED_LOGIN_FIELDS) {
+//   loginData[key] = account[key];
+// }
+//   // TODO: account for multiservice when we combine reliers
+//   // const isMultiService = this.relier && this.relier.get('multiService');
+//   // if (isMultiService) {
+//   //   loginData = this._formatForMultiServiceBrowser(loginData);
+//   // }
+//   loginData.verified = !!loginData.verified;
+//   // TODO: this is set in the `beforeSignIn` auth-broker method
+//   // loginData.verifiedCanLinkAccount = !!this._verifiedCanLinkEmail;
+//   return Object.fromEntries(
+//     Object.entries(loginData).filter(([key, value]) => value !== undefined)
+//   );
+// }
 
+// TODO in FXA-7172
 export function notifyFirefoxOfLogin(
   account: AccountData,
   isSessionVerified: boolean
@@ -84,10 +84,10 @@ export function notifyFirefoxOfLogin(
    * required data. The verification tab sends a WebChannel message
    * already, so no need here too.
    */
-  const loginData = getLoginData(account);
-  if (!hasRequiredLoginFields(loginData)) {
-    return;
-  }
+  // const loginData = getLoginData(account);
+  // if (!hasRequiredLoginFields(loginData)) {
+  //   return;
+  // }
 
   // Only send one login notification per uid to avoid race
   // conditions within the browser. Two attempts to send

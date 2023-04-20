@@ -18,7 +18,7 @@ import { ReachRouterWindow } from '../window';
 
 export class IntegrationFactory {
   protected readonly data: ModelDataStore;
-  // TODO: Using Relier flags is temporary, we will combine them in a follow up.
+  // TODO: Using Relier flags is temporary, we will combine them in FXA-7308
   public readonly flags: RelierFlags;
   public readonly storageData: StorageData;
 
@@ -30,7 +30,7 @@ export class IntegrationFactory {
     const { window } = opts;
     this.storageData = new StorageData(window);
     this.data = opts.data || new UrlQueryData(window);
-    // TODO: Using Relier flags is temporary, we will combine them in a follow up.
+    // TODO: Using Relier flags is temporary, we will combine them in FXA-7308
     this.flags =
       opts.flags ||
       new DefaultRelierFlags(new UrlQueryData(window), this.storageData);
@@ -48,10 +48,7 @@ export class IntegrationFactory {
         return new PairingAuthorityIntegration();
       }
       if (flags.isDevicePairingAsSupplicant()) {
-        return new PairingSupplicantIntegration(
-          this.storageData,
-          this.flags.searchParam
-        );
+        return new PairingSupplicantIntegration(this.flags.searchParam);
       }
       return this.createOAuthIntegration();
     } else if (flags.isVerification()) {
@@ -75,7 +72,7 @@ export class IntegrationFactory {
     // If no service is specified and the user is verifies in a 2nd browser,
     // then fall back to the default content server context.
 
-    // TODO
+    // TODO in FXA-7308
     // const sameBrowserVerificationContext =
     //   this._getSameBrowserVerificationModel('context').get('context');
     const sameBrowserVerificationContext = false;
@@ -94,7 +91,7 @@ export class IntegrationFactory {
     return new WebIntegration();
   }
 
-  // TODO
+  // TODO in FXA-7308
   // private _getSameBrowserVerificationModel(namespace) {
   //   const urlVerificationInfo = Url.searchParams(this._window.location.search);
 
@@ -118,10 +115,7 @@ export class IntegrationFactory {
       return new PairingAuthorityIntegration();
     }
     if (flags.isDevicePairingAsSupplicant()) {
-      return new PairingSupplicantIntegration(
-        this.storageData,
-        this.flags.searchParam
-      );
+      return new PairingSupplicantIntegration(this.flags.searchParam);
     }
 
     return new OAuthIntegration(this.flags.searchParam);
