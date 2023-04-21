@@ -8,9 +8,9 @@ import {
   IntegrationType,
 } from './base-integration';
 
-type SyncIntegrationFeatures = IntegrationFeatures & {
+export interface SyncIntegrationFeatures extends IntegrationFeatures {
   sendChangePasswordNotice: boolean;
-};
+}
 
 type SyncIntegrationTypes =
   | IntegrationType.SyncBasic
@@ -22,28 +22,17 @@ type SyncIntegrationTypes =
  * through Sync in a different browser, and 2) as a base class for desktop Sync support,
  * which has webchannel support.
  */
-export class SyncBasicIntegration extends BaseIntegration {
-  protected integrationFeatures: SyncIntegrationFeatures;
-
+export class SyncBasicIntegration<
+  T extends SyncIntegrationFeatures
+> extends BaseIntegration<T> {
   constructor(
     type: SyncIntegrationTypes = IntegrationType.SyncBasic,
-    features: Partial<SyncIntegrationFeatures> = {}
+    features: Partial<T> = {}
   ) {
-    super(type);
-    this.integrationFeatures = {
-      ...super.features,
+    super(type, {
       sendChangePasswordNotice: false,
-      syncOptional: this.isSyncOptional(),
+      syncOptional: false,
       ...features,
-    };
-  }
-
-  get features(): SyncIntegrationFeatures {
-    return this.integrationFeatures;
-  }
-
-  private isSyncOptional(): boolean {
-    // TODO: check if multiService + service not being sync when in FXA-7308
-    return false;
+    } as T);
   }
 }

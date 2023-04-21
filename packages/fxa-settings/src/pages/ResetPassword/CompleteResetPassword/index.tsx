@@ -10,6 +10,7 @@ import {
   CreateIntegration,
   IntegrationType,
   useAccount,
+  useSession,
 } from '../../../models';
 import WarningMessage from '../../../components/WarningMessage';
 import LinkRememberPassword from '../../../components/LinkRememberPassword';
@@ -87,7 +88,6 @@ const CompleteResetPassword = ({
     state: LocationState;
   };
   const integration = CreateIntegration();
-  const session = useSession();
 
   /* When the user clicks the confirm password reset link from their email, we check
    * to see if they have an account recovery key set. If they do, we navigate to the
@@ -169,20 +169,18 @@ const CompleteResetPassword = ({
         // account's original email because this will maintain backwards compatibility with
         // how account password hashing works previously.
         const emailToUse = emailToHashWith || email;
-        await account.completeResetPassword(
-          token,
-          code,
-          emailToUse,
-          newPassword
-        );
+        const [, sessionisVerified] = await Promise.all([
+          account.completeResetPassword(token, code, emailToUse, newPassword),
+          account.isSessionVerified(),
+        ]);
 
         switch (integration.type) {
           case IntegrationType.SyncDesktop:
-            notifyFirefoxOfLogin(account, session.verified);
+            notifyFirefoxOfLogin(account, sessionisVerified);
             break;
           case IntegrationType.OAuth:
             if (
-              session.verified &&
+              sessionisVerified &&
               // only allow this redirect if 2FA is not enabled, otherwise users must enter
               // their TOTP code first
               !account.totp.verified &&
@@ -224,13 +222,7 @@ const CompleteResetPassword = ({
         setErrorType(ErrorType['complete-reset']);
       }
     },
-    [
-      account,
-      alertSuccessAndNavigate,
-      integration.type,
-      location.search,
-      session.verified,
-    ]
+    [account, alertSuccessAndNavigate, integration.type, location.search]
   );
 
   if (showLoadingSpinner) {

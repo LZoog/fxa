@@ -84,7 +84,6 @@ const AccountRecoveryResetPassword = ({
   const notifier = useNotifier();
   const account = useAccount();
   const navigate = useNavigate();
-  const session = useSession();
   const location = useLocation();
 
   const integration = CreateIntegration();
@@ -256,7 +255,11 @@ const AccountRecoveryResetPassword = ({
         emailToHashWith:
           verificationInfo.emailToHashWith || verificationInfo.email,
       };
-      await account.resetPasswordWithRecoveryKey(options);
+
+      const [, sessionisVerified] = await Promise.all([
+        account.resetPasswordWithRecoveryKey(options),
+        account.isSessionVerified(),
+      ]);
 
       // FOLLOW-UP: Functionality not yet available.
       await account.setLastLogin(Date.now());
@@ -269,11 +272,11 @@ const AccountRecoveryResetPassword = ({
 
       switch (integration.type) {
         case IntegrationType.SyncDesktop:
-          notifyFirefoxOfLogin(account, session.verified);
+          notifyFirefoxOfLogin(account, sessionisVerified);
           break;
         case IntegrationType.OAuth:
           if (
-            session.verified &&
+            sessionisVerified &&
             // a user can only redirect back to the relier from the original tab
             // to avoid two tabs redirecting.
             isOriginalTab()

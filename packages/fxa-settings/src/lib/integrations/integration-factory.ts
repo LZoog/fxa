@@ -10,7 +10,6 @@ import {
   SyncDesktopIntegration,
   WebIntegration,
 } from '../../models';
-import { Integration } from '../../models/integrations/base-integration';
 import { Constants } from '../constants';
 import { ModelDataStore, StorageData, UrlQueryData } from '../model-data';
 import { DefaultRelierFlags, RelierFlags } from '../reliers';
@@ -40,7 +39,7 @@ export class IntegrationFactory {
    * Produces an integration object given the current data store's state.
    * @returns An integration implementation.
    */
-  getIntegration(): Integration {
+  getIntegration() {
     const flags = this.flags;
 
     if (flags.isOAuth()) {

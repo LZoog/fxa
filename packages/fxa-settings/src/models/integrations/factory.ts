@@ -17,7 +17,7 @@ function CreateIntegrationFlags() {
   return new DefaultIntegrationFlags(urlQueryData, storageData);
 }
 
-export function CreateIntegrationFactory() {
+function CreateIntegrationFactory() {
   const { windowWrapper: window, urlQueryData } = useContext(AppContext);
 
   if (!window || !urlQueryData) {

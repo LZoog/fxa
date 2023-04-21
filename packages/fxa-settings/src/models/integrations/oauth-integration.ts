@@ -11,9 +11,9 @@ import {
   IntegrationType,
 } from './base-integration';
 
-type OAuthIntegrationFeatures = IntegrationFeatures & {
+interface OAuthIntegrationFeatures extends IntegrationFeatures {
   webChannelSupport: boolean;
-};
+}
 
 type OAuthIntegrationTypes =
   | IntegrationType.OAuth
@@ -21,26 +21,19 @@ type OAuthIntegrationTypes =
 
 export type SearchParam = IntegrationFlags['searchParam'];
 
-export class OAuthIntegration extends BaseIntegration {
-  protected integrationFeatures: OAuthIntegrationFeatures;
+export class OAuthIntegration extends BaseIntegration<OAuthIntegrationFeatures> {
   private searchParam: SearchParam;
 
   constructor(
     searchParam: SearchParam,
     type: OAuthIntegrationTypes = IntegrationType.OAuth
   ) {
-    super(type);
-    this.searchParam = searchParam;
-    this.integrationFeatures = {
-      ...super.features,
+    super(type, {
       handleSignedInNotification: false,
       reuseExistingSession: true,
-      webChannelSupport: this.hasWebChannelSupport(),
-    };
-  }
-
-  get features(): OAuthIntegrationFeatures {
-    return this.integrationFeatures;
+    });
+    this.searchParam = searchParam;
+    this.features.webChannelSupport = this.hasWebChannelSupport();
   }
 
   private hasWebChannelSupport() {

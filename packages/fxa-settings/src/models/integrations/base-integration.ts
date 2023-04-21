@@ -3,24 +3,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 export enum IntegrationType {
-  OAuth,
-  PairingAuthority, // TODO
-  PairingSupplicant, // TODO
-  SyncBasic,
-  SyncDesktop,
-  Web, // default
+  OAuth = 'OAuth',
+  PairingAuthority = 'PairingAuthority', // TODO
+  PairingSupplicant = 'PairingSupplicant', // TODO
+  SyncBasic = 'SyncBasic',
+  SyncDesktop = 'SyncDesktop',
+  Web = 'Web', // default
 }
 
-export abstract class Integration {
+export abstract class Integration<T extends IntegrationFeatures> {
   type: IntegrationType;
-  abstract features: Partial<IntegrationFeatures>;
+  protected features: T;
 
-  constructor(type: IntegrationType) {
+  constructor(type: IntegrationType, features: T) {
     this.type = type;
+    this.features = features;
   }
 }
 
-export type IntegrationFeatures = {
+export interface IntegrationFeatures {
   /**
    * If the provided UID no longer exists on the auth server, can the
    * user sign up/in with the same email address but a different uid?
@@ -47,7 +48,7 @@ export type IntegrationFeatures = {
    * Does this environment support the Sync Optional flow?
    */
   syncOptional: boolean;
-};
+}
 
 /* TODO, do we care about these capabilities/features?
  * -isOpenWebmailButtonVisible: we have a webmail link showing only in desktop v3 on the confirm
@@ -56,15 +57,11 @@ export type IntegrationFeatures = {
  * -
  */
 
-export class BaseIntegration extends Integration {
-  protected integrationFeatures: IntegrationFeatures;
-
-  constructor(
-    type: IntegrationType,
-    features: Partial<IntegrationFeatures> = {}
-  ) {
-    super(type);
-    this.integrationFeatures = {
+export class BaseIntegration<
+  T extends IntegrationFeatures = IntegrationFeatures
+> extends Integration<T> {
+  constructor(type: IntegrationType, features: Partial<T> = {}) {
+    super(type, {
       allowUidChange: false,
       fxaStatus: false,
       handleSignedInNotification: true,
@@ -72,10 +69,6 @@ export class BaseIntegration extends Integration {
       supportsPairing: false,
       syncOptional: false,
       ...features,
-    };
-  }
-
-  get features(): IntegrationFeatures {
-    return this.integrationFeatures;
+    } as T);
   }
 }
