@@ -17,7 +17,7 @@ jest.mock('@reach/router', () => ({
   ...jest.requireActual('@reach/router'),
 }));
 
-function renderLinkExpiredResetPasswordWithAccount(account: Account) {
+function renderWithAccount(account: Account) {
   render(
     <AppContext.Provider value={mockAppContext({ account })}>
       <LocationProvider>
@@ -35,7 +35,7 @@ describe('LinkExpiredResetPassword', () => {
   });
 
   it('renders the component as expected for an expired Reset Password link', () => {
-    renderLinkExpiredResetPasswordWithAccount(account);
+    renderWithAccount(account);
 
     screen.getByRole('heading', {
       name: 'Reset password link expired',
@@ -50,7 +50,7 @@ describe('LinkExpiredResetPassword', () => {
       resendResetPassword: jest.fn().mockResolvedValue(true),
     } as unknown as Account;
 
-    renderLinkExpiredResetPasswordWithAccount(account);
+    renderWithAccount(account);
     const receiveNewLinkButton = screen.getByRole('button', {
       name: 'Receive new link',
     });
@@ -68,7 +68,7 @@ describe('LinkExpiredResetPassword', () => {
       resendResetPassword: jest.fn().mockRejectedValue('error'),
     } as unknown as Account;
 
-    renderLinkExpiredResetPasswordWithAccount(account);
+    renderWithAccount(account);
     const receiveNewLinkButton = screen.getByRole('button', {
       name: 'Receive new link',
     });

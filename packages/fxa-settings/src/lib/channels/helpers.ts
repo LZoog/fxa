@@ -38,6 +38,12 @@ export function notifyFirefoxOfLogin(
     return;
   }
 
+  // TODO: account for multiservice TODO with relier/integration combination
+  // const isMultiService = this.relier && this.relier.get('multiService');
+  // if (isMultiService) {
+  //   loginData = this._formatForMultiServiceBrowser(loginData);
+  // }
+
   // TODO with relier/integration combination or during login tickets.
   // Only send one login notification per uid to avoid race
   // conditions within the browser. Two attempts to send
