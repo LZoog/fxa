@@ -17,6 +17,8 @@ import ServiceMixin from './mixins/service-mixin';
 import SignedInNotificationMixin from './mixins/signed-in-notification-mixin';
 import SignInMixin from './mixins/signin-mixin';
 import Template from 'templates/sign_in_password.mustache';
+import ThirdPartyAuthMixin from './mixins/third-party-auth-mixin';
+import ThirdPartyAuth from '../templates/partial/third-party-auth.mustache';
 import UserCardMixin from './mixins/user-card-mixin';
 import PocketMigrationMixin from './mixins/pocket-migration-mixin';
 
@@ -51,14 +53,34 @@ const SignInPasswordView = FormView.extend({
     if (account && account.get('metricsEnabled') === false) {
       GleanMetrics.setEnabled(false);
     }
+
+    // We need an explicit call here in case a user directly navigates to
+    // /signin or they're redirected, e.g. when directly accessing settings.
+    // However, we don't want to call this if the previous screen already
+    // checked the status due to rate limiting on the account/status POST
+    // endpoint and we can't always use the account/status GET call here
+    // since we don't always have the uid.
+    if (
+      account &&
+      (account.get('hasLinkedAccount') === undefined ||
+        account.get('hasPassword') === undefined)
+    ) {
+      return account.checkAccountStatus();
+    }
   },
 
   setInitialContext(context) {
     const account = this.getAccount();
+    const hasLinkedAccount = account.get('hasLinkedAccount');
+    const hasPassword = account.get('hasPassword');
 
     context.set({
       email: account.get('email'),
       isPasswordNeeded: this.isPasswordNeededForAccount(account),
+      hasLinkedAccountAndNoPassword: hasLinkedAccount && !hasPassword,
+      unsafeThirdPartyAuthHTML: this.renderTemplate(ThirdPartyAuth, {
+        isSignup: false,
+      }),
     });
   },
 
@@ -102,6 +124,7 @@ Cocktail.mixin(
   ServiceMixin,
   SignInMixin,
   SignedInNotificationMixin,
+  ThirdPartyAuthMixin,
   UserCardMixin,
   PocketMigrationMixin
 );

@@ -1191,6 +1191,54 @@ describe('lib/fxa-client', function () {
     });
   });
 
+  describe('checkAccountStatus', function () {
+    it('returns data if account exists', function () {
+      const accountStatusData = {
+        exists: true,
+        hasLinkedAccount: true,
+        hasPassword: false,
+      };
+      sinon.stub(realClient, 'accountStatusByEmail').callsFake(function () {
+        return Promise.resolve(accountStatusData);
+      });
+
+      return client.checkAccountStatus(email).then(function (statusData) {
+        assert.isTrue(
+          realClient.accountStatusByEmail.calledWith(email, {
+            thirdPartyAuthStatus: true,
+          })
+        );
+        assert.deepEqual(accountStatusData, statusData);
+      });
+    });
+
+    // it('returns exists: false if an account does not exist', function () {
+    //   const accountStatusData = {
+    //     exists: false
+    //   }
+    //   sinon.stub(realClient, 'accountStatusByEmail').callsFake(function () {
+    //     return Promise.resolve(accountStatusData);
+    //   });
+
+    //   return client.checkAccountStatus(email).then(function (statusData) {
+    //     assert.isTrue(
+    //       realClient.accountStatusByEmail.calledWith(email, {
+    //         thirdPartyAuthStatus: true,
+    //       })
+    //     );
+    //     assert.deepEqual(accountStatusData, statusData);
+    //   });
+
+    //   // sinon.stub(realClient, 'accountStatus').callsFake(function () {
+    //   //   return Promise.resolve({ exists: false });
+    //   // });
+
+    //   // return client.checkAccountExists('uid').then(function (accountExists) {
+    //   //   assert.isFalse(accountExists);
+    //   // });
+    // });
+  });
+
   describe('checkPassword', function () {
     it('returns error if password is incorrect', function () {
       email = trim(email);

@@ -1405,6 +1405,13 @@ describe('/account/status', () => {
     mockDB.accountExists = (arg) => {
       return false;
     };
+    mockDB.accountRecord = (arg) => {
+      return {
+        exists: true,
+        linkedAccounts: [{}],
+        verifierSetAt: 0,
+      };
+    };
 
     const mockMailer = mocks.mockMailer();
     const mockPush = mocks.mockPush();
@@ -1471,6 +1478,33 @@ describe('/account/status', () => {
 
     return runTest(route, mockRequest, (response) => {
       assert.equal(response.invalidDomain, undefined);
+    });
+  });
+
+  it('calls accountRecord and returns expected values when thirdPartyAuthStatus is requested', async () => {
+    const { route, mockRequest, mockDB } = setup();
+    mockRequest.payload.thirdPartyAuthStatus = true;
+
+    return runTest(route, mockRequest, (response) => {
+      assert.equal(mockDB.accountRecord.callCount, 1);
+      assert.equal(mockDB.accountExists.callCount, 0);
+      assert.deepEqual(response, {
+        exists: true,
+        hasLinkedAccount: true,
+        hasPassword: false,
+      });
+    });
+  });
+
+  it('calls accountExists when thirdPartyAuthStatus is not requested', async () => {
+    const { route, mockRequest, mockDB } = setup();
+
+    return runTest(route, mockRequest, (response) => {
+      assert.equal(mockDB.accountRecord.callCount, 0);
+      assert.equal(mockDB.accountExists.callCount, 1);
+      assert.deepEqual(response, {
+        exists: false,
+      });
     });
   });
 });
