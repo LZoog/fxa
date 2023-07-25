@@ -4,8 +4,12 @@
 
 import React from 'react';
 import { AccountData, ProfileInfo, Session } from '.';
-import { AppContext, AppContextValue, defaultAppContext } from './AppContext';
 import { renderWithLocalizationProvider } from 'fxa-react/lib/test-utils/localizationProvider';
+import {
+  AppContext,
+  AppContextValue,
+  defaultAppContext,
+} from './contexts/AppContext';
 
 import {
   createHistory,

@@ -7,12 +7,11 @@ import { Link, useLocation, useNavigate } from '@reach/router';
 import { useForm } from 'react-hook-form';
 import { logPageViewEvent } from '../../../lib/metrics';
 import {
-  useIntegration,
   IntegrationType,
   useAccount,
-  useRelier,
   isOAuthIntegration,
-  useAuthClient,
+  Relier,
+  Integration,
 } from '../../../models';
 import WarningMessage from '../../../components/WarningMessage';
 import LinkRememberPassword from '../../../components/LinkRememberPassword';
@@ -36,6 +35,7 @@ import {
   isOriginalTab,
 } from '../../../lib/storage-utils';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
+import { FinishOAuthFlowHandler } from '../../../lib/oauth/hooks';
 
 // The equivalent complete_reset_password mustache file included account_recovery_reset_password
 // For React, we have opted to separate these into two pages to align with the routes.
@@ -78,9 +78,13 @@ export type CompleteResetPasswordParams = {
 const CompleteResetPassword = ({
   params,
   setLinkStatus,
+  integration,
+  finishOAuthFlowHandler,
 }: {
   params: CompleteResetPasswordLink;
   setLinkStatus: React.Dispatch<React.SetStateAction<LinkStatus>>;
+  integration: Integration;
+  finishOAuthFlowHandler: FinishOAuthFlowHandler;
 }) => {
   const [errorType, setErrorType] = useState(ErrorType.none);
   /* Show a loading spinner until all checks complete. Without this, users with a
@@ -93,9 +97,6 @@ const CompleteResetPassword = ({
   const location = useLocation() as ReturnType<typeof useLocation> & {
     state: LocationState;
   };
-  const integration = useIntegration();
-  const relier = useRelier();
-  const authClient = useAuthClient();
 
   const { handleSubmit, register, getValues, errors, formState, trigger } =
     useForm<FormData>({
@@ -242,12 +243,11 @@ const CompleteResetPassword = ({
               isHardNavigate = true;
             } else if (sessionIsVerified && isOAuthIntegration(integration)) {
               // todo add type guard
-              const { redirect } = await integration.handlePasswordReset(
-                relier.uid || account.uid,
+              const { redirect } = await finishOAuthFlowHandler(
+                integration.data.uid || account.uid,
                 accountResetData.sessionToken,
                 accountResetData.keyFetchToken,
-                accountResetData.unwrapBKey,
-                authClient
+                accountResetData.unwrapBKey
               );
 
               // Clear local / session storage
@@ -289,9 +289,8 @@ const CompleteResetPassword = ({
       account,
       integration,
       location.search,
-      relier.uid,
       alertSuccessAndNavigate,
-      authClient,
+      finishOAuthFlowHandler,
     ]
   );
 

@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import exp from 'constants';
 import { ModelDataStore, GenericData } from '../../lib/model-data';
-import { OAuthRelier, replaceItemInArray } from './oauth-relier';
+import { OAuthIntegration, replaceItemInArray } from './oauth-integration';
 
-describe('models/reliers/oauth-relier', function () {
+describe('models/integrations/oauth-relier', function () {
   let data: ModelDataStore;
   let oauthData: ModelDataStore;
-  let model: OAuthRelier;
+  let model: OAuthIntegration;
 
   beforeEach(function () {
     data = new GenericData({});
     oauthData = new GenericData({});
-    model = new OAuthRelier(data, oauthData, {
+    model = new OAuthIntegration(data, oauthData, {
       scopedKeysEnabled: true,
       scopedKeysValidation: {},
       isPromptNoneEnabled: true,
@@ -35,8 +34,8 @@ describe('models/reliers/oauth-relier', function () {
       'profile:email profile:uid profile:non_whitelisted';
     const SCOPE_WITH_OPENID = 'profile:email profile:uid openid';
 
-    function getRelierWithScope(scope: string) {
-      const relier = new OAuthRelier(
+    function getIntegrationWithScope(scope: string) {
+      const integration = new OAuthIntegration(
         new GenericData({
           scope,
         }),
@@ -49,32 +48,32 @@ describe('models/reliers/oauth-relier', function () {
         }
       );
 
-      relier.isTrusted = async () => {
+      integration.isTrusted = async () => {
         return true;
       };
 
-      return relier;
+      return integration;
     }
 
     describe('is invalid', () => {
-      function getRelier(scope: string) {
-        return getRelierWithScope(scope);
+      function getIntegration(scope: string) {
+        return getIntegrationWithScope(scope);
       }
 
       it('empty scope', async () => {
-        const relier = getRelier('');
-        await expect(relier.getPermissions()).rejects.toThrow();
+        const integration = getIntegration('');
+        await expect(integration.getPermissions()).rejects.toThrow();
       });
 
       it('whitespace scope', async () => {
-        const relier = getRelier(' ');
-        await expect(relier.getPermissions()).rejects.toThrow();
+        const integration = getIntegration(' ');
+        await expect(integration.getPermissions()).rejects.toThrow();
       });
     });
 
     describe('is valid', () => {
-      function getRelier(scope: string) {
-        return getRelierWithScope(scope);
+      function getIntegration(scope: string) {
+        return getIntegrationWithScope(scope);
       }
 
       it(`normalizes ${SCOPE}`, async () => {

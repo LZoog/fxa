@@ -3,12 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { useEffect, useState } from 'react';
-import {
-  NavigateFn,
-  RouteComponentProps,
-  useLocation,
-  useNavigate,
-} from '@reach/router';
+import { RouteComponentProps, useLocation, useNavigate } from '@reach/router';
 import {
   FtlMsg,
   hardNavigate,
@@ -25,26 +20,20 @@ import LinkRememberPassword from '../../../components/LinkRememberPassword';
 import { LinkExpiredResetPassword } from '../../../components/LinkExpiredResetPassword';
 import { REACT_ENTRYPOINT } from '../../../constants';
 import { AuthUiErrors } from '../../../lib/auth-errors/auth-errors';
-import {
-  ModelValidationErrors,
-  GenericData,
-  UrlQueryData,
-} from '../../../lib/model-data';
+import { ModelValidationErrors } from '../../../lib/model-data';
 import {
   logErrorEvent,
   logViewEvent,
   setUserPreference,
   usePageViewEvent,
 } from '../../../lib/metrics';
-import { useNotifier, useAccount, useAuthClient } from '../../../models/hooks';
+import { useNotifier, useAccount } from '../../../models/hooks';
 import { LinkStatus } from '../../../lib/types';
 import {
   CreateAccountRecoveryKeyInfo,
-  useRelier,
   CreateVerificationInfo,
-  useIntegration,
   IntegrationType,
-  OAuthIntegration,
+  Integration,
 } from '../../../models';
 import { notifyFirefoxOfLogin } from '../../../lib/channels/helpers';
 import {
@@ -52,6 +41,7 @@ import {
   clearOriginalTab,
   isOriginalTab,
 } from '../../../lib/storage-utils';
+import { FinishOAuthFlowHandler } from '../../../lib/oauth/hooks';
 
 // This page is based on complete_reset_password but has been separated to align with the routes.
 
@@ -64,11 +54,8 @@ import {
 export const viewName = 'account-recovery-reset-password';
 
 export type AccountRecoveryResetPasswordProps = {
-  overrides?: {
-    navigate?: NavigateFn;
-    locationData?: GenericData;
-    urlQueryData?: UrlQueryData;
-  };
+  integration: Integration;
+  finishOAuthFlowHandler: FinishOAuthFlowHandler;
 } & RouteComponentProps;
 
 type FormData = {
@@ -86,7 +73,8 @@ enum BannerState {
 }
 
 const AccountRecoveryResetPassword = ({
-  overrides,
+  integration,
+  finishOAuthFlowHandler,
 }: AccountRecoveryResetPasswordProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
@@ -95,9 +83,6 @@ const AccountRecoveryResetPassword = ({
   const navigate = useNavigate();
   const location = useLocation();
 
-  const relier = useRelier();
-  const authClient = useAuthClient();
-  const integration = useIntegration();
   const verificationInfo = CreateVerificationInfo();
   const accountRecoveryKeyInfo = CreateAccountRecoveryKeyInfo();
 
@@ -134,7 +119,12 @@ const AccountRecoveryResetPassword = ({
   }
 
   if (linkStatus === 'expired') {
-    return <LinkExpiredResetPassword email={state.email} {...{ viewName }} />;
+    return (
+      <LinkExpiredResetPassword
+        email={state.email}
+        {...{ viewName, integration }}
+      />
+    );
   }
 
   // TODO: implement persistVerificationData,
@@ -277,7 +267,7 @@ const AccountRecoveryResetPassword = ({
       // FOLLOW-UP: Functionality not yet available. FXA-7045
       notifier.onAccountSignIn(account);
 
-      relier.resetPasswordConfirm = true;
+      integration.data.resetPasswordConfirm = true;
 
       logViewEvent(viewName, 'verification.success');
 
@@ -301,13 +291,11 @@ const AccountRecoveryResetPassword = ({
           break;
         case IntegrationType.OAuth:
           if (sessionIsVerified) {
-            const oauthIntegration = integration as OAuthIntegration;
-            const { redirect } = await oauthIntegration.handlePasswordReset(
-              relier.uid || account.uid,
+            const { redirect } = await finishOAuthFlowHandler(
+              integration.data.uid || account.uid,
               accountResetData.sessionToken,
               accountResetData.keyFetchToken,
-              accountResetData.unwrapBKey,
-              authClient
+              accountResetData.unwrapBKey
             );
 
             // Clear session / local storage states

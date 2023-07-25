@@ -2,5 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-export * from './relier-delegates';
-export * from './relier-flags';
+import { MozServices } from '../lib/types';
+
+export const MOCK_REDIRECT_URI = 'http://localhost:8080/123Done';
+export const MOCK_SERVICE = MozServices.FirefoxMonitor;

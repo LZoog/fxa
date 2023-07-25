@@ -2,5 +2,28 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { IntegrationType } from '../../../models';
+import { MOCK_REDIRECT_URI, MOCK_SERVICE } from '../../mocks';
+import {
+  ConfirmResetPasswordBaseIntegration,
+  ConfirmResetPasswordOAuthIntegration,
+} from './interfaces';
+
 export const MOCK_EMAIL = 'blabidi@blabidiboo.com';
 export const MOCK_PASSWORD_FORGOT_TOKEN = 'abc';
+
+export function createMockConfirmResetPasswordWebIntegration(): ConfirmResetPasswordBaseIntegration {
+  return {
+    type: IntegrationType.Web,
+  };
+}
+
+export function createMockConfirmResetPasswordOAuthIntegration(
+  serviceName = MOCK_SERVICE
+): ConfirmResetPasswordOAuthIntegration {
+  return {
+    type: IntegrationType.OAuth,
+    getRedirectUri: jest.fn().mockReturnValue(MOCK_REDIRECT_URI),
+    getService: jest.fn().mockReturnValue(serviceName),
+  };
+}

@@ -3,7 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { MOCK_ACCOUNT } from '../../models/mocks';
-import { Account } from '../../models';
+import { Account, IntegrationType } from '../../models';
+import {
+  ResetPasswordBaseIntegration,
+  ResetPasswordOAuthIntegration,
+} from './interfaces';
+import { MozServices } from '../../lib/types';
+import { MOCK_REDIRECT_URI, MOCK_SERVICE } from '../mocks';
 
 // No error message on submit
 export const mockDefaultAccount = { MOCK_ACCOUNT } as any as Account;
@@ -31,3 +37,22 @@ export const mockAccountWithUnexpectedError = {
 
 mockAccountWithThrottledError.resetPassword = () =>
   Promise.reject('some error');
+
+export function createMockResetPasswordWebIntegration(): ResetPasswordBaseIntegration {
+  return {
+    type: IntegrationType.Web,
+    getServiceName: jest.fn().mockReturnValue(MozServices.Default),
+  };
+}
+
+export function createMockResetPasswordOAuthIntegration(
+  serviceName = MOCK_SERVICE
+): ResetPasswordOAuthIntegration {
+  return {
+    type: IntegrationType.OAuth,
+    getRedirectUri: jest.fn().mockReturnValue(MOCK_REDIRECT_URI),
+    saveOAuthState: jest.fn(),
+    getService: jest.fn().mockReturnValue(serviceName),
+    getServiceName: jest.fn().mockReturnValue(serviceName),
+  };
+}

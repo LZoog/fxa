@@ -7,11 +7,11 @@ import { act } from '@testing-library/react';
 import { renderWithLocalizationProvider } from 'fxa-react/lib/test-utils/localizationProvider';
 import App from '.';
 import * as Metrics from '../../lib/metrics';
-import { useAccount, useInitialState } from '../../models';
+import { useAccount, useInitialSettingsState } from '../../models';
 
 jest.mock('../../models', () => ({
   ...jest.requireActual('../../models'),
-  useInitialState: jest.fn(),
+  useInitialSettingsState: jest.fn(),
   useAccount: jest.fn(),
 }));
 
@@ -58,7 +58,7 @@ describe('metrics', () => {
       hasSecondaryVerifiedEmail: false,
     };
     (useAccount as jest.Mock).mockReturnValue(mockAccount);
-    (useInitialState as jest.Mock).mockReturnValue({ loading: true });
+    (useInitialSettingsState as jest.Mock).mockReturnValue({ loading: true });
     const DEVICE_ID = 'yoyo';
     const BEGIN_TIME = 123456;
     const FLOW_ID = 'abc123';

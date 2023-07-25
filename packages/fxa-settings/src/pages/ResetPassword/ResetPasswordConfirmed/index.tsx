@@ -6,11 +6,12 @@ import React, { useEffect, useState } from 'react';
 import { RouteComponentProps } from '@reach/router';
 import Ready from '../../../components/Ready';
 import AppLayout from '../../../components/AppLayout';
-import { useRelier } from '../../../models';
+import { Integration } from '../../../models';
 
 export type ResetPasswordConfirmedProps = {
   continueHandler?: Function;
   isSignedIn: boolean;
+  integration: Integration;
 };
 
 export const viewName = 'reset-password-confirmed';
@@ -18,16 +19,15 @@ export const viewName = 'reset-password-confirmed';
 const ResetPasswordConfirmed = ({
   continueHandler,
   isSignedIn,
+  integration,
 }: ResetPasswordConfirmedProps & RouteComponentProps) => {
-  const relier = useRelier();
-
   const [serviceName, setServiceName] = useState<string>();
   const [isSync, setIsSync] = useState<boolean>();
 
   useEffect(() => {
     (async () => {
-      setServiceName(await relier.getServiceName());
-      setIsSync(await relier.isSync());
+      setServiceName(await integration.getServiceName());
+      setIsSync(await integration.isSync());
     })();
   });
 
