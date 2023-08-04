@@ -14,11 +14,11 @@ import {
   bind,
   KeyTransforms as T,
   ModelValidation as V,
-  ModelDataProvider,
 } from '../../lib/model-data';
 import { Constants } from '../../lib/constants';
 import { ERRORS, OAuthError } from '../../lib/oauth';
 import { IntegrationFlags } from '../../lib/integrations';
+import { BaseIntegrationData } from './web-integration';
 
 interface OAuthIntegrationFeatures extends IntegrationFeatures {
   webChannelSupport: boolean;
@@ -44,7 +44,7 @@ export function isOAuthIntegration(integration: {
 }
 
 // TODO: probably move this somewhere else
-export class OAuthIntegrationData extends ModelDataProvider {
+export class OAuthIntegrationData extends BaseIntegrationData {
   @bind([V.isString], T.snakeCase)
   clientId: string | undefined;
 
@@ -104,9 +104,6 @@ export class OAuthIntegrationData extends ModelDataProvider {
 
   @bind([V.isString])
   loginHint: string | undefined;
-
-  @bind([V.isString])
-  uid: string | undefined;
 }
 
 export type OAuthIntegrationOptions = {

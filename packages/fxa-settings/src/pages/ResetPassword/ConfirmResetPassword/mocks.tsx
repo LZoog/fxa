@@ -4,19 +4,10 @@
 
 import { IntegrationType } from '../../../models';
 import { MOCK_REDIRECT_URI, MOCK_SERVICE } from '../../mocks';
-import {
-  ConfirmResetPasswordBaseIntegration,
-  ConfirmResetPasswordOAuthIntegration,
-} from './interfaces';
+import { ConfirmResetPasswordOAuthIntegration } from './interfaces';
 
 export const MOCK_EMAIL = 'blabidi@blabidiboo.com';
 export const MOCK_PASSWORD_FORGOT_TOKEN = 'abc';
-
-export function createMockConfirmResetPasswordWebIntegration(): ConfirmResetPasswordBaseIntegration {
-  return {
-    type: IntegrationType.Web,
-  };
-}
 
 export function createMockConfirmResetPasswordOAuthIntegration(
   serviceName = MOCK_SERVICE

@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { IntegrationSubsetType } from '../../../lib/integrations';
 import { IntegrationType, OAuthIntegration } from '../../../models';
 
 export interface ConfirmResetPasswordOAuthIntegration {
@@ -10,13 +11,9 @@ export interface ConfirmResetPasswordOAuthIntegration {
   getService: () => ReturnType<OAuthIntegration['getService']>;
 }
 
-export interface ConfirmResetPasswordBaseIntegration {
-  type: IntegrationType;
-}
-
 export type ConfirmResetPasswordIntegration =
   | ConfirmResetPasswordOAuthIntegration
-  | ConfirmResetPasswordBaseIntegration;
+  | IntegrationSubsetType;
 
 export interface ConfirmResetPasswordLocationState {
   email: string;

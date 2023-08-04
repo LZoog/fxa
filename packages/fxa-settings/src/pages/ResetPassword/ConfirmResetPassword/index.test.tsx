@@ -11,7 +11,6 @@ import {
   MOCK_EMAIL,
   MOCK_PASSWORD_FORGOT_TOKEN,
   createMockConfirmResetPasswordOAuthIntegration,
-  createMockConfirmResetPasswordWebIntegration,
 } from './mocks';
 import { REACT_ENTRYPOINT } from '../../../constants';
 import { Account } from '../../../models';
@@ -24,6 +23,7 @@ import {
 } from '../../../models/mocks';
 import { usePageViewEvent, logViewEvent } from '../../../lib/metrics';
 import { MOCK_REDIRECT_URI, MOCK_SERVICE } from '../../mocks';
+import { createMockWebIntegration } from '../../../lib/integrations/mocks';
 
 jest.mock('../../../lib/metrics', () => ({
   logViewEvent: jest.fn(),
@@ -63,9 +63,7 @@ jest.mock('@reach/router', () => ({
 }));
 
 const ConfirmResetPasswordWithWebIntegration = () => (
-  <ConfirmResetPassword
-    integration={createMockConfirmResetPasswordWebIntegration()}
-  />
+  <ConfirmResetPassword integration={createMockWebIntegration()} />
 );
 
 describe('ConfirmResetPassword page', () => {

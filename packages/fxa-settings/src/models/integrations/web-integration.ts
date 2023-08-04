@@ -12,12 +12,18 @@ import {
 } from '../../lib/model-data';
 
 // TODO: move this to other file, FXA-8099
-export class WebIntegrationData extends ModelDataProvider {
+export class BaseIntegrationData extends ModelDataProvider {
+  @bind([V.isString])
+  code: string | undefined;
+
   @bind([V.isString])
   context: string | undefined;
 
   @bind([V.isString])
   email: string | undefined;
+
+  @bind([V.isString])
+  emailToHashWith: string | undefined;
 
   @bind([V.isString])
   entrypoint: string | undefined;
@@ -41,6 +47,9 @@ export class WebIntegrationData extends ModelDataProvider {
   style: string | undefined;
 
   @bind([V.isString])
+  token: string | undefined;
+
+  @bind([V.isString])
   uid: string | undefined;
 
   @bind([V.isString], T.snakeCase)
@@ -61,7 +70,7 @@ export class WebIntegrationData extends ModelDataProvider {
 
 export class WebIntegration extends BaseIntegration {
   constructor(data: ModelDataStore) {
-    super(IntegrationType.Web, new WebIntegrationData(data));
+    super(IntegrationType.Web, new BaseIntegrationData(data));
     this.setFeatures({
       reuseExistingSession: true,
       fxaStatus: this.isFxaStatusSupported(),

@@ -5,11 +5,7 @@
 import React from 'react';
 import { AccountData, ProfileInfo, Session } from '.';
 import { renderWithLocalizationProvider } from 'fxa-react/lib/test-utils/localizationProvider';
-import {
-  AppContext,
-  AppContextValue,
-  defaultAppContext,
-} from './contexts/AppContext';
+import { AppContext, AppContextValue, defaultAppContext } from '.';
 
 import {
   createHistory,

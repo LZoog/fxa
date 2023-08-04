@@ -3,17 +3,33 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { useState } from 'react';
-import { Integration, useAccount } from '../../models';
+import {
+  IntegrationType,
+  OAuthIntegration,
+  isOAuthIntegration,
+  useAccount,
+} from '../../models';
 import { ResendStatus } from '../../lib/types';
 import { logViewEvent } from 'fxa-settings/src/lib/metrics';
 import { REACT_ENTRYPOINT } from 'fxa-settings/src/constants';
 import { LinkExpired } from '../LinkExpired';
+import { IntegrationSubsetType } from '../../lib/integrations';
 
 type LinkExpiredResetPasswordProps = {
   email: string;
   viewName: string;
-  integration: Integration;
+  integration: LinkExpiredResetPasswordIntegration;
 };
+
+interface LinkExpiredResetPasswordOAuthIntegration {
+  type: IntegrationType.OAuth;
+  getService: () => ReturnType<OAuthIntegration['getService']>;
+  getRedirectUri: () => ReturnType<OAuthIntegration['getService']>;
+}
+
+type LinkExpiredResetPasswordIntegration =
+  | LinkExpiredResetPasswordOAuthIntegration
+  | IntegrationSubsetType;
 
 export const LinkExpiredResetPassword = ({
   email,
@@ -29,7 +45,7 @@ export const LinkExpiredResetPassword = ({
 
   const resendResetPasswordLink = async () => {
     try {
-      if (integration.isOAuth()) {
+      if (isOAuthIntegration(integration)) {
         await account.resetPassword(
           email,
           integration.getService(),

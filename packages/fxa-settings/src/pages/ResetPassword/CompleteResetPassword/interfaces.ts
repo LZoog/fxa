@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { IntegrationSubsetType } from '../../../lib/integrations';
 import { FinishOAuthFlowHandler } from '../../../lib/oauth/hooks';
 import { LinkStatus } from '../../../lib/types';
 import { IntegrationType, OAuthIntegrationData } from '../../../models';
@@ -38,13 +39,9 @@ export interface CompleteResetPasswordOAuthIntegration {
   data: { uid: OAuthIntegrationData['uid'] };
 }
 
-export interface CompleteResetPasswordBaseIntegration {
-  type: IntegrationType;
-}
-
-type CompleteResetPasswordIntegration =
+export type CompleteResetPasswordIntegration =
   | CompleteResetPasswordOAuthIntegration
-  | CompleteResetPasswordBaseIntegration;
+  | IntegrationSubsetType;
 
 export interface CompleteResetPasswordProps {
   params: CompleteResetPasswordLink;

@@ -2,21 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React, { useState } from 'react';
-import { LinkStatus, LinkType } from 'fxa-settings/src/lib/types';
+import React from 'react';
+import { LinkType } from 'fxa-settings/src/lib/types';
 import CompleteResetPassword from '.';
 import { Integration, IntegrationType } from '../../../models';
 import { MOCK_ACCOUNT } from '../../../models/mocks';
 import { CompleteResetPasswordLink } from '../../../models/reset-password/verification';
 import {
-  CompleteResetPasswordBaseIntegration,
   CompleteResetPasswordIntegration,
   CompleteResetPasswordOAuthIntegration,
 } from './interfaces';
-import { MOCK_UID } from '../../mocks';
+import { MOCK_UID, mockUrlQueryData } from '../../mocks';
 import LinkValidator from '../../../components/LinkValidator';
-import { ReachRouterWindow } from '../../../lib/window';
-import { UrlQueryData } from '../../../lib/model-data';
+import {
+  createMockSyncDesktopIntegration,
+  createMockWebIntegration,
+} from '../../../lib/integrations/mocks';
 
 // TODO: combine a lot of mocks with AccountRecoveryResetPassword
 const fxDesktopV3ContextParam = { context: 'fx_desktop_v3' };
@@ -62,17 +63,6 @@ export const MOCK_RESET_DATA = {
   verified: true,
 };
 
-export function mockUrlQueryData(
-  params: Record<string, string> = mockCompleteResetPasswordParams
-) {
-  const window = new ReachRouterWindow();
-  const data = new UrlQueryData(window);
-  for (const param of Object.keys(params)) {
-    data.set(param, params[param]);
-  }
-  return data;
-}
-
 export const Subject = ({
   integrationType = IntegrationType.Web,
   params = mockCompleteResetPasswordParams,
@@ -89,13 +79,11 @@ export const Subject = ({
         createMockResetPasswordOAuthIntegration();
       break;
     case IntegrationType.SyncDesktop:
-      completeResetPasswordIntegration =
-        createMockResetPasswordSyncDesktopIntegration();
+      completeResetPasswordIntegration = createMockSyncDesktopIntegration();
       break;
     case IntegrationType.Web:
     default:
-      completeResetPasswordIntegration =
-        createMockResetPasswordWebIntegration();
+      completeResetPasswordIntegration = createMockWebIntegration();
   }
 
   return (
@@ -105,7 +93,7 @@ export const Subject = ({
       getParamsFromModel={() => {
         return new CompleteResetPasswordLink(urlQueryData);
       }}
-      // TODO fix type
+      // TODO worth fixing this type?
       integration={completeResetPasswordIntegration as Integration}
     >
       {({ setLinkStatus, params }) => (
@@ -118,18 +106,6 @@ export const Subject = ({
     </LinkValidator>
   );
 };
-
-function createMockResetPasswordWebIntegration(): CompleteResetPasswordBaseIntegration {
-  return {
-    type: IntegrationType.Web,
-  };
-}
-
-function createMockResetPasswordSyncDesktopIntegration(): CompleteResetPasswordBaseIntegration {
-  return {
-    type: IntegrationType.SyncDesktop,
-  };
-}
 
 function createMockResetPasswordOAuthIntegration(): CompleteResetPasswordOAuthIntegration {
   return {

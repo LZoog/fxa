@@ -8,7 +8,7 @@ import { StorageData, UrlQueryData } from '../model-data';
 import { DefaultIntegrationFlags } from './integration-factory-flags';
 import { ReachRouterWindow } from '../window';
 
-describe('lib/integrations/relier-factory-flags', function () {
+describe('lib/integrations/integration-factory-flags', function () {
   const window = new ReachRouterWindow();
   let integrationFlags: DefaultIntegrationFlags;
   let queryData: UrlQueryData;

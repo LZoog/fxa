@@ -61,7 +61,6 @@ export function useIntegration() {
     const urlQueryData = new UrlQueryData(windowWrapper);
     const urlHashData = new UrlHashData(windowWrapper);
     const storageData = new StorageData(windowWrapper);
-    // const locationStateData = new LocationStateData(windowWrapper);
     const oauthClient = new OAuthClient(config.servers.oauth.url);
 
     // TODO: we shouldn't do this here, move to shared hook or read from config. FXA-6836

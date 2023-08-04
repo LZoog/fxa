@@ -16,13 +16,3 @@ export function CreateVerificationInfo() {
 
   return new VerificationInfo(urlQueryData);
 }
-
-export function CreateAccountRecoveryKeyInfo() {
-  const { locationStateData } = useContext(AppContext);
-
-  if (locationStateData == null) {
-    throw new Error('Are you forgetting an AppContext.Provider?');
-  }
-
-  return new AccountRecoveryKeyInfo(locationStateData);
-}

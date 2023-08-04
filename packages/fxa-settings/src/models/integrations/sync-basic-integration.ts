@@ -9,13 +9,13 @@ import {
 } from './base-integration';
 import {
   bind,
-  ModelDataProvider,
   ModelValidation as V,
   ModelDataStore,
 } from '../../lib/model-data';
 import { Constants } from '../../lib/constants';
+import { BaseIntegrationData } from './web-integration';
 
-export class SyncBasicIntegrationData extends ModelDataProvider {
+export class SyncBasicIntegrationData extends BaseIntegrationData {
   @bind([V.isValidCountry])
   country: string | undefined;
 
