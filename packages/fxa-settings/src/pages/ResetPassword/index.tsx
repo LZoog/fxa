@@ -24,7 +24,6 @@ import { FtlMsg } from 'fxa-react/lib/utils';
 import AppLayout from '../../components/AppLayout';
 import Banner, { BannerType } from '../../components/Banner';
 import CardHeader from '../../components/CardHeader';
-import { ConfirmResetPasswordLocationState } from './ConfirmResetPassword';
 import { InputText } from '../../components/InputText';
 import LinkRememberPassword from '../../components/LinkRememberPassword';
 import WarningMessage from '../../components/WarningMessage';
@@ -32,6 +31,7 @@ import { isEmailValid } from 'fxa-shared/email/helpers';
 import sentryMetrics from 'fxa-shared/lib/sentry';
 import { setOriginalTabMarker } from '../../lib/storage-utils';
 import { ResetPasswordFormData, ResetPasswordProps } from './interfaces';
+import { ConfirmResetPasswordLocationState } from './ConfirmResetPassword/interfaces';
 
 export const viewName = 'reset-password';
 

@@ -49,20 +49,6 @@ jest.mock('@reach/router', () => ({
 const route = '/reset_password';
 const render = (ui: any, account?: Account) => {
   const history = createHistoryWithQuery(route);
-  if (account) {
-    return renderWithRouter(
-      ui,
-      {
-        route,
-        history,
-      },
-      mockAppContext({
-        ...createAppContext(history),
-        account,
-      })
-    );
-  }
-
   return renderWithRouter(
     ui,
     {
@@ -70,10 +56,15 @@ const render = (ui: any, account?: Account) => {
       history,
     },
     mockAppContext({
-      ...createAppContext(history),
+      ...createAppContext(),
+      ...(account && { account }),
     })
   );
 };
+
+const ResetPasswordWithWebIntegration = () => (
+  <ResetPassword integration={createMockResetPasswordWebIntegration()} />
+);
 
 describe('PageResetPassword', () => {
   // TODO: enable l10n tests when they've been updated to handle embedded tags in ftl strings
@@ -82,10 +73,6 @@ describe('PageResetPassword', () => {
   // beforeAll(async () => {
   //   bundle = await getFtlBundle('settings');
   // });
-
-  const ResetPasswordWithWebIntegration = () => (
-    <ResetPassword integration={createMockResetPasswordWebIntegration()} />
-  );
 
   it('renders as expected', async () => {
     render(<ResetPasswordWithWebIntegration />);

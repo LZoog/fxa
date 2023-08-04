@@ -42,7 +42,7 @@ const renderWithHistory = (ui: any, account?: Account) => {
       history,
     },
     mockAppContext({
-      ...createAppContext(history),
+      ...createAppContext(),
       ...(account && { account }),
     })
   );
@@ -62,18 +62,18 @@ jest.mock('@reach/router', () => ({
   },
 }));
 
+const ConfirmResetPasswordWithWebIntegration = () => (
+  <ConfirmResetPassword
+    integration={createMockConfirmResetPasswordWebIntegration()}
+  />
+);
+
 describe('ConfirmResetPassword page', () => {
   // TODO enable l10n testing
   // let bundle: FluentBundle;
   // beforeAll(async () => {
   //   bundle = await getFtlBundle('settings');
   // });
-
-  const ConfirmResetPasswordWithWebIntegration = () => (
-    <ConfirmResetPassword
-      integration={createMockConfirmResetPasswordWebIntegration()}
-    />
-  );
 
   it('renders as expected', () => {
     renderWithHistory(<ConfirmResetPasswordWithWebIntegration />);

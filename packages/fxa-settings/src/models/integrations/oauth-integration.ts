@@ -104,6 +104,9 @@ export class OAuthIntegrationData extends ModelDataProvider {
 
   @bind([V.isString])
   loginHint: string | undefined;
+
+  @bind([V.isString])
+  uid: string | undefined;
 }
 
 export type OAuthIntegrationOptions = {

@@ -4,5 +4,6 @@
 
 import { MozServices } from '../lib/types';
 
+export const MOCK_UID = 'abc123';
 export const MOCK_REDIRECT_URI = 'http://localhost:8080/123Done';
 export const MOCK_SERVICE = MozServices.FirefoxMonitor;

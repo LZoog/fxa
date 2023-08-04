@@ -2,20 +2,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React from 'react';
-import { LinkType } from 'fxa-settings/src/lib/types';
+import React, { useState } from 'react';
+import { LinkStatus, LinkType } from 'fxa-settings/src/lib/types';
 import CompleteResetPassword from '.';
-import LinkValidator from '../../../components/LinkValidator';
-import { StorageData, UrlQueryData } from '../../../lib/model-data';
-import { Account } from '../../../models';
-import {
-  mockAppContext,
-  MOCK_ACCOUNT,
-  createHistoryWithQuery,
-  createAppContext,
-} from '../../../models/mocks';
+import { Integration, IntegrationType } from '../../../models';
+import { MOCK_ACCOUNT } from '../../../models/mocks';
 import { CompleteResetPasswordLink } from '../../../models/reset-password/verification';
+import {
+  CompleteResetPasswordBaseIntegration,
+  CompleteResetPasswordIntegration,
+  CompleteResetPasswordOAuthIntegration,
+} from './interfaces';
+import { MOCK_UID } from '../../mocks';
+import LinkValidator from '../../../components/LinkValidator';
 import { ReachRouterWindow } from '../../../lib/window';
+import { UrlQueryData } from '../../../lib/model-data';
 
 // TODO: combine a lot of mocks with AccountRecoveryResetPassword
 const fxDesktopV3ContextParam = { context: 'fx_desktop_v3' };
@@ -72,54 +73,69 @@ export function mockUrlQueryData(
   return data;
 }
 
-class StorageDataMock extends StorageData {
-  public override persist(): void {
-    // no op
+export const Subject = ({
+  integrationType = IntegrationType.Web,
+  params = mockCompleteResetPasswordParams,
+}: {
+  integrationType?: IntegrationType;
+  params?: Record<string, string>;
+}) => {
+  const urlQueryData = mockUrlQueryData(params);
+
+  let completeResetPasswordIntegration: CompleteResetPasswordIntegration;
+  switch (integrationType) {
+    case IntegrationType.OAuth:
+      completeResetPasswordIntegration =
+        createMockResetPasswordOAuthIntegration();
+      break;
+    case IntegrationType.SyncDesktop:
+      completeResetPasswordIntegration =
+        createMockResetPasswordSyncDesktopIntegration();
+      break;
+    case IntegrationType.Web:
+    default:
+      completeResetPasswordIntegration =
+        createMockResetPasswordWebIntegration();
   }
-  public override load(): void {
-    // no op
-  }
-  public override set(): void {
-    // no op
-  }
+
+  return (
+    <LinkValidator
+      linkType={LinkType['reset-password']}
+      viewName={'complete-reset-password'}
+      getParamsFromModel={() => {
+        return new CompleteResetPasswordLink(urlQueryData);
+      }}
+      // TODO fix type
+      integration={completeResetPasswordIntegration as Integration}
+    >
+      {({ setLinkStatus, params }) => (
+        <CompleteResetPassword
+          {...{ setLinkStatus, params }}
+          integration={completeResetPasswordIntegration}
+          finishOAuthFlowHandler={jest.fn()}
+        />
+      )}
+    </LinkValidator>
+  );
+};
+
+function createMockResetPasswordWebIntegration(): CompleteResetPasswordBaseIntegration {
+  return {
+    type: IntegrationType.Web,
+  };
 }
 
-const route = '/complete_reset_password';
-export const getSubject = (
-  account: Account,
-  params?: Record<string, string>
-) => {
-  const urlQueryData = mockUrlQueryData(params);
-  const history = createHistoryWithQuery(
-    route,
-    new URLSearchParams(params).toString()
-  );
-  const windowWrapper = new ReachRouterWindow(history);
-
+function createMockResetPasswordSyncDesktopIntegration(): CompleteResetPasswordBaseIntegration {
   return {
-    Subject: () => (
-      <LinkValidator
-        linkType={LinkType['reset-password']}
-        viewName={'complete-reset-password'}
-        getParamsFromModel={() => {
-          return new CompleteResetPasswordLink(urlQueryData);
-        }}
-      >
-        {({ setLinkStatus, params }) => (
-          <CompleteResetPassword {...{ setLinkStatus, params }} />
-        )}
-      </LinkValidator>
-    ),
-    route,
-    history,
-    appCtx: {
-      ...mockAppContext({
-        ...createAppContext(history),
-        account,
-        windowWrapper,
-        urlQueryData,
-        storageData: new StorageDataMock(windowWrapper),
-      }),
+    type: IntegrationType.SyncDesktop,
+  };
+}
+
+function createMockResetPasswordOAuthIntegration(): CompleteResetPasswordOAuthIntegration {
+  return {
+    type: IntegrationType.OAuth,
+    data: {
+      uid: MOCK_UID,
     },
   };
-};
+}

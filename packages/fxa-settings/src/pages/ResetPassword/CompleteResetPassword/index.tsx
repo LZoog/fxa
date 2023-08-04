@@ -10,8 +10,6 @@ import {
   IntegrationType,
   useAccount,
   isOAuthIntegration,
-  Relier,
-  Integration,
 } from '../../../models';
 import WarningMessage from '../../../components/WarningMessage';
 import LinkRememberPassword from '../../../components/LinkRememberPassword';
@@ -26,7 +24,6 @@ import {
   hardNavigate,
 } from 'fxa-react/lib/utils';
 import { LinkStatus } from '../../../lib/types';
-import { CompleteResetPasswordLink } from '../../../models/reset-password/verification';
 import useNavigateWithoutRerender from '../../../lib/hooks/useNavigateWithoutRerender';
 import { notifyFirefoxOfLogin } from '../../../lib/channels/helpers';
 import {
@@ -35,7 +32,13 @@ import {
   isOriginalTab,
 } from '../../../lib/storage-utils';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
-import { FinishOAuthFlowHandler } from '../../../lib/oauth/hooks';
+import {
+  CompleteResetPasswordErrorType,
+  CompleteResetPasswordFormData,
+  CompleteResetPasswordLocationState,
+  CompleteResetPasswordProps,
+  CompleteResetPasswordSubmitData,
+} from './interfaces';
 
 // The equivalent complete_reset_password mustache file included account_recovery_reset_password
 // For React, we have opted to separate these into two pages to align with the routes.
@@ -49,44 +52,17 @@ import { FinishOAuthFlowHandler } from '../../../lib/oauth/hooks';
 //
 // If account recovery was initiated with a key, redirect to account_recovery_reset_password
 
-enum ErrorType {
-  'none',
-  'recovery-key',
-  'complete-reset',
-}
-
 export const viewName = 'complete-reset-password';
-
-type FormData = {
-  newPassword: string;
-  confirmPassword: string;
-};
-
-type SubmitData = {
-  newPassword: string;
-} & CompleteResetPasswordParams;
-
-type LocationState = { lostRecoveryKey: boolean };
-
-export type CompleteResetPasswordParams = {
-  email: string;
-  emailToHashWith: string;
-  code: string;
-  token: string;
-};
 
 const CompleteResetPassword = ({
   params,
   setLinkStatus,
   integration,
   finishOAuthFlowHandler,
-}: {
-  params: CompleteResetPasswordLink;
-  setLinkStatus: React.Dispatch<React.SetStateAction<LinkStatus>>;
-  integration: Integration;
-  finishOAuthFlowHandler: FinishOAuthFlowHandler;
-}) => {
-  const [errorType, setErrorType] = useState(ErrorType.none);
+}: CompleteResetPasswordProps) => {
+  const [errorType, setErrorType] = useState(
+    CompleteResetPasswordErrorType.none
+  );
   /* Show a loading spinner until all checks complete. Without this, users with a
    * recovery key set or with an expired or damaged link will experience some jank due
    * to an immediate redirect or rerender of this page. */
@@ -95,11 +71,11 @@ const CompleteResetPassword = ({
   const navigateWithoutRerender = useNavigateWithoutRerender();
   const account = useAccount();
   const location = useLocation() as ReturnType<typeof useLocation> & {
-    state: LocationState;
+    state: CompleteResetPasswordLocationState;
   };
 
   const { handleSubmit, register, getValues, errors, formState, trigger } =
-    useForm<FormData>({
+    useForm<CompleteResetPasswordFormData>({
       mode: 'onTouched',
       criteriaMode: 'all',
       defaultValues: {
@@ -149,7 +125,7 @@ const CompleteResetPassword = ({
           });
         }
       } catch (error) {
-        setErrorType(ErrorType['recovery-key']);
+        setErrorType(CompleteResetPasswordErrorType['recovery-key']);
       }
     };
 
@@ -170,7 +146,7 @@ const CompleteResetPassword = ({
   ]);
 
   const alertSuccessAndNavigate = useCallback(() => {
-    setErrorType(ErrorType.none);
+    setErrorType(CompleteResetPasswordErrorType.none);
     navigateWithoutRerender(
       `/reset_password_verified${window.location.search}`,
       { replace: true }
@@ -184,7 +160,7 @@ const CompleteResetPassword = ({
       code,
       email,
       emailToHashWith,
-    }: SubmitData) => {
+    }: CompleteResetPasswordSubmitData) => {
       try {
         // The `emailToHashWith` option is returned by the auth-server to let the front-end
         // know what to hash the new password with. This is important in the scenario where a user
@@ -242,7 +218,7 @@ const CompleteResetPassword = ({
               );
               isHardNavigate = true;
             } else if (sessionIsVerified && isOAuthIntegration(integration)) {
-              // todo add type guard
+              // todo use type guard, FXA-8111
               const { redirect } = await finishOAuthFlowHandler(
                 integration.data.uid || account.uid,
                 accountResetData.sessionToken,
@@ -282,7 +258,7 @@ const CompleteResetPassword = ({
           alertSuccessAndNavigate();
         }
       } catch (e) {
-        setErrorType(ErrorType['complete-reset']);
+        setErrorType(CompleteResetPasswordErrorType['complete-reset']);
       }
     },
     [
@@ -343,9 +319,9 @@ const CompleteResetPassword = ({
         headingTextFtlId="complete-reset-pw-header"
       />
 
-      {errorType === ErrorType['recovery-key'] &&
+      {errorType === CompleteResetPasswordErrorType['recovery-key'] &&
         renderRecoveryKeyErrorBanner()}
-      {errorType === ErrorType['complete-reset'] &&
+      {errorType === CompleteResetPasswordErrorType['complete-reset'] &&
         renderCompleteResetPasswordErrorBanner()}
 
       <WarningMessage
