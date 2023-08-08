@@ -28,23 +28,7 @@ interface SharedProps {
   serviceName?: MozServices;
 }
 
-// CWTS is enabled if relier is sync or multiService, broker is OAuth
-// CWTS and newsletters cannot both be enabled
-type ConditionalProps =
-  | {
-      isCWTSEnabled?: boolean;
-      areNewslettersEnabled?: never;
-    }
-  | {
-      isCWTSEnabled?: never;
-      areNewslettersEnabled?: boolean;
-    }
-  | {
-      isCWTSEnabled?: never;
-      areNewslettersEnabled?: never;
-    };
-
-export type SignupProps = SharedProps & ConditionalProps;
+export type SignupProps = SharedProps;
 
 type FormData = {
   newPassword: string;
@@ -58,8 +42,6 @@ const Signup = ({
   email,
   canChangeEmail = true,
   serviceName,
-  isCWTSEnabled,
-  areNewslettersEnabled,
 }: SignupProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
@@ -243,24 +225,19 @@ const Signup = ({
           </LinkExternal>
         </FtlMsg>
 
-        {isCWTSEnabled && (
+        {/* check: {isSyncIntegration(integration) */}
+        {true ? (
           <ChooseWhatToSync
             {...{ engines, selectedEngines, setSelectedEngines }}
           />
-        )}
-
-        {areNewslettersEnabled && (
+        ) : (
           <ChooseNewsletters
             {...{ newsletters, selectedNewsletters, setSelectedNewsletters }}
           />
         )}
       </FormPasswordWithBalloons>
 
-      {isPocketClient ? (
-        <TermsPrivacyAgreement isPocketClient />
-      ) : (
-        <TermsPrivacyAgreement />
-      )}
+      <TermsPrivacyAgreement {...{ isPocketClient }} />
     </>
   );
 };

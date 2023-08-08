@@ -33,9 +33,9 @@ const ChooseNewsletters = ({
   return (
     <>
       <FtlMsg id="choose-newsletters-prompt">
-        <p className="text-start mb-1">
-          Practical knowledge is coming to your inbox. Sign up for more:
-        </p>
+        <h2 className="text-start text-base mb-4 font-bold">
+          Get more from Mozilla:
+        </h2>
       </FtlMsg>
       <ul className="flex flex-wrap text-start text-sm mb-4">
         {newsletters.map((newsletter) => {

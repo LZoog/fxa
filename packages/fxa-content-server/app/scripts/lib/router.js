@@ -446,7 +446,11 @@ Router = Router.extend({
         }
       );
     },
-    'signup(/)': createViewHandler(SignUpPasswordView),
+    'signup(/)': function () {
+      this.createReactOrBackboneViewHandler('signup', SignUpPasswordView, {
+        email: this.user.get('emailFromIndex'),
+      });
+    },
     'signup_confirmed(/)': function () {
       this.createReactOrBackboneViewHandler(
         'signup_confirmed',
