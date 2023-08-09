@@ -53,6 +53,7 @@ import {
 import CompleteResetPasswordContainer from '../../pages/ResetPassword/CompleteResetPassword/container';
 import AccountRecoveryResetPasswordContainer from '../../pages/ResetPassword/AccountRecoveryResetPassword/container';
 import { QueryParams } from '../..';
+import Signup from '../../pages/Signup';
 
 // TODO: FXA-8098
 // export const INITIAL_METRICS_QUERY = gql`
@@ -250,6 +251,8 @@ const AuthAndAccountSetupRoutes = (_: RouteComponentProps) => {
         path="/signin_confirmed/*"
         {...{ integration }}
       />
+
+      <Signup path="/signup/*" />
 
       <Confirm path="/confirm/*" {...{ sessionTokenId }} />
       <ConfirmSignupCode path="/confirm_signup_code/*" />
