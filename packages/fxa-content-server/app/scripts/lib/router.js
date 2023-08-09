@@ -531,6 +531,7 @@ Router = Router.extend({
   ) {
     const showReactApp = this.showReactApp(routeName);
     if (showReactApp) {
+      console.log('creating react view handler');
       this.createReactViewHandler(routeName, additionalParams);
     } else {
       return getView(ViewOrPath).then((View) => {
