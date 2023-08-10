@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, RouteComponentProps } from '@reach/router';
 import { useForm } from 'react-hook-form';
 import { useFtlMsgResolver } from '../../models';
@@ -21,33 +21,26 @@ import Banner, { BannerType } from '../../components/Banner';
 import CardHeader from '../../components/CardHeader';
 import { REACT_ENTRYPOINT } from '../../constants';
 import AppLayout from '../../components/AppLayout';
-
-interface SharedProps {
-  email: string;
-  // canChangeEmail is true if not from relying party or force_auth
-  canChangeEmail?: boolean;
-  serviceName?: MozServices;
-}
-
-export type SignupProps = SharedProps;
-
-type FormData = {
-  newPassword: string;
-  confirmPassword: string;
-  userAge: string;
-};
+import { SignupFormData, SignupProps } from './interfaces';
 
 export const viewName = 'signup';
 
-const Signup = ({
-  email,
-  canChangeEmail = true,
-  serviceName,
-}: SignupProps & RouteComponentProps) => {
+const Signup = ({ integration }: SignupProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
+  const [serviceName, setServiceName] = useState<string>(MozServices.Default);
+  useEffect(() => {
+    (async () => {
+      setServiceName(await integration.getServiceName());
+    })();
+  });
+
+  const email = 'grabFromIntegrationOrOtherModel@gmail.com';
+  // const canChangeEmail = integration;
+
   const onFocusMetricsEvent = `${viewName}.engage`;
-  const isPocketClient = serviceName === MozServices.Pocket;
+  // TODO, see if this is how we want to check for Pocket
+  const isPocketClient = serviceName.includes(MozServices.Pocket);
 
   const [ageCheckErrorText, setAgeCheckErrorText] = useState<string>('');
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -68,7 +61,7 @@ const Signup = ({
   const [selectedNewsletters, setSelectedNewsletters] = useState<string[]>([]);
 
   const { handleSubmit, register, getValues, errors, formState, trigger } =
-    useForm<FormData>({
+    useForm<SignupFormData>({
       mode: 'onBlur',
       criteriaMode: 'all',
       defaultValues: {
@@ -114,14 +107,17 @@ const Signup = ({
    *       - account signup - set password
    *       - handle errors
    **/
-  const onSubmit = useCallback(async ({ newPassword, userAge }: FormData) => {
-    try {
-      // await something
-      // go somwehere, pass email as location state
-    } catch (e) {
-      // do something with the error
-    }
-  }, []);
+  const onSubmit = useCallback(
+    async ({ newPassword, userAge }: SignupFormData) => {
+      try {
+        // await something
+        // go somwehere, pass email as location state
+      } catch (e) {
+        // do something with the error
+      }
+    },
+    []
+  );
 
   return (
     // TODO: if force_auth && AuthErrors.is(error, 'DELETED_ACCOUNT') :
