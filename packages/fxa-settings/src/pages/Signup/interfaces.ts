@@ -7,9 +7,19 @@ import {
   IntegrationType,
   OAuthIntegration,
 } from '../../models';
+import { SignupQueryParams } from '../../models/pages/signup';
+
+export interface BeginSignupResponse {
+  Signup: {
+    uid: string;
+    sessionToken: hexstring;
+    authAt: number;
+  };
+}
 
 export interface SignupProps {
   integration: SignupIntegration;
+  queryParams: SignupQueryParams;
 }
 
 type SignupIntegration = SignupOAuthIntegration | SignupBaseIntegration;

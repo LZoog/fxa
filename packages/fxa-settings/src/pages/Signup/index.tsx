@@ -3,12 +3,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, RouteComponentProps } from '@reach/router';
+import { Link } from '@reach/router';
 import { useForm } from 'react-hook-form';
-import { useFtlMsgResolver } from '../../models';
+import {
+  isOAuthIntegration,
+  isSyncDesktopIntegration,
+  useFtlMsgResolver,
+} from '../../models';
 import { logViewEvent, usePageViewEvent } from '../../lib/metrics';
 import { MozServices } from '../../lib/types';
-import { FtlMsg } from 'fxa-react/lib/utils';
+import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
 import LinkExternal from 'fxa-react/components/LinkExternal';
 import FormPasswordWithBalloons from '../../components/FormPasswordWithBalloons';
 import InputText from '../../components/InputText';
@@ -25,7 +29,7 @@ import { SignupFormData, SignupProps } from './interfaces';
 
 export const viewName = 'signup';
 
-const Signup = ({ integration }: SignupProps) => {
+const Signup = ({ integration, queryParams }: SignupProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
   const [serviceName, setServiceName] = useState<string>(MozServices.Default);
@@ -35,8 +39,7 @@ const Signup = ({ integration }: SignupProps) => {
     })();
   });
 
-  const email = 'grabFromIntegrationOrOtherModel@gmail.com';
-  // const canChangeEmail = integration;
+  const canChangeEmail = !isOAuthIntegration(integration);
 
   const onFocusMetricsEvent = `${viewName}.engage`;
   // TODO, see if this is how we want to check for Pocket
@@ -162,13 +165,24 @@ const Signup = ({ integration }: SignupProps) => {
       )}
 
       <div className="mt-4 mb-6">
-        <p className="break-all">{email}</p>
+        <p className="break-all">{queryParams.email}</p>
 
         {canChangeEmail && (
           <FtlMsg id="signup-change-email-link">
-            <Link to="/" className="link-blue text-sm">
+            {/* TODO: Replace this with `Link` once index page is Reactified */}
+            <a
+              href="/"
+              className="link-blue text-sm"
+              onClick={(e) => {
+                e.preventDefault();
+                // TODO: this takes users to /signin if they've got an email in
+                // localStorage. Hopefully there's another workaround but might
+                // need to send a param back over to content-server?
+                hardNavigateToContentServer('/');
+              }}
+            >
               Change email
-            </Link>
+            </a>
           </FtlMsg>
         )}
       </div>
@@ -181,7 +195,7 @@ const Signup = ({ integration }: SignupProps) => {
           register,
           getValues,
           onFocus,
-          email,
+          email: queryParams.email,
           onFocusMetricsEvent,
         }}
         passwordFormType="signup"
@@ -222,8 +236,7 @@ const Signup = ({ integration }: SignupProps) => {
           </LinkExternal>
         </FtlMsg>
 
-        {/* check: {isSyncIntegration(integration) */}
-        {true ? (
+        {isSyncDesktopIntegration(integration) ? (
           <ChooseWhatToSync
             {...{ engines, selectedEngines, setSelectedEngines }}
           />

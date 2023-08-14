@@ -2,9 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { RouteComponentProps } from '@reach/router';
+import { RouteComponentProps, useLocation } from '@reach/router';
 import { Integration } from '../../models';
 import Signup from '.';
+import { useValidatedQueryParams } from '../../lib/hooks/useValidate';
+import { SignupQueryParams } from '../../models/pages/signup';
+import { hardNavigateToContentServer } from 'fxa-react/lib/utils';
+import { useMutation } from '@apollo/client';
+import { BeginSignupResponse } from './interfaces';
+import { BEGIN_SIGNUP_MUTATION } from './gql';
 
 /*
  * In content-server, the `email` param is optional. If it's provided, we
@@ -33,7 +39,21 @@ const SignupContainer = ({
 }: {
   integration: Integration;
 } & RouteComponentProps) => {
-  return <Signup {...{ integration }} />;
+  const location = useLocation();
+
+  const [beginSignup] = useMutation<BeginSignupResponse>(BEGIN_SIGNUP_MUTATION);
+
+  const begin;
+
+  const { queryParams, queryParamErrors } =
+    useValidatedQueryParams(SignupQueryParams);
+
+  // TODO
+  if (queryParamErrors?.email) {
+    hardNavigateToContentServer(`/${location.search}`);
+  }
+
+  return <Signup {...{ integration, queryParams }} />;
 };
 
 export default SignupContainer;
