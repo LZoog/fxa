@@ -27,7 +27,7 @@ import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { MozServices } from '../../lib/types';
 
 /*
- * In content-server, the `email` param is optional. If it's provided, we
+ * In Backbone, the `email` param is optional. If it's provided, we
  * check against it to see if the account exists and if it does, we redirect
  * users to `/signin`.
  *
@@ -37,10 +37,10 @@ import { MozServices } from '../../lib/types';
  * check on the Backbone index page, which is rate limited since it doesn't require a
  * session token, we also temporarily pass `emailFromContent=true` to signal not to perform
  * the check again. If this param is not passed and `email` is, we perform the check and
- * redirect existing user emails to `/signin` to match content-server functionality.
+ * redirect existing user emails to `/signin` to match Backbone functionality.
  *
  * If the account exists when signup is attempted, the user will be shown an "Account
- * already exists" error message. In content-server, we attempt to redirect users that are
+ * already exists" error message. In Backbone, we attempt to redirect users that are
  * on `/signup` with an account that already exists to where they need to go (Settings or
  * RP redirect) if for example, a user begins signup in one tab and then begins and
  * completes it in another tab. The "Account already exists" error message is only shown
