@@ -14,13 +14,10 @@ const ResetPasswordConfirmed = ({
   continueHandler,
   isSignedIn,
   serviceName,
-  isSync,
 }: ResetPasswordConfirmedProps & RouteComponentProps) => {
   return (
     <AppLayout>
-      <Ready
-        {...{ continueHandler, isSignedIn, isSync, viewName, serviceName }}
-      />
+      <Ready {...{ continueHandler, isSignedIn, viewName, serviceName }} />
     </AppLayout>
   );
 };

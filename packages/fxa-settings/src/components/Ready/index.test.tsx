@@ -28,7 +28,9 @@ describe('Ready', () => {
   // });
 
   it('renders as expected with default values', () => {
-    renderWithLocalizationProvider(<Ready {...{ viewName, isSignedIn }} />);
+    renderWithLocalizationProvider(
+      <Ready {...{ viewName, isSignedIn }} serviceName={MozServices.Default} />
+    );
     // testAllL10n(screen, bundle);
 
     const passwordResetConfirmation = screen.getByText(
@@ -66,7 +68,11 @@ describe('Ready', () => {
 
   it('renders as expected when page is viewed by a logged out user', () => {
     renderWithLocalizationProvider(
-      <Ready isSignedIn={false} {...{ viewName }} />
+      <Ready
+        isSignedIn={false}
+        {...{ viewName }}
+        serviceName={MozServices.Default}
+      />
     );
 
     const passwordResetConfirmation = screen.getByText(
@@ -81,7 +87,11 @@ describe('Ready', () => {
 
   it('renders as expected the service is sync', () => {
     renderWithLocalizationProvider(
-      <Ready isSignedIn={false} isSync {...{ viewName }} />
+      <Ready
+        isSignedIn={false}
+        {...{ viewName }}
+        serviceName={customServiceName}
+      />
     );
 
     const passwordResetConfirmation = screen.getByText(
@@ -121,7 +131,9 @@ describe('Ready', () => {
   });
 
   it('emits a metrics event on render', () => {
-    renderWithLocalizationProvider(<Ready {...{ viewName, isSignedIn }} />);
+    renderWithLocalizationProvider(
+      <Ready {...{ viewName, isSignedIn }} serviceName={MozServices.Default} />
+    );
     expect(usePageViewEvent).toHaveBeenCalledWith(viewName, REACT_ENTRYPOINT);
   });
 

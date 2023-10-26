@@ -6,5 +6,4 @@ export type ResetPasswordConfirmedProps = {
   continueHandler?: Function;
   isSignedIn: boolean;
   serviceName: string;
-  isSync: boolean;
 };

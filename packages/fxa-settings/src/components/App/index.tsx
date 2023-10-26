@@ -6,11 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { RouteComponentProps, Router } from '@reach/router';
 import { ScrollToTop } from '../Settings/ScrollToTop';
 import { currentAccount, sessionToken } from '../../lib/cache';
-import {
-  useConfig,
-  useIntegration,
-  isSyncDesktopIntegration,
-} from '../../models';
+import { useConfig, useIntegration } from '../../models';
 import * as Metrics from '../../lib/metrics';
 
 import sentryMetrics from 'fxa-shared/lib/sentry';
@@ -82,7 +78,7 @@ export const App = ({
       },
       {
         flowQueryParams,
-        accountData: { metricsEnabled: data?.metricsEnabled, uid: data?.uid },
+        account: { metricsEnabled: data?.metricsEnabled, uid: data?.uid },
         userAgent: navigator.userAgent,
         integration,
       }
@@ -190,9 +186,6 @@ const AuthAndAccountSetupRoutes = ({
     );
   }
 
-  // TODO: Not sure we want this check here long term
-  const isSync = isSyncDesktopIntegration(integration);
-
   return (
     <Router>
       <WebChannelExample path="/web_channel_example/*" />
@@ -247,35 +240,35 @@ const AuthAndAccountSetupRoutes = ({
 
       <ResetPasswordConfirmed
         path="/reset_password_verified/*"
-        {...{ integration, isSignedIn, serviceName, isSync }}
+        {...{ isSignedIn, serviceName }}
       />
 
       <ResetPasswordWithRecoveryKeyVerified
         path="/reset_password_with_recovery_key_verified/*"
-        {...{ integration, isSignedIn, serviceName, isSync }}
+        {...{ integration, isSignedIn }}
       />
 
       <PrimaryEmailVerified
         path="/primary_email_verified/*"
-        {...{ integration, isSignedIn, serviceName, isSync }}
+        {...{ isSignedIn, serviceName }}
       />
 
       <SignupConfirmed
         path="/signup_verified/*"
-        {...{ integration, isSignedIn, serviceName, isSync }}
+        {...{ isSignedIn, serviceName }}
       />
       <SignupConfirmed
         path="/signup_confirmed/*"
-        {...{ integration, isSignedIn, serviceName, isSync }}
+        {...{ isSignedIn, serviceName }}
       />
 
       <SigninConfirmed
         path="/signin_verified/*"
-        {...{ integration, isSignedIn, serviceName, isSync }}
+        {...{ isSignedIn, serviceName }}
       />
       <SigninConfirmed
         path="/signin_confirmed/*"
-        {...{ integration, isSignedIn, serviceName, isSync }}
+        {...{ isSignedIn, serviceName }}
       />
 
       <SignupContainer path="/signup/*" {...{ integration }} />

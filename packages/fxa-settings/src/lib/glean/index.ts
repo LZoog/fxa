@@ -30,7 +30,7 @@ import { Integration } from '../../models';
 type DeviceTypes = 'mobile' | 'tablet' | 'desktop';
 export type GleanMetricsContext = {
   flowQueryParams: FlowQueryParams;
-  accountData?: { uid?: hexstring; metricsEnabled?: boolean };
+  account?: { uid?: hexstring; metricsEnabled?: boolean };
   userAgent: string;
   integration: Integration;
 };
@@ -110,8 +110,8 @@ const populateMetrics = async (properties: EventProperties) => {
 
   userIdSha256.set('');
   try {
-    if (metricsContext.accountData?.uid) {
-      const hashedUid = await hashUid(metricsContext.accountData.uid);
+    if (metricsContext.account?.uid) {
+      const hashedUid = await hashUid(metricsContext.account.uid);
       userIdSha256.set(hashedUid);
     }
   } catch (e) {
