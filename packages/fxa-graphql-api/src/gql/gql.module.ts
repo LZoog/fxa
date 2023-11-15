@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Request, Response } from 'express';
 import { CustomsModule } from 'fxa-shared/nestjs/customs/customs.module';
 import { CustomsService } from 'fxa-shared/nestjs/customs/customs.service';
 import { MozLoggerService } from 'fxa-shared/nestjs/logger/logger.service';
@@ -26,6 +25,9 @@ import Config, { AppConfig } from '../config';
 import { AccountResolver } from './account.resolver';
 import { LegalResolver } from './legal.resolver';
 import { SessionResolver } from './session.resolver';
+import { SubscriptionResolver } from './subscription.resolver';
+import { ClientInfoResolver } from './clientInfo.resolver';
+import { Request, Response } from 'express';
 
 const config = Config.getProperties();
 
@@ -70,6 +72,8 @@ export const GraphQLConfigFactory = async (
     CustomsService,
     SessionResolver,
     LegalResolver,
+    ClientInfoResolver,
+    SubscriptionResolver,
     SentryPlugin,
   ],
 })
