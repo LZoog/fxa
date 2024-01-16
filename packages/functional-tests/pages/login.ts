@@ -16,18 +16,19 @@ export const selectors = {
   ERROR: '.error',
   LINK_LOST_RECOVERY_KEY: '.lost-recovery-key',
   LINK_RESET_PASSWORD: 'a[href^="/reset_password"]',
-  LINK_USE_DIFFERENT: '#use-different',
+  LINK_CHANGE_EMAIL: 'a:has-text("Change email")',
+  LINK_USE_DIFFERENT: 'a:has-text("Use a different account")',
   LINK_USE_RECOVERY_CODE: '#use-recovery-code-link',
   NUMBER_INPUT: 'input[type=number]',
   PASSWORD: '#password',
-  PASSWORD_HEADER: '#fxa-signin-password-header',
+  PASSWORD_HEADER: 'h1:has-text("Enter your password")',
   PERMISSIONS_HEADER: '#fxa-permissions-header',
   PASSWORD_MASK_INPUT: '#password[type=password]',
   PASSWORD_TEXT_INPUT: '#password[type=text]',
   SHOW_PASSWORD: '#password ~ [for="show-password"]',
   RESET_PASSWORD_EXPIRED_HEADER: '#fxa-reset-link-expired-header',
   RESET_PASSWORD_HEADER: '#fxa-reset-password-header',
-  SIGN_UP_CODE_HEADER: '#fxa-confirm-signup-code-header',
+  SIGN_UP_CODE_HEADER: 'h1:has-text("Enter confirmation code")',
   SIGNIN_BOUNCED_HEADER: '#fxa-signin-bounced-header',
   BOUNCED_CREATE_ACCOUNT: '#create-account',
   SIGN_IN_CODE_HEADER: '#fxa-signin-code-header',
@@ -338,6 +339,15 @@ export class LoginPage extends BaseLayout {
     return this.page.click(selectors.LINK_USE_DIFFERENT);
   }
 
+  async isChangeEmailLinkVisible() {
+    const link = await this.page.locator(selectors.LINK_CHANGE_EMAIL);
+    return link.isVisible();
+  }
+
+  async useChangeEmailLink() {
+    return this.page.click(selectors.LINK_CHANGE_EMAIL);
+  }
+
   async getTooltipError() {
     return this.page.locator(selectors.TOOLTIP).innerText();
   }
@@ -460,13 +470,15 @@ export class LoginPage extends BaseLayout {
   }
 
   async signInPasswordHeader() {
-    const header = this.page.locator('#fxa-signin-password-header');
+    const header = this.page.locator(selectors.PASSWORD_HEADER);
     await header.waitFor();
     return header.isVisible();
   }
 
   async signUpPasswordHeader() {
-    const header = this.page.locator('#fxa-signup-password-header');
+    const header = this.page.getByRole('heading', {
+      name: 'Set your password',
+    });
     await header.waitFor();
     return header.isVisible();
   }

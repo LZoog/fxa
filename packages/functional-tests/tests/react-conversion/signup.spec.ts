@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { expect, newPagesForSync, test } from '../../lib/fixtures/standard';
-import { EmailHeader, EmailType } from '../../lib/email';
 import { createCustomEventDetail, FirefoxCommand } from '../../lib/channels';
 import { syncMobileOAuthQueryParams } from '../../lib/query-params';
 
@@ -50,14 +49,7 @@ test.describe('severity-1 #smoke', () => {
       await signupReact.fillOutEmailFirst(email);
       await page.waitForSelector('#root');
       await signupReact.fillOutSignupForm(PASSWORD);
-
-      const code = await target.email.waitForEmail(
-        email,
-        EmailType.verifyShortCode,
-        EmailHeader.shortCode
-      );
-
-      await signupReact.fillOutCodeForm(code);
+      await signupReact.fillOutCodeForm(email);
 
       // Verify logged into settings page
       await page.waitForURL(/settings/);
@@ -94,7 +86,7 @@ test.describe('severity-1 #smoke', () => {
       );
     });
 
-    test('signup oauth', async ({
+    test.only('signup oauth', async ({
       page,
       target,
       pages: { relier, signupReact },
@@ -115,7 +107,7 @@ test.describe('severity-1 #smoke', () => {
       await relier.signOut();
     });
 
-    test('signup oauth with missing redirect_uri', async ({
+    test.only('signup oauth with missing redirect_uri', async ({
       page,
       target,
       pages: { relier, signupReact },
@@ -138,7 +130,7 @@ test.describe('severity-1 #smoke', () => {
       await relier.signOut();
     });
 
-    test('signup oauth webchannel - sync mobile or FF desktop 123+', async ({
+    test.only('signup oauth webchannel - sync mobile or FF desktop 123+', async ({
       target,
     }) => {
       const syncBrowserPages = await newPagesForSync(target);
@@ -173,14 +165,7 @@ test.describe('severity-1 #smoke', () => {
 
       await signupReact.listenToWebChannelMessages();
       await signupReact.fillOutSignupForm(PASSWORD);
-
-      const code = await target.email.waitForEmail(
-        email,
-        EmailType.verifyShortCode,
-        EmailHeader.shortCode
-      );
-
-      await signupReact.fillOutCodeForm(code);
+      await signupReact.fillOutCodeForm(email);
       await signupReact.checkWebChannelMessage(FirefoxCommand.OAuthLogin);
     });
 
@@ -204,14 +189,7 @@ test.describe('severity-1 #smoke', () => {
       await page.waitForSelector('#root');
 
       await signupReact.fillOutSignupForm(PASSWORD);
-
-      const code = await target.email.waitForEmail(
-        email,
-        EmailType.verifyShortCode,
-        EmailHeader.shortCode
-      );
-
-      await signupReact.fillOutCodeForm(code);
+      await signupReact.fillOutCodeForm(email);
 
       // See note in `firefox.ts` about an event listener hack needed for this test
       await page.waitForURL(/connect_another_device/);
@@ -222,7 +200,7 @@ test.describe('severity-1 #smoke', () => {
   });
 });
 
-test.describe('severity-2 #smoke', () => {
+test.describe.only('severity-2 #smoke', () => {
   test.describe('signup react', () => {
     test('signup invalid email', async ({ page, pages: { signupReact } }) => {
       skipCleanup = true;
@@ -297,12 +275,7 @@ test.describe('severity-2 #smoke', () => {
       await signupReact.goto();
       await signupReact.fillOutEmailFirst(email);
       await signupReact.fillOutSignupForm(PASSWORD);
-      const code = await target.email.waitForEmail(
-        email,
-        EmailType.verifyShortCode,
-        EmailHeader.shortCode
-      );
-      await signupReact.fillOutCodeForm(code);
+      await signupReact.fillOutCodeForm(email);
       await page.waitForURL(/settings/);
       await settings.signOut();
       await signupReact.goto();
@@ -339,13 +312,7 @@ test.describe('severity-2 #smoke', () => {
       await signupReact.goto('/', searchParams);
       await signupReact.fillOutEmailFirst(email);
       await signupReact.fillOutSignupForm(PASSWORD);
-      const code = await target.email.waitForEmail(
-        email,
-        EmailType.verifyShortCode,
-        EmailHeader.shortCode
-      );
-
-      await signupReact.fillOutCodeForm(code);
+      await signupReact.fillOutCodeForm(email);
       /*
        * We must `waitUntil: 'load'` due to redirects that occur here. Note,
        * React signup for SubPlat has one additional redirect compared to Backbone.

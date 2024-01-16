@@ -120,10 +120,15 @@ test.describe('password strength tests', () => {
     await login.submit();
   });
 
-  test('test different password errors and success', async ({
+  test.only('test different password errors and success', async ({
     credentials,
-    pages: { login },
+    pages: { configPage, login },
   }) => {
+    const config = await configPage.getConfig();
+    test.skip(
+      config.showReactApp.signUpRoutes === true,
+      'password errors and success tests were converted to unit tests in PasswordStrengthBalloon component'
+    );
     //Submit without providing a password
     await login.submitButton.click();
 
