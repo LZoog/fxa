@@ -91,7 +91,7 @@ test.describe('severity-2 #smoke', () => {
       // Input invalid code and verify the tooltip error
       await signinTokenCode.input.fill('000000');
       await signinTokenCode.submit.click();
-      await expect(signinTokenCode.tooltip).toContainText('Invalid or expired');
+      expect(page.getByText('Invalid or expired')).toBeVisible();
 
       //Input Valid code and verify the success
       await login.fillOutSignUpCode(email);

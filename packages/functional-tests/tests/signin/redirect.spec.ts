@@ -34,11 +34,10 @@ test.describe('severity-2 #smoke', () => {
 
     test('prevent xss in redirect_to parameter', async ({
       target,
-      pages: { page },
+      pages: { page, configPage },
     }) => {
       const redirectTo = 'javascript:alert(1)';
       await engageRedirect(page, target, redirectTo);
-
       const error = await page.waitForSelector('.error');
       expect(await error.isVisible()).toBeTruthy();
       expect(await error.textContent()).toEqual('Invalid redirect!');

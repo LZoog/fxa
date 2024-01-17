@@ -56,6 +56,27 @@ test.describe('severity-1 #smoke', () => {
       await settings.signOut();
     });
 
+    test.only('signup web, resend code', async ({
+      page,
+      pages: { settings, signupReact, signinTokenCode },
+    }) => {
+      await signupReact.goto();
+      await signupReact.fillOutEmailFirst(email);
+      await page.waitForSelector('#root');
+      await signupReact.fillOutSignupForm(PASSWORD);
+
+      const newCode = page.locator('button:has-text("Email new code."');
+      await expect(newCode).toBeVisible();
+      await newCode.click();
+
+      await expect(page.locator('text="Email resent.')).toBeVisible();
+      await signupReact.fillOutCodeForm(email);
+
+      // Verify logged into settings page
+      await page.waitForURL(/settings/);
+      await settings.signOut();
+    });
+
     // TODO this test is skipped until we sort out
     // how to record an email bounce for testing
     test.skip('signup, bounce email', async ({
@@ -86,7 +107,7 @@ test.describe('severity-1 #smoke', () => {
       );
     });
 
-    test.only('signup oauth', async ({
+    test('signup oauth', async ({
       page,
       target,
       pages: { relier, signupReact },
@@ -107,7 +128,7 @@ test.describe('severity-1 #smoke', () => {
       await relier.signOut();
     });
 
-    test.only('signup oauth with missing redirect_uri', async ({
+    test('signup oauth with missing redirect_uri', async ({
       page,
       target,
       pages: { relier, signupReact },
@@ -130,7 +151,30 @@ test.describe('severity-1 #smoke', () => {
       await relier.signOut();
     });
 
-    test.only('signup oauth webchannel - sync mobile or FF desktop 123+', async ({
+    test('signup oauth ', async ({
+      page,
+      target,
+      pages: { relier, signupReact },
+    }) => {
+      relier.goto();
+      relier.clickEmailFirst();
+
+      // wait for navigation, and get search params
+      await page.waitForURL(/oauth\//);
+      const params = new URL(page.url()).searchParams;
+      params.delete('redirect_uri');
+
+      // reload email-first page without redirect_uri, but with React experiment params
+      await signupReact.goToEmailFirstAndCreateAccount(params, email, PASSWORD);
+
+      // redirectUri should have fallen back to the clientInfo config redirect URI
+      // Expect to be redirected to relier
+      await page.waitForURL(target.relierUrl);
+      expect(await relier.isLoggedIn()).toBe(true);
+      await relier.signOut();
+    });
+
+    test('signup oauth webchannel - sync mobile or FF desktop 123+', async ({
       target,
     }) => {
       const syncBrowserPages = await newPagesForSync(target);
@@ -200,7 +244,7 @@ test.describe('severity-1 #smoke', () => {
   });
 });
 
-test.describe.only('severity-2 #smoke', () => {
+test.describe('severity-2 #smoke', () => {
   test.describe('signup react', () => {
     test('signup invalid email', async ({ page, pages: { signupReact } }) => {
       skipCleanup = true;

@@ -34,8 +34,10 @@ test.describe('severity-2 #smoke', () => {
     };
     /* eslint-enable camelcase */
 
-    test.beforeEach(async ({ target }, { project }) => {
+    test.beforeEach(async ({ target, pages: { configPage } }, { project }) => {
       // The `sync` prefix is needed to force confirmation.
+      const config = await configPage.getConfig();
+
       email = `sync${Math.random()}@restmail.net`;
       await target.createAccount(email, password);
     });
