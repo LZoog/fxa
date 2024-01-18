@@ -58,6 +58,7 @@ import SignupContainer from '../../pages/Signup/container';
 import GleanMetrics from '../../lib/glean';
 import { hardNavigateToContentServer } from 'fxa-react/lib/utils';
 import { firefox } from '../../lib/channels/firefox';
+import SigninContainer from '../../pages/Signin/container';
 
 const Settings = lazy(() => import('../Settings'));
 
@@ -287,6 +288,7 @@ const AuthAndAccountSetupRoutes = ({
       />
 
       {/* Signin */}
+      <SigninContainer path="/signin/*" {...{ integration }} />
       <SigninBounced email={localAccount?.email} path="/signin_bounced/*" />
       <SigninConfirmed
         path="/signin_confirmed/*"

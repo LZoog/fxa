@@ -407,7 +407,12 @@ Router = Router.extend({
       })}`;
       this.navigateAway(settingsLink);
     },
-    'signin(/)': createViewHandler(SignInPasswordView),
+    'signin(/)': function () {
+      this.createReactOrBackboneViewHandler('signin', SignInPasswordView, {
+        ...Url.searchParams(this.window.location.search),
+        email: this.user.get('emailFromIndex'),
+      });
+    },
     'signin_bounced(/)': function () {
       this.createReactOrBackboneViewHandler(
         'signin_bounced',
