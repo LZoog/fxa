@@ -93,7 +93,7 @@ export const signupQueryParams = {
 
 export const signupQueryParamsWithContent = {
   ...signupQueryParams,
-  emailFromContent: 'true',
+  emailStatusChecked: 'true',
 };
 
 export const Subject = ({

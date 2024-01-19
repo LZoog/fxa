@@ -56,12 +56,12 @@ const SignupConfirmCodeContainer = ({
       const params = new URLSearchParams(location.search);
 
       // If the user reached this page from React signup,
-      // 'email' and 'emailFromContent' will be set as params
+      // 'email' and 'emailStatusChecked' will be set as params
       // when the user was navigated from Backbone to React.
       // This is temporary until index is converted to React.
       // Passing back the 'email' param causes various behaviors in
       // content-server since it marks the email as "coming from a RP".
-      params.delete('emailFromContent');
+      params.delete('emailStatusChecked');
       params.delete('email');
       // passing the 'bouncedEmail' param will display an error tooltip
       // on the email-first signin/signup page and allow to check

@@ -250,7 +250,7 @@ Router = Router.extend({
           // see comment in fxa-settings/src/pages/Signup/container.tsx for param explanation
           email: this.user.get('emailFromIndex'),
           ...(this.user.get('emailFromIndex') && {
-            emailFromContent: 'true',
+            emailStatusChecked: 'true',
           }),
           ...Url.searchParams(this.window.location.search),
         }
@@ -411,6 +411,9 @@ Router = Router.extend({
       this.createReactOrBackboneViewHandler('signin', SignInPasswordView, {
         ...Url.searchParams(this.window.location.search),
         email: this.user.get('emailFromIndex'),
+        ...(this.user.get('emailFromIndex') && {
+          emailStatusChecked: 'true',
+        }),
       });
     },
     'signin_bounced(/)': function () {
@@ -457,10 +460,10 @@ Router = Router.extend({
     'signup(/)': function () {
       this.createReactOrBackboneViewHandler('signup', SignUpPasswordView, {
         ...Url.searchParams(this.window.location.search),
-        // see comment in fxa-settings/src/pages/Signup/container.tsx for param explanation
+        // see comment in fxa-settings/src/pages/Signin/container.tsx for param explanation
         email: this.user.get('emailFromIndex'),
         ...(this.user.get('emailFromIndex') && {
-          emailFromContent: 'true',
+          emailStatusChecked: 'true',
         }),
       });
     },

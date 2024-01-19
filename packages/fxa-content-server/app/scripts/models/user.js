@@ -135,6 +135,8 @@ var User = Backbone.Model.extend({
       // we can convert the index page over and pass this along with router state
       // instead of param.
       this.set({ emailFromIndex: accountData.get('email') });
+      this.set({ hasPassword: accountData.get('hasPassword') });
+      this.set({ hasLinkedAccount: accountData.get('hasLinkedAccount') });
       // we already have an account instance
       return accountData;
     }

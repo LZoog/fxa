@@ -635,7 +635,7 @@ describe('Signup page', () => {
           {...{
             queryParams: {
               email: 'foo@bar.com',
-              emailFromContent: 'true',
+              emailStatusChecked: 'true',
             },
           }}
         />
@@ -673,7 +673,7 @@ describe('Signup page', () => {
           {...{
             queryParams: {
               email: 'foo@bar.com',
-              emailFromContent: 'true',
+              emailStatusChecked: 'true',
             },
           }}
         />
