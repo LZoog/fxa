@@ -7,8 +7,7 @@ import { bind, ModelDataProvider } from '../../../lib/model-data';
 
 export class SigninQueryParams extends ModelDataProvider {
   // 'email' will be optional once the index page is converted to React
-  // and we pass it with router-state instead of a param, and `emailStatusChecked`
-  // can be removed
+  // and we pass it with router-state instead of a param
   @IsEmail()
   @bind()
   email: string = '';
@@ -16,5 +15,10 @@ export class SigninQueryParams extends ModelDataProvider {
   @IsOptional()
   @IsBoolean()
   @bind()
-  emailStatusChecked: boolean = false;
+  hasLinkedAccount: boolean | undefined = undefined;
+
+  @IsOptional()
+  @IsBoolean()
+  @bind()
+  hasPassword: boolean | undefined = undefined;
 }

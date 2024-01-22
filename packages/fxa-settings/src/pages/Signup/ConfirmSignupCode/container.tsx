@@ -18,7 +18,6 @@ import { hardNavigateToContentServer } from 'fxa-react/lib/utils';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { GetEmailBounceStatusResponse, LocationState } from './interfaces';
 import sentryMetrics from 'fxa-shared/sentry/browser';
-import { StoredAccountData } from '../../../lib/storage-utils';
 import { useQuery } from '@apollo/client';
 import { EMAIL_BOUNCE_STATUS_QUERY } from './gql';
 
@@ -43,7 +42,7 @@ const SignupConfirmCodeContainer = ({
   } = location.state || {};
   const navigate = useNavigate();
 
-  const storedLocalAccount: StoredAccountData | undefined = currentAccount();
+  const storedLocalAccount = currentAccount();
   const { email, sessionToken, uid } = storedLocalAccount || {};
 
   const { finishOAuthFlowHandler, oAuthDataError } = useFinishOAuthFlowHandler(
@@ -66,7 +65,7 @@ const SignupConfirmCodeContainer = ({
       // passing the 'bouncedEmail' param will display an error tooltip
       // on the email-first signin/signup page and allow to check
       // if the entered email matches the bounced email
-      hasBounced && params.set('bouncedEmail', email);
+      hasBounced && email && params.set('bouncedEmail', email);
       if (Array.from(params).length > 0) {
         path += `?${params.toString()}`;
       }
@@ -106,7 +105,7 @@ const SignupConfirmCodeContainer = ({
     return <LoadingSpinner fullScreen />;
   }
 
-  if (!sessionToken) {
+  if (!sessionToken || !email || !uid) {
     /* Users who reach this page should have account data set in localStorage.
    * Account data is persisted local storage after creating an (unverified) account
    * and after sign in. Users may also have localStorage set by the browser if

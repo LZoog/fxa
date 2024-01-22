@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { RouteComponentProps, useNavigate } from '@reach/router';
+import { RouteComponentProps, useLocation, useNavigate } from '@reach/router';
 import {
   Integration,
   isOAuthIntegration,
@@ -65,6 +65,10 @@ export type SignupContainerIntegration = Pick<
   'type' | 'getService' | 'features' | 'isSync'
 >;
 
+type LocationState = {
+  emailStatusChecked?: boolean;
+};
+
 const SignupContainer = ({
   integration,
 }: {
@@ -73,6 +77,10 @@ const SignupContainer = ({
   const authClient = useAuthClient();
   const navigate = useNavigate();
   const config = useConfig();
+  const location = useLocation() as ReturnType<typeof useLocation> & {
+    state: LocationState;
+  };
+  const { emailStatusChecked } = location.state || {};
 
   const { queryParamModel, validationError } =
     useValidatedQueryParams(SignupQueryParams);
@@ -91,9 +99,12 @@ const SignupContainer = ({
 
   useEffect(() => {
     (async () => {
+      // Modify this once index is converted to React
       if (!validationError) {
-        // Remove this once index is converted to React
-        if (!queryParamModel.emailStatusChecked) {
+        // emailStatusChecked can be passed from React Signin when users hit /signin
+        // with an email query param that we already determined doesn't exist.
+        // It's supplied by Backbone when going from Backbone Index page to React signup.
+        if (!queryParamModel.emailStatusChecked && !emailStatusChecked) {
           const { exists, hasLinkedAccount, hasPassword } =
             await authClient.accountStatusByEmail(queryParamModel.email, {
               thirdPartyAuthStatus: true,

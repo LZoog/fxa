@@ -411,9 +411,8 @@ Router = Router.extend({
       this.createReactOrBackboneViewHandler('signin', SignInPasswordView, {
         ...Url.searchParams(this.window.location.search),
         email: this.user.get('emailFromIndex'),
-        ...(this.user.get('emailFromIndex') && {
-          emailStatusChecked: 'true',
-        }),
+        hasLinkedAccount: this.user.get('hasLinkedAccount'),
+        hasPassword: this.user.get('hasPassword'),
       });
     },
     'signin_bounced(/)': function () {
