@@ -43,7 +43,7 @@ const SignupConfirmCodeContainer = ({
   const navigate = useNavigate();
 
   const storedLocalAccount = currentAccount();
-  const { email, sessionToken, uid } = storedLocalAccount || {};
+  const { email, sessionToken } = storedLocalAccount || {};
 
   const { finishOAuthFlowHandler, oAuthDataError } = useFinishOAuthFlowHandler(
     authClient,
@@ -105,7 +105,7 @@ const SignupConfirmCodeContainer = ({
     return <LoadingSpinner fullScreen />;
   }
 
-  if (!sessionToken || !email || !uid) {
+  if (!storedLocalAccount || !sessionToken || !email) {
     /* Users who reach this page should have account data set in localStorage.
    * Account data is persisted local storage after creating an (unverified) account
    * and after sign in. Users may also have localStorage set by the browser if
@@ -151,8 +151,8 @@ const SignupConfirmCodeContainer = ({
   return (
     <ConfirmSignupCode
       {...{
+        storedLocalAccount,
         email,
-        uid,
         sessionToken,
         integration,
         finishOAuthFlowHandler,

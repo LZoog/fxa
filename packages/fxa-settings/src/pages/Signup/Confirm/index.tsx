@@ -38,7 +38,7 @@ import { hardNavigateToContentServer } from 'fxa-react/lib/utils';
 export const viewName = 'confirm';
 
 export type ConfirmProps = {
-  sessionTokenId: string | null;
+  sessionTokenId?: string | null;
 };
 
 export const Confirm = ({

@@ -288,7 +288,7 @@ const AuthAndAccountSetupRoutes = ({
       />
 
       {/* Signin */}
-      <SigninContainer path="/signin/*" {...{ integration }} />
+      <SigninContainer path="/signin/*" {...{ integration, serviceName }} />
       <SigninBounced email={localAccount?.email} path="/signin_bounced/*" />
       <SigninConfirmed
         path="/signin_confirmed/*"

@@ -17,6 +17,9 @@ import { useEffect, useState } from 'react';
 import firefox from '../../lib/channels/firefox';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { currentAccount } from '../../lib/cache';
+import { useQuery } from '@apollo/client';
+import { SESSION_STATUS_QUERY } from './gql';
+import { hardNavigateToContentServer } from 'fxa-react/lib/utils';
 
 /*
  * In content-server, the `email` param is optional. If it's provided, we
@@ -79,14 +82,23 @@ const SigninContainer = ({
     hasPassword: queryParamModel.hasPassword || hasPasswordFromLocationState,
   });
 
-  let email = queryParamModel.email || emailFromLocationState;
+  const nonCachedEmail = queryParamModel.email || emailFromLocationState;
+  let email = nonCachedEmail;
+  let isPasswordNeeded = true;
   let sessionToken: string | undefined, uid: string | undefined;
   // only read from local storage if email isn't provided via query param or router state
-  if (!email) {
+  if (!nonCachedEmail) {
     const storedLocalAccount = currentAccount();
     email = storedLocalAccount?.email;
     sessionToken = storedLocalAccount?.sessionToken;
     uid = storedLocalAccount?.uid;
+
+    // need to check if exists... else "account deleted" message??
+
+    // check if session token is verified. If so, isPasswordNeeded = false
+    // /session/status
+
+    // if session token not present, isPasswordNeeded = true
   }
 
   const isOAuth = isOAuthIntegration(integration);
@@ -140,15 +152,70 @@ const SigninContainer = ({
     })();
   });
 
-  // if (!email) {
-  // hardRedirectToContentServer
-  // }
+  // useEffect(() => {
+  //   (async () => {
+  //     if (sessionToken) {
+  //       await authClient.sessionVerifyCode(email, {
+  //         thirdPartyAuthStatus: true,
+  //       });
+  //     }
+  //     setShowLoadingSpinner(false);
+  //   })();
+  // });
+
+  // const [sessionStatus] = useQuery<SessionStatusResponse>(SESSION_STATUS_QUERY);
+
+  // const beginSignupHandler: BeginSignupHandler = useCallback(
+  //   async (email, password) => {
+  //     try {
+  //       const { data } = await beginSignup({
+  //         variables: {
+  //           input: {
+  //             email,
+  //             authPW,
+  //           },
+  //         },
+  //       });
+  //       return data ? { data: { ...data, unwrapBKey } } : { data: null };
+  //     } catch (error) {
+  //       const graphQLError: GraphQLError = error.graphQLErrors?.[0];
+  //       if (graphQLError && graphQLError.extensions?.errno) {
+  //         const { errno } = graphQLError.extensions as { errno: number };
+  //         return {
+  //           error: {
+  //             errno,
+  //             message: AuthUiErrorNos[errno].message,
+  //             ftlId: composeAuthUiErrorTranslationId({ errno }),
+  //           },
+  //         };
+  //       } else {
+  //         // TODO: why is `errno` in `AuthServerError` possibly undefined?
+  //         // might want to grab from `ERRORS.UNEXPECTED_ERROR` instead
+  //         const { errno = 999, message } = AuthUiErrors.UNEXPECTED_ERROR;
+  //         return {
+  //           data: null,
+  //           error: {
+  //             errno,
+  //             message,
+  //             ftlId: composeAuthUiErrorTranslationId({ errno }),
+  //           },
+  //         };
+  //       }
+  //     }
+  //   },
+  //   [beginSignup, integration, isSyncDesktopV3, isOAuth]
+  // );
+
+  if (!email) {
+    hardNavigateToContentServer(`/signin?email=${queryParamModel.email}`);
+    return <LoadingSpinner fullScreen />;
+  }
 
   if (showLoadingSpinner) {
     return <LoadingSpinner fullScreen />;
   }
 
-  return <Signin {...{ serviceName }} />;
+  return <Signin {...{ serviceName, email, isPasswordNeeded }} />;
 };
 
 export default SigninContainer;
