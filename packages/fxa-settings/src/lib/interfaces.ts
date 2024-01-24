@@ -2,10 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { AccountAvatar } from '../../lib/interfaces';
+// This file contains app-wide shared interfaces and types.
 
-export interface AvatarResponse {
-  account: {
-    avatar: AccountAvatar;
-  };
+export interface AccountAvatar {
+  id: string | null;
+  url: string | null;
 }

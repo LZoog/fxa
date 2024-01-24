@@ -24,6 +24,7 @@ import { AuthUiErrorNos, AuthUiErrors } from '../lib/auth-errors/auth-errors';
 import { GET_SESSION_VERIFIED } from './Session';
 import { LinkedAccountProviderIds, MozServices } from '../lib/types';
 import { GET_LOCAL_SIGNED_IN_STATUS } from '../components/App/gql';
+import { AccountAvatar } from '../lib/interfaces';
 
 export interface DeviceLocation {
   city: string | null;
@@ -79,9 +80,7 @@ export interface AttachedClient {
 export interface AccountData {
   uid: hexstring;
   displayName: string | null;
-  avatar: {
-    id: string | null;
-    url: string | null;
+  avatar: AccountAvatar & {
     isDefault: boolean;
   };
   accountCreated: number;
@@ -107,10 +106,7 @@ export interface AccountData {
 export interface ProfileInfo {
   uid: hexstring;
   displayName: string | null;
-  avatar: {
-    id: string | null;
-    url: string | null;
-  };
+  avatar: AccountAvatar;
   primaryEmail: Email;
   emails: Email[];
 }

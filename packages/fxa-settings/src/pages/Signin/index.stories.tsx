@@ -25,9 +25,7 @@ const SigninWithProvider = ({
 }: SigninProps) => {
   return (
     <LocationProvider>
-      <AppLayout>
-        <Signin {...{ email, isPasswordNeeded, serviceName }} />
-      </AppLayout>
+      <Signin {...{ email, isPasswordNeeded, serviceName }} />
     </LocationProvider>
   );
 };

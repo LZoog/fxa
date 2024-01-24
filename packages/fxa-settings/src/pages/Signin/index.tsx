@@ -17,25 +17,33 @@ import { BrandMessagingPortal } from '../../components/BrandMessaging';
 import GleanMetrics from '../../lib/glean';
 import AppLayout from '../../components/AppLayout';
 import { AvatarResponse } from './interfaces';
+import Avatar from '../../components/Settings/Avatar';
+import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
+import classNames from 'classnames';
 
 export type SigninProps = {
   email: string;
   isPasswordNeeded: boolean;
   serviceName?: MozServices;
-  avatarData?: AvatarResponse;
+  avatarData: AvatarResponse | undefined;
+  avatarLoading: boolean;
 };
 
 export const viewName = 'signin';
+
+/* The avatar size must not increase until the tablet breakpoint due to logging into
+ * Pocket with FxA and maybe others later: an Apple-controlled modal displays FxA in a
+ * web view and we want the "Sign in" button to be displayed above the fold. See FXA-7425 */
+const avatarClassNames = 'mx-auto h-24 w-24 tablet:h-40 tablet:w-40';
 
 const Signin = ({
   email,
   isPasswordNeeded,
   serviceName,
   avatarData,
+  avatarLoading,
 }: SigninProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
-
-  console.log('avatarData', avatarData);
 
   // TODO in FXA-6488 use the integration's client id (instead of service name) to determine if client is Pocket or Monitor
   const isPocketClient = serviceName === MozServices.Pocket;
@@ -133,16 +141,23 @@ const Signin = ({
       <section>
         {/* Alerts and success messages originally went here */}
         <div className="mt-9">
-          {/* When we get to the functionality stage, we can probably replace this with the Avatar component in Settings*/}
-          {/* The avatar size must not increase until the tablet breakpoint due to logging into
-           * Pocket with FxA and maybe others later: an Apple-controlled modal displays FxA in a
-           * web view and we want the "Sign in" button to be displayed above the fold. See FXA-7425 */}
-          {avatarData && (
-            <img
-              src={avatarData.account.avatar.url}
-              className="mx-auto h-24 w-24 tablet:h-40 tablet:w-40"
-              alt="avatar"
+          {avatarData?.account.avatar ? (
+            <Avatar
+              className={avatarClassNames}
+              avatar={avatarData.account.avatar}
             />
+          ) : avatarLoading ? (
+            <div
+              className={classNames(
+                avatarClassNames,
+                'flex justify-center items-center'
+              )}
+            >
+              <LoadingSpinner />
+            </div>
+          ) : (
+            // There was an error, so just show default avatar
+            <Avatar className={avatarClassNames} />
           )}
           <div className="my-5 text-base break-all">{email}</div>
         </div>

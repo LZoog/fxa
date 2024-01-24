@@ -149,11 +149,8 @@ const SigninContainer = ({
     })();
   });
 
-  const {
-    data: avatarData,
-    loading,
-    error,
-  } = useQuery<AvatarResponse>(AVATAR_QUERY);
+  const { data: avatarData, loading: avatarLoading } =
+    useQuery<AvatarResponse>(AVATAR_QUERY);
 
   // const beginSignupHandler: BeginSignupHandler = useCallback(
   //   async (email, password) => {
@@ -205,7 +202,11 @@ const SigninContainer = ({
     return <LoadingSpinner fullScreen />;
   }
 
-  return <Signin {...{ serviceName, email, isPasswordNeeded, avatarData }} />;
+  return (
+    <Signin
+      {...{ serviceName, email, isPasswordNeeded, avatarData, avatarLoading }}
+    />
+  );
 };
 
 export default SigninContainer;

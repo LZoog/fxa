@@ -91,6 +91,7 @@ const SignInPasswordView = FormView.extend({
 
   setInitialContext(context) {
     const account = this.getAccount();
+    console.log('woo', account.get('sessionToken'));
     const hasLinkedAccount = account.get('hasLinkedAccount') ?? false;
     const hasPassword = account.get('hasPassword') ?? true;
     const hasLinkedAccountAndNoPassword = hasLinkedAccount && !hasPassword;
