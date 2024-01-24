@@ -61,16 +61,11 @@ const SigninContainer = ({
   const location = useLocation() as ReturnType<typeof useLocation> & {
     state?: LocationState;
   };
-  // Since we may perform an async call on initial render that can affect what is rendered,
-  // return a spinner on first render.
-  const [showLoadingSpinner, setShowLoadingSpinner] = useState(true);
-
   const { queryParamModel, validationError } =
     useValidatedQueryParams(SigninQueryParams);
 
-  // email will either come from local storage, or
-  // React signup (router state) or Backbone index (query param).
-  // if email comes from local storage we'll want to check status
+  // email with either come from React signup (router state),
+  // Backbone index (query param), or will be cached (local storage)
   const {
     email: emailFromLocationState,
     hasLinkedAccount: hasLinkedAccountFromLocationState,
@@ -82,16 +77,17 @@ const SigninContainer = ({
       queryParamModel.hasLinkedAccount || hasLinkedAccountFromLocationState,
     hasPassword: queryParamModel.hasPassword || hasPasswordFromLocationState,
   });
+  const { hasLinkedAccount, hasPassword } = accountStatus;
 
   const nonCachedEmail = queryParamModel.email || emailFromLocationState;
   let email = nonCachedEmail;
-  let sessionToken: string | undefined, uid: string | undefined;
+  let sessionToken: string | undefined;
   // only read from local storage if email isn't provided via query param or router state
   if (!nonCachedEmail) {
     const storedLocalAccount = currentAccount();
     email = storedLocalAccount?.email;
     sessionToken = storedLocalAccount?.sessionToken;
-    uid = storedLocalAccount?.uid;
+    // uid = storedLocalAccount?.uid;
   }
 
   const isOAuth = isOAuthIntegration(integration);
@@ -102,6 +98,7 @@ const SigninContainer = ({
   // On click of "Sign in" we update isPasswordNeeded and display error message: "Session expired. Sign in to continue."
   const isPasswordNeeded =
     !sessionToken ||
+    !hasPassword ||
     (isOAuth && (integration.wantsKeys() || integration.wantsLogin()));
 
   useEffect(() => {
@@ -119,13 +116,9 @@ const SigninContainer = ({
               thirdPartyAuthStatus: true,
             });
           if (!exists) {
-            // TODO? append all query params here and in signup container?
-
             // For now, just pass back emailStatusChecked. When we convert the Index page
             // we'll want to read from router state.
-            navigate(
-              `/signup?email=${queryParamModel.email}&emailStatusChecked=true`
-            );
+            navigate(`/signup?email=${email}&emailStatusChecked=true`);
             // TODO: Probably move this to the Index page onsubmit once
             // the index page is converted to React, we need to run it in
             // signup and signin for Sync
@@ -145,7 +138,6 @@ const SigninContainer = ({
           firefox.fxaCanLinkAccount({ email: queryParamModel.email });
         }
       }
-      setShowLoadingSpinner(false);
     })();
   });
 
@@ -194,17 +186,27 @@ const SigninContainer = ({
   // );
 
   if (!email) {
-    hardNavigateToContentServer(`/signin?email=${queryParamModel.email}`);
+    hardNavigateToContentServer('/');
     return <LoadingSpinner fullScreen />;
   }
 
-  if (showLoadingSpinner) {
+  // Wait for async call (if needed) to complete
+  if (hasLinkedAccount === undefined || hasPassword === undefined) {
     return <LoadingSpinner fullScreen />;
   }
 
   return (
     <Signin
-      {...{ serviceName, email, isPasswordNeeded, avatarData, avatarLoading }}
+      {...{
+        integration,
+        serviceName,
+        email,
+        isPasswordNeeded,
+        hasLinkedAccount,
+        hasPassword,
+        avatarData,
+        avatarLoading,
+      }}
     />
   );
 };

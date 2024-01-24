@@ -4,7 +4,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { usePageViewEvent } from '../../lib/metrics';
-import { useFtlMsgResolver } from '../../models';
+import { isOAuthIntegration, useFtlMsgResolver } from '../../models';
 import { MozServices } from '../../lib/types';
 import { FtlMsg } from 'fxa-react/lib/utils';
 import { RouteComponentProps, Link } from '@reach/router';
@@ -16,18 +16,14 @@ import ThirdPartyAuth from '../../components/ThirdPartyAuth';
 import { BrandMessagingPortal } from '../../components/BrandMessaging';
 import GleanMetrics from '../../lib/glean';
 import AppLayout from '../../components/AppLayout';
-import { AvatarResponse } from './interfaces';
+import { SigninProps } from './interfaces';
 import Avatar from '../../components/Settings/Avatar';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import classNames from 'classnames';
-
-export type SigninProps = {
-  email: string;
-  isPasswordNeeded: boolean;
-  serviceName?: MozServices;
-  avatarData: AvatarResponse | undefined;
-  avatarLoading: boolean;
-};
+import {
+  isClientMonitor,
+  isClientPocket,
+} from '../../models/integrations/client-matching';
 
 export const viewName = 'signin';
 
@@ -37,17 +33,21 @@ export const viewName = 'signin';
 const avatarClassNames = 'mx-auto h-24 w-24 tablet:h-40 tablet:w-40';
 
 const Signin = ({
+  integration,
   email,
   isPasswordNeeded,
   serviceName,
+  hasLinkedAccount,
+  hasPassword,
   avatarData,
   avatarLoading,
 }: SigninProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
-  // TODO in FXA-6488 use the integration's client id (instead of service name) to determine if client is Pocket or Monitor
-  const isPocketClient = serviceName === MozServices.Pocket;
-  const isMonitorClient = serviceName === MozServices.FirefoxMonitor;
+  const isOAuth = isOAuthIntegration(integration);
+  const isPocketClient = isOAuth && isClientPocket(integration.getService());
+  const isMonitorClient = isOAuth && isClientMonitor(integration.getService());
+
   const [error, setError] = useState('');
   const [password, setPassword] = useState('');
   const ftlMsgResolver = useFtlMsgResolver();
@@ -86,12 +86,6 @@ const Signin = ({
     GleanMetrics.login.success();
   }, []);
 
-  // TODO: This page is also supposed to render the user card, complete with avatar.
-
-  // TODO: The user-card mixin does some fancy footwork listening to see if you access token changes
-  // because it's possible for the access token to be invalidated when we display the avatar image.
-  // if we get the notification of a change, we re-render the card.
-
   const onForgotPasswordClick = () => {
     GleanMetrics.login.forgotPassword();
     return true;
@@ -120,9 +114,14 @@ const Signin = ({
   // TODO:
   // Add in the Banner component in place of the original `success` and `error` display divs
 
+  const showThirdPartyAuth =
+    (!integration.isSync() && !hasLinkedAccount) ||
+    (!integration.isSync() && isOAuth && hasLinkedAccount) ||
+    (integration.isSync() && hasLinkedAccount && !hasPassword);
+
   return (
     <AppLayout>
-      <BrandMessagingPortal {...{ viewName }} />,
+      <BrandMessagingPortal {...{ viewName }} />
       {isPasswordNeeded ? (
         <CardHeader
           headingText="Enter your password"
@@ -191,11 +190,11 @@ const Signin = ({
           </div>
         </form>
 
-        <ThirdPartyAuth />
+        {showThirdPartyAuth && <ThirdPartyAuth />}
 
         <TermsPrivacyAgreement {...{ isPocketClient, isMonitorClient }} />
 
-        <div className="flex justify-between">
+        <div className="flex justify-between mt-5">
           <FtlMsg id="signin-use-a-different-account">
             <Link to="/" className="text-sm link-blue">
               Use a different account

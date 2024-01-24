@@ -6,8 +6,7 @@ import { IsBoolean, IsEmail, IsOptional } from 'class-validator';
 import { bind, ModelDataProvider } from '../../../lib/model-data';
 
 export class SigninQueryParams extends ModelDataProvider {
-  // 'email' will be optional once the index page is converted to React
-  // and we pass it with router-state instead of a param
+  @IsOptional()
   @IsEmail()
   @bind()
   email: string = '';
