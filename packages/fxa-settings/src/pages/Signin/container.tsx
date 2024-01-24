@@ -18,8 +18,9 @@ import firefox from '../../lib/channels/firefox';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { currentAccount } from '../../lib/cache';
 import { useQuery } from '@apollo/client';
-import { SESSION_STATUS_QUERY } from './gql';
+import { AVATAR_QUERY } from './gql';
 import { hardNavigateToContentServer } from 'fxa-react/lib/utils';
+import { AvatarResponse } from './interfaces';
 
 /*
  * In content-server, the `email` param is optional. If it's provided, we
@@ -84,7 +85,6 @@ const SigninContainer = ({
 
   const nonCachedEmail = queryParamModel.email || emailFromLocationState;
   let email = nonCachedEmail;
-  let isPasswordNeeded = true;
   let sessionToken: string | undefined, uid: string | undefined;
   // only read from local storage if email isn't provided via query param or router state
   if (!nonCachedEmail) {
@@ -92,13 +92,6 @@ const SigninContainer = ({
     email = storedLocalAccount?.email;
     sessionToken = storedLocalAccount?.sessionToken;
     uid = storedLocalAccount?.uid;
-
-    // need to check if exists... else "account deleted" message??
-
-    // check if session token is verified. If so, isPasswordNeeded = false
-    // /session/status
-
-    // if session token not present, isPasswordNeeded = true
   }
 
   const isOAuth = isOAuthIntegration(integration);
@@ -106,11 +99,15 @@ const SigninContainer = ({
   const isSyncDesktopV3 = isSyncDesktopV3Integration(integration);
   const isSyncWebChannel = isSyncOAuth || isSyncDesktopV3;
 
+  // On click of "Sign in" we update isPasswordNeeded and display error message: "Session expired. Sign in to continue."
+  const isPasswordNeeded =
+    !sessionToken ||
+    (isOAuth && (integration.wantsKeys() || integration.wantsLogin()));
+
   useEffect(() => {
     (async () => {
+      // Tweak this once index page is converted to React
       if (!validationError && email) {
-        // Remove this once index is converted to React
-
         // if you directly hit /signin with email param or we read from localstorage
         // this means the account status hasn't been checked
         if (
@@ -152,18 +149,11 @@ const SigninContainer = ({
     })();
   });
 
-  // useEffect(() => {
-  //   (async () => {
-  //     if (sessionToken) {
-  //       await authClient.sessionVerifyCode(email, {
-  //         thirdPartyAuthStatus: true,
-  //       });
-  //     }
-  //     setShowLoadingSpinner(false);
-  //   })();
-  // });
-
-  // const [sessionStatus] = useQuery<SessionStatusResponse>(SESSION_STATUS_QUERY);
+  const {
+    data: avatarData,
+    loading,
+    error,
+  } = useQuery<AvatarResponse>(AVATAR_QUERY);
 
   // const beginSignupHandler: BeginSignupHandler = useCallback(
   //   async (email, password) => {
@@ -215,7 +205,7 @@ const SigninContainer = ({
     return <LoadingSpinner fullScreen />;
   }
 
-  return <Signin {...{ serviceName, email, isPasswordNeeded }} />;
+  return <Signin {...{ serviceName, email, isPasswordNeeded, avatarData }} />;
 };
 
 export default SigninContainer;

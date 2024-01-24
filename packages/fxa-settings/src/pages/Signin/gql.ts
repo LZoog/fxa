@@ -4,11 +4,13 @@
 
 import { gql } from '@apollo/client';
 
-export const SESSION_STATUS_QUERY = gql`
-  query SessionStatus {
-    sessionStatus {
-      uid
-      state
+export const AVATAR_QUERY = gql`
+  query AvatarQuery {
+    account {
+      avatar {
+        id
+        url
+      }
     }
   }
 `;

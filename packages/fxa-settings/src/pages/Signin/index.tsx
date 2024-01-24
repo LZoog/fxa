@@ -15,11 +15,14 @@ import CardHeader from '../../components/CardHeader';
 import ThirdPartyAuth from '../../components/ThirdPartyAuth';
 import { BrandMessagingPortal } from '../../components/BrandMessaging';
 import GleanMetrics from '../../lib/glean';
+import AppLayout from '../../components/AppLayout';
+import { AvatarResponse } from './interfaces';
 
 export type SigninProps = {
   email: string;
   isPasswordNeeded: boolean;
   serviceName?: MozServices;
+  avatarData?: AvatarResponse;
 };
 
 export const viewName = 'signin';
@@ -28,8 +31,11 @@ const Signin = ({
   email,
   isPasswordNeeded,
   serviceName,
+  avatarData,
 }: SigninProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
+
+  console.log('avatarData', avatarData);
 
   // TODO in FXA-6488 use the integration's client id (instead of service name) to determine if client is Pocket or Monitor
   const isPocketClient = serviceName === MozServices.Pocket;
@@ -107,7 +113,7 @@ const Signin = ({
   // Add in the Banner component in place of the original `success` and `error` display divs
 
   return (
-    <>
+    <AppLayout>
       <BrandMessagingPortal {...{ viewName }} />,
       {isPasswordNeeded ? (
         <CardHeader
@@ -131,7 +137,13 @@ const Signin = ({
           {/* The avatar size must not increase until the tablet breakpoint due to logging into
            * Pocket with FxA and maybe others later: an Apple-controlled modal displays FxA in a
            * web view and we want the "Sign in" button to be displayed above the fold. See FXA-7425 */}
-          <div className="mx-auto h-24 w-24 tablet:h-40 tablet:w-40"></div>
+          {avatarData && (
+            <img
+              src={avatarData.account.avatar.url}
+              className="mx-auto h-24 w-24 tablet:h-40 tablet:w-40"
+              alt="avatar"
+            />
+          )}
           <div className="my-5 text-base break-all">{email}</div>
         </div>
         <form noValidate {...{ onSubmit }}>
@@ -185,7 +197,7 @@ const Signin = ({
           </FtlMsg>
         </div>
       </section>
-    </>
+    </AppLayout>
   );
 };
 
