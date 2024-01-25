@@ -30,12 +30,12 @@ import { AvatarResponse } from './interfaces';
  * In the React version, we're temporarily always passing the `email` param over
  * from the Backbone index page until the index page is converted over, in which case
  * we can pass the param with router state. Since we already perform this account exists
- * check on the Backbone index page, which is rate limited since it doesn't require a
- * session token, we also temporarily pass `emailStatusChecked=true` to signal not to perform
- * the check again. If this param is not passed and `email` is, we perform the check and
- * redirect existing user emails to `/signup` to match content-server functionality.
- *
- *
+ * (account status) check on the Backbone index page, which is rate limited since it doesn't
+ * require a session token, we also temporarily pass email status params to 1) signal not to
+ * perform the check again but also because 2) these params are needed to conditionally
+ * display UI in signin. If no status params are passed and `email` is, or we read the
+ * email from local storage, we perform the check and redirect existing user emails to
+ * `/signup` to match content-server functionality.
  */
 
 export type SigninContainerIntegration = Pick<
@@ -145,13 +145,16 @@ const SigninContainer = ({
     useQuery<AvatarResponse>(AVATAR_QUERY);
 
   // TODO all this jazz
-  const beginLoginHandler = useCallback(async (password?: string) => {
-    try {
-      //
-    } catch (e) {}
-  }, []);
+  // const beginLoginHandler = useCallback(async (password?: string) => {
+  //   try {
+  //     //
+  //   } catch (e) {}
+  // }, []);
+
+  console.log('email', email);
 
   // TODO: if validationError is 'email', in content-server we show "Bad request email param"
+  // For now, just redirect to index-first, until FXA-8289 is done
   if (!email || validationError) {
     hardNavigateToContentServer('/');
     return <LoadingSpinner fullScreen />;
@@ -168,6 +171,7 @@ const SigninContainer = ({
         integration,
         serviceName,
         email,
+        // beginLoginHandler,
         isPasswordNeeded,
         hasLinkedAccount,
         hasPassword,
