@@ -6,8 +6,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { usePageViewEvent } from '../../lib/metrics';
 import { isOAuthIntegration, useFtlMsgResolver } from '../../models';
 import { MozServices } from '../../lib/types';
-import { FtlMsg } from 'fxa-react/lib/utils';
-import { RouteComponentProps, Link } from '@reach/router';
+import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
+import { RouteComponentProps, Link, useLocation } from '@reach/router';
 import InputPassword from '../../components/InputPassword';
 import TermsPrivacyAgreement from '../../components/TermsPrivacyAgreement';
 import { REACT_ENTRYPOINT } from '../../constants';
@@ -43,10 +43,12 @@ const Signin = ({
   avatarLoading,
 }: SigninProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
+  const location = useLocation();
 
   const isOAuth = isOAuthIntegration(integration);
   const isPocketClient = isOAuth && isClientPocket(integration.getService());
   const isMonitorClient = isOAuth && isClientMonitor(integration.getService());
+  const hasLinkedAccountAndNoPassword = hasLinkedAccount && !hasPassword;
 
   const [error, setError] = useState('');
   const [password, setPassword] = useState('');
@@ -190,25 +192,48 @@ const Signin = ({
           </div>
         </form>
 
-        {showThirdPartyAuth && <ThirdPartyAuth />}
+        {showThirdPartyAuth && (
+          <ThirdPartyAuth showSeparator={!hasLinkedAccountAndNoPassword} />
+        )}
 
         <TermsPrivacyAgreement {...{ isPocketClient, isMonitorClient }} />
 
         <div className="flex justify-between mt-5">
           <FtlMsg id="signin-use-a-different-account">
-            <Link to="/" className="text-sm link-blue">
-              Use a different account
-            </Link>
-          </FtlMsg>
-          <FtlMsg id="signin-forgot-password">
-            <Link
-              to="/reset_password"
+            <a
+              href="/"
               className="text-sm link-blue"
-              onClick={onForgotPasswordClick}
+              onClick={(e) => {
+                e.preventDefault();
+                const params = new URLSearchParams(location.search);
+                // Tell content-server to stay on index and prefill the email
+                params.set('prefillEmail', email);
+                // Passing back the 'email' param causes various behaviors in
+                // content-server since it marks the email as "coming from a RP".
+                // Also remove other params that are passed when coming
+                // from content-server to Backbone, see Signup container component
+                // for more info.
+                params.delete('email');
+                params.delete('hasLinkedAccount');
+                params.delete('hasPassword');
+                params.delete('showReactApp');
+                hardNavigateToContentServer(`/?${params.toString()}`);
+              }}
             >
-              Forgot password?
-            </Link>
+              Use a different account
+            </a>
           </FtlMsg>
+          {!hasLinkedAccountAndNoPassword && (
+            <FtlMsg id="signin-forgot-password">
+              <Link
+                to="/reset_password"
+                className="text-sm link-blue"
+                onClick={onForgotPasswordClick}
+              >
+                Forgot password?
+              </Link>
+            </FtlMsg>
+          )}
         </div>
       </section>
     </AppLayout>
