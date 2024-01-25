@@ -13,7 +13,7 @@ import {
 import { MozServices } from '../../lib/types';
 import { useValidatedQueryParams } from '../../lib/hooks/useValidate';
 import { SigninQueryParams } from '../../models/pages/signin';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import firefox from '../../lib/channels/firefox';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { currentAccount } from '../../lib/cache';
@@ -144,48 +144,15 @@ const SigninContainer = ({
   const { data: avatarData, loading: avatarLoading } =
     useQuery<AvatarResponse>(AVATAR_QUERY);
 
-  // const beginSignupHandler: BeginSignupHandler = useCallback(
-  //   async (email, password) => {
-  //     try {
-  //       const { data } = await beginSignup({
-  //         variables: {
-  //           input: {
-  //             email,
-  //             authPW,
-  //           },
-  //         },
-  //       });
-  //       return data ? { data: { ...data, unwrapBKey } } : { data: null };
-  //     } catch (error) {
-  //       const graphQLError: GraphQLError = error.graphQLErrors?.[0];
-  //       if (graphQLError && graphQLError.extensions?.errno) {
-  //         const { errno } = graphQLError.extensions as { errno: number };
-  //         return {
-  //           error: {
-  //             errno,
-  //             message: AuthUiErrorNos[errno].message,
-  //             ftlId: composeAuthUiErrorTranslationId({ errno }),
-  //           },
-  //         };
-  //       } else {
-  //         // TODO: why is `errno` in `AuthServerError` possibly undefined?
-  //         // might want to grab from `ERRORS.UNEXPECTED_ERROR` instead
-  //         const { errno = 999, message } = AuthUiErrors.UNEXPECTED_ERROR;
-  //         return {
-  //           data: null,
-  //           error: {
-  //             errno,
-  //             message,
-  //             ftlId: composeAuthUiErrorTranslationId({ errno }),
-  //           },
-  //         };
-  //       }
-  //     }
-  //   },
-  //   [beginSignup, integration, isSyncDesktopV3, isOAuth]
-  // );
+  // TODO all this jazz
+  const beginLoginHandler = useCallback(async (password?: string) => {
+    try {
+      //
+    } catch (e) {}
+  }, []);
 
-  if (!email) {
+  // TODO: if validationError is 'email', in content-server we show "Bad request email param"
+  if (!email || validationError) {
     hardNavigateToContentServer('/');
     return <LoadingSpinner fullScreen />;
   }

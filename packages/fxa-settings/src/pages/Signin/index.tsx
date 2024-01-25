@@ -5,7 +5,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { usePageViewEvent } from '../../lib/metrics';
 import { isOAuthIntegration, useFtlMsgResolver } from '../../models';
-import { MozServices } from '../../lib/types';
 import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
 import { RouteComponentProps, Link, useLocation } from '@reach/router';
 import InputPassword from '../../components/InputPassword';
@@ -88,11 +87,6 @@ const Signin = ({
     GleanMetrics.login.success();
   }, []);
 
-  const onForgotPasswordClick = () => {
-    GleanMetrics.login.forgotPassword();
-    return true;
-  };
-
   const onSubmit = useCallback(async () => {
     try {
       isPasswordNeeded
@@ -112,9 +106,6 @@ const Signin = ({
     isPasswordNeeded,
     setError,
   ]);
-
-  // TODO:
-  // Add in the Banner component in place of the original `success` and `error` display divs
 
   const showThirdPartyAuth =
     (!integration.isSync() && !hasLinkedAccount) ||
@@ -140,7 +131,7 @@ const Signin = ({
         />
       )}
       <section>
-        {/* Alerts and success messages originally went here */}
+        {/* TODO banner for success/error messages */}
         <div className="mt-9">
           {avatarData?.account.avatar ? (
             <Avatar
@@ -163,7 +154,7 @@ const Signin = ({
           <div className="my-5 text-base break-all">{email}</div>
         </div>
         <form noValidate {...{ onSubmit }}>
-          <input type="email" className="email hidden" value={email} disabled />
+          <input type="email" className="hidden" value={email} disabled />
 
           {isPasswordNeeded && (
             <InputPassword
@@ -226,9 +217,10 @@ const Signin = ({
           {!hasLinkedAccountAndNoPassword && (
             <FtlMsg id="signin-forgot-password">
               <Link
+                // TODO, pass params?
                 to="/reset_password"
                 className="text-sm link-blue"
-                onClick={onForgotPasswordClick}
+                onClick={() => GleanMetrics.login.forgotPassword}
               >
                 Forgot password?
               </Link>
