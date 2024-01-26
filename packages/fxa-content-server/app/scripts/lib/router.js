@@ -408,7 +408,6 @@ Router = Router.extend({
       this.navigateAway(settingsLink);
     },
     'signin(/)': function () {
-      console.log('emailFromIndex', this.user.get('emailFromIndex'));
       this.createReactOrBackboneViewHandler('signin', SignInPasswordView, {
         ...Url.searchParams(this.window.location.search),
 

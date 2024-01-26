@@ -14,3 +14,16 @@ export const AVATAR_QUERY = gql`
     }
   }
 `;
+
+export const BEGIN_SIGNIN_MUTATION = gql`
+  mutation SignIn($input: SignInInput!) {
+    signIn(input: $input) {
+      uid
+      sessionToken
+      authAt
+      metricsEnabled
+      verified
+      keyFetchToken
+    }
+  }
+`;

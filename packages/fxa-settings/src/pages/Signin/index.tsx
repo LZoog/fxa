@@ -6,7 +6,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { usePageViewEvent } from '../../lib/metrics';
 import { isOAuthIntegration, useFtlMsgResolver } from '../../models';
 import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
-import { RouteComponentProps, Link, useLocation } from '@reach/router';
+import {
+  RouteComponentProps,
+  Link,
+  useLocation,
+  useNavigate,
+} from '@reach/router';
 import InputPassword from '../../components/InputPassword';
 import TermsPrivacyAgreement from '../../components/TermsPrivacyAgreement';
 import { REACT_ENTRYPOINT } from '../../constants';
@@ -15,7 +20,7 @@ import ThirdPartyAuth from '../../components/ThirdPartyAuth';
 import { BrandMessagingPortal } from '../../components/BrandMessaging';
 import GleanMetrics from '../../lib/glean';
 import AppLayout from '../../components/AppLayout';
-import { SigninProps } from './interfaces';
+import { SigninFormData, SigninProps } from './interfaces';
 import Avatar from '../../components/Settings/Avatar';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import classNames from 'classnames';
@@ -23,6 +28,9 @@ import {
   isClientMonitor,
   isClientPocket,
 } from '../../models/integrations/client-matching';
+import { StoredAccountData, storeAccountData } from '../../lib/storage-utils';
+import { useForm } from 'react-hook-form';
+import Banner, { BannerType } from '../../components/Banner';
 
 export const viewName = 'signin';
 
@@ -37,12 +45,16 @@ const Signin = ({
   isPasswordNeeded,
   serviceName,
   hasLinkedAccount,
+  beginSigninHandler,
   hasPassword,
   avatarData,
   avatarLoading,
 }: SigninProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
   const location = useLocation();
+  const navigate = useNavigate();
+  const [signinLoading, setSigninLoading] = useState<boolean>(false);
+  const [bannerErrorText, setBannerErrorText] = useState<string>('');
 
   const isOAuth = isOAuthIntegration(integration);
   const isPocketClient = isOAuth && isClientPocket(integration.getService());
@@ -56,6 +68,15 @@ const Signin = ({
     'password',
     'Password'
   );
+
+  const { handleSubmit, register } = useForm<SigninFormData>({
+    mode: 'onTouched',
+    criteriaMode: 'all',
+    defaultValues: {
+      email,
+      password: '',
+    },
+  });
 
   useEffect(() => {
     if (!isPasswordNeeded) {
@@ -76,18 +97,42 @@ const Signin = ({
     GleanMetrics.cachedLogin.success();
   }, []);
 
-  const signInWithPassword = useCallback((email: string, password: string) => {
-    GleanMetrics.login.submit();
+  const signInWithPassword = useCallback(
+    async (email: string, password: string) => {
+      GleanMetrics.login.submit();
 
-    // TODO: add in the functionality to actually sign a user in using their password
-    // return an error to be displayed if anything goes wrong.
+      setSigninLoading(true);
+      const { data, error } = await beginSigninHandler(email, password);
 
-    // Move this event if necessary.  The branching logic for a successful or
-    // failed login has not been implemented when the event was added.
-    GleanMetrics.login.success();
-  }, []);
+      if (data) {
+        GleanMetrics.login.success();
+
+        const accountData: StoredAccountData = {
+          email,
+          uid: data.signIn.uid,
+          lastLogin: Date.now(),
+          sessionToken: data.signIn.sessionToken,
+          verified: data.signIn.verified,
+          metricsEnabled: data.signIn.metricsEnabled,
+        };
+
+        storeAccountData(accountData);
+        // check verification method and navigate accordingly
+        // if 'totp-2fa', go to signin_totp_code
+        navigate('/settings');
+      }
+      if (error) {
+        const { message, ftlId } = error;
+        setBannerErrorText(ftlMsgResolver.getMsg(ftlId, message));
+        // if the request errored, loading state must be marked as false to reenable submission
+        setSigninLoading(false);
+      }
+    },
+    []
+  );
 
   const onSubmit = useCallback(async () => {
+    console.log('on submit called');
     try {
       isPasswordNeeded
         ? signInWithPassword(email, password)
@@ -130,6 +175,11 @@ const Signin = ({
           {...{ serviceName }}
         />
       )}
+      {bannerErrorText && (
+        <Banner type={BannerType.error}>
+          <p>{bannerErrorText}</p>
+        </Banner>
+      )}
       <section>
         {/* TODO banner for success/error messages */}
         <div className="mt-9">
@@ -153,11 +203,12 @@ const Signin = ({
           )}
           <div className="my-5 text-base break-all">{email}</div>
         </div>
-        <form noValidate {...{ onSubmit }}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <input type="email" className="hidden" value={email} disabled />
 
           {isPasswordNeeded && (
             <InputPassword
+              name="password"
               anchorPosition="start"
               className="mb-5 text-start"
               label={localizedPasswordFormLabel}
@@ -167,16 +218,22 @@ const Signin = ({
               required
               autoFocus
               onChange={(e) => setPassword(e.currentTarget.value)}
+              inputRef={register()}
             />
           )}
           {/* This non-fulfilled input tricks the browser, when trying to
               sign in with the wrong password, into not showing the doorhanger.
+              TODO: this no work
            */}
-          <input className="hidden" required />
+          {/* <input className="hidden" required /> */}
 
           <div className="flex">
             <FtlMsg id="signin-button">
-              <button className="cta-primary cta-xl" type="submit">
+              <button
+                className="cta-primary cta-xl"
+                type="submit"
+                disabled={signinLoading}
+              >
                 Sign in
               </button>
             </FtlMsg>

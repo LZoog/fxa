@@ -17,10 +17,21 @@ import { useCallback, useEffect, useState } from 'react';
 import firefox from '../../lib/channels/firefox';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { currentAccount } from '../../lib/cache';
-import { useQuery } from '@apollo/client';
-import { AVATAR_QUERY } from './gql';
+import { useMutation, useQuery } from '@apollo/client';
+import { AVATAR_QUERY, BEGIN_SIGNIN_MUTATION } from './gql';
 import { hardNavigateToContentServer } from 'fxa-react/lib/utils';
-import { AvatarResponse } from './interfaces';
+import {
+  AvatarResponse,
+  BeginSigninHandler,
+  BeginSigninResponse,
+} from './interfaces';
+import { getCredentials } from 'fxa-auth-client/browser';
+import { GraphQLError } from 'graphql';
+import {
+  AuthUiErrorNos,
+  AuthUiErrors,
+  composeAuthUiErrorTranslationId,
+} from '../../lib/auth-errors/auth-errors';
 
 /*
  * In content-server, the `email` param is optional. If it's provided, we
@@ -40,7 +51,7 @@ import { AvatarResponse } from './interfaces';
 
 export type SigninContainerIntegration = Pick<
   Integration,
-  'type' | 'getService' | 'features' | 'isSync'
+  'type' | 'isSync' | 'getService'
 >;
 
 type LocationState = {
@@ -144,14 +155,63 @@ const SigninContainer = ({
   const { data: avatarData, loading: avatarLoading } =
     useQuery<AvatarResponse>(AVATAR_QUERY);
 
-  // TODO all this jazz
-  // const beginLoginHandler = useCallback(async (password?: string) => {
-  //   try {
-  //     //
-  //   } catch (e) {}
-  // }, []);
+  const [beginSignin] = useMutation<BeginSigninResponse>(BEGIN_SIGNIN_MUTATION);
 
-  console.log('email', email);
+  const beginSigninHandler: BeginSigninHandler = useCallback(
+    async (email: string, password: string) => {
+      // const service = integration.getService();
+      // const options: BeginSignUpOptions = {
+      const options = {
+        verificationMethod: 'email-otp',
+      };
+      //   // keys must be true to receive keyFetchToken for oAuth and syncDesktop
+      //   keys: isOAuth || isSyncDesktopV3,
+      //   service: service !== MozServices.Default ? service : undefined,
+      // };
+      try {
+        // const { authPW, unwrapBKey } = await getCredentials(email, password);
+        const { authPW } = await getCredentials(email, password);
+        console.log('before data');
+        const { data } = await beginSignin({
+          variables: {
+            input: {
+              email,
+              authPW,
+              options,
+            },
+          },
+        });
+
+        return { data };
+        // return data ? { data: { ...data, unwrapBKey } } : { data: null };
+      } catch (error) {
+        const graphQLError: GraphQLError = error.graphQLErrors?.[0];
+        if (graphQLError && graphQLError.extensions?.errno) {
+          const { errno } = graphQLError.extensions as { errno: number };
+          return {
+            error: {
+              errno,
+              message: AuthUiErrorNos[errno].message,
+              ftlId: composeAuthUiErrorTranslationId({ errno }),
+            },
+          };
+        } else {
+          // TODO: why is `errno` in `AuthServerError` possibly undefined?
+          // might want to grab from `ERRORS.UNEXPECTED_ERROR` instead
+          const { errno = 999, message } = AuthUiErrors.UNEXPECTED_ERROR;
+          return {
+            data: null,
+            error: {
+              errno,
+              message,
+              ftlId: composeAuthUiErrorTranslationId({ errno }),
+            },
+          };
+        }
+      }
+    },
+    [beginSignin]
+  );
 
   // TODO: if validationError is 'email', in content-server we show "Bad request email param"
   // For now, just redirect to index-first, until FXA-8289 is done
@@ -171,7 +231,8 @@ const SigninContainer = ({
         integration,
         serviceName,
         email,
-        // beginLoginHandler,
+        beginSigninHandler,
+
         isPasswordNeeded,
         hasLinkedAccount,
         hasPassword,
