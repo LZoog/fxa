@@ -31,6 +31,7 @@ import {
 import { StoredAccountData, storeAccountData } from '../../lib/storage-utils';
 import { useForm } from 'react-hook-form';
 import Banner, { BannerType } from '../../components/Banner';
+import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
 
 export const viewName = 'signin';
 
@@ -53,6 +54,10 @@ const Signin = ({
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
   const location = useLocation();
   const navigate = useNavigate();
+  const ftlMsgResolver = useFtlMsgResolver();
+
+  const [passwordTooltipErrorText, setPasswordTooltipErrorText] =
+    useState<string>('');
   const [signinLoading, setSigninLoading] = useState<boolean>(false);
   const [bannerErrorText, setBannerErrorText] = useState<string>('');
 
@@ -61,12 +66,13 @@ const Signin = ({
   const isMonitorClient = isOAuth && isClientMonitor(integration.getService());
   const hasLinkedAccountAndNoPassword = hasLinkedAccount && !hasPassword;
 
-  const [error, setError] = useState('');
-  const [password, setPassword] = useState('');
-  const ftlMsgResolver = useFtlMsgResolver();
   const localizedPasswordFormLabel = ftlMsgResolver.getMsg(
     'password',
     'Password'
+  );
+  const localizedValidPasswordError = ftlMsgResolver.getMsg(
+    'auth-error-1010',
+    'Valid password required'
   );
 
   const { handleSubmit, register } = useForm<SigninFormData>({
@@ -86,7 +92,7 @@ const Signin = ({
     }
   }, [isPasswordNeeded]);
 
-  const signInUsingLoggedInAccount = useCallback(() => {
+  const signInWithCachedAccount = useCallback(() => {
     GleanMetrics.cachedLogin.submit();
 
     // TODO: add in functionality to sign in using the logged in account
@@ -97,60 +103,63 @@ const Signin = ({
     GleanMetrics.cachedLogin.success();
   }, []);
 
-  const signInWithPassword = useCallback(
-    async (email: string, password: string) => {
-      GleanMetrics.login.submit();
+  const signInWithPassword = useCallback(async (password: string) => {
+    GleanMetrics.login.submit();
 
-      setSigninLoading(true);
-      const { data, error } = await beginSigninHandler(email, password);
+    setSigninLoading(true);
+    const { data, error } = await beginSigninHandler(email, password);
 
-      if (data) {
-        GleanMetrics.login.success();
+    if (data) {
+      GleanMetrics.login.success();
 
-        const accountData: StoredAccountData = {
-          email,
-          uid: data.signIn.uid,
-          lastLogin: Date.now(),
-          sessionToken: data.signIn.sessionToken,
-          verified: data.signIn.verified,
-          metricsEnabled: data.signIn.metricsEnabled,
-        };
+      const accountData: StoredAccountData = {
+        email,
+        uid: data.signIn.uid,
+        lastLogin: Date.now(),
+        sessionToken: data.signIn.sessionToken,
+        verified: data.signIn.verified,
+        metricsEnabled: data.signIn.metricsEnabled,
+      };
 
-        storeAccountData(accountData);
-        // check verification method and navigate accordingly
-        // if 'totp-2fa', go to signin_totp_code
-        navigate('/settings');
-      }
-      if (error) {
-        const { message, ftlId } = error;
-        setBannerErrorText(ftlMsgResolver.getMsg(ftlId, message));
-        // if the request errored, loading state must be marked as false to reenable submission
-        setSigninLoading(false);
-      }
-    },
-    []
-  );
-
-  const onSubmit = useCallback(async () => {
-    console.log('on submit called');
-    try {
-      isPasswordNeeded
-        ? signInWithPassword(email, password)
-        : signInUsingLoggedInAccount();
-      // TODO: add message in Banner re: success, then navigate to where appropriate
-    } catch (e) {
-      // TODO: metrics event for error
-      // TODO: Add in localized Banner message for error
-      setError(e);
+      storeAccountData(accountData);
+      // check verification method and navigate accordingly
+      // if 'totp-2fa', go to signin_totp_code
+      navigate('/settings');
     }
-  }, [
-    email,
-    password,
-    signInUsingLoggedInAccount,
-    signInWithPassword,
-    isPasswordNeeded,
-    setError,
-  ]);
+    if (error) {
+      const { message, ftlId, errno } = error;
+      // if auth-error-103
+      if (
+        errno === AuthUiErrors.PASSWORD_REQUIRED.errno ||
+        errno === AuthUiErrors.INCORRECT_PASSWORD.errno
+      ) {
+        setPasswordTooltipErrorText(ftlMsgResolver.getMsg(ftlId, message));
+      } else {
+        setBannerErrorText(ftlMsgResolver.getMsg(ftlId, message));
+      }
+      // if the request errored, loading state must be marked as false to reenable submission
+      setSigninLoading(false);
+    }
+  }, []);
+
+  const onSubmit = useCallback(
+    async ({ password }: { password: string }) => {
+      if (isPasswordNeeded && password === '') {
+        setPasswordTooltipErrorText(localizedValidPasswordError);
+        return;
+      }
+
+      isPasswordNeeded
+        ? signInWithPassword(password)
+        : signInWithCachedAccount();
+    },
+    [
+      signInWithCachedAccount,
+      signInWithPassword,
+      isPasswordNeeded,
+      localizedValidPasswordError,
+    ]
+  );
 
   const showThirdPartyAuth =
     (!integration.isSync() && !hasLinkedAccount) ||
@@ -212,12 +221,16 @@ const Signin = ({
               anchorPosition="start"
               className="mb-5 text-start"
               label={localizedPasswordFormLabel}
-              hasErrors={error.length > 0}
-              errorText={error}
+              errorText={passwordTooltipErrorText}
               tooltipPosition="bottom"
               required
               autoFocus
-              onChange={(e) => setPassword(e.currentTarget.value)}
+              onChange={() => {
+                // clear error tooltip if user types in the field
+                if (passwordTooltipErrorText) {
+                  setPasswordTooltipErrorText('');
+                }
+              }}
               inputRef={register()}
             />
           )}
