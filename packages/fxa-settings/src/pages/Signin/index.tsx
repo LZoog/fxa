@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { usePageViewEvent } from '../../lib/metrics';
 import { isOAuthIntegration, useFtlMsgResolver } from '../../models';
 import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
@@ -43,7 +43,7 @@ const avatarClassNames = 'mx-auto h-24 w-24 tablet:h-40 tablet:w-40';
 const Signin = ({
   integration,
   email,
-  isPasswordNeeded,
+  sessionToken,
   serviceName,
   hasLinkedAccount,
   beginSigninHandler,
@@ -66,6 +66,13 @@ const Signin = ({
   const isMonitorClient = isOAuth && isClientMonitor(integration.getService());
   const hasLinkedAccountAndNoPassword = hasLinkedAccount && !hasPassword;
 
+  // We must use a ref because we may update this value in a callback
+  let isPasswordNeededRef = useRef(
+    !sessionToken ||
+      !hasPassword ||
+      (isOAuth && (integration.wantsKeys() || integration.wantsLogin()))
+  );
+
   const localizedPasswordFormLabel = ftlMsgResolver.getMsg(
     'password',
     'Password'
@@ -85,12 +92,12 @@ const Signin = ({
   });
 
   useEffect(() => {
-    if (!isPasswordNeeded) {
+    if (!isPasswordNeededRef.current) {
       GleanMetrics.cachedLogin.view();
     } else {
       GleanMetrics.login.view();
     }
-  }, [isPasswordNeeded]);
+  }, [isPasswordNeededRef]);
 
   const signInWithCachedAccount = useCallback(() => {
     GleanMetrics.cachedLogin.submit();
@@ -103,60 +110,67 @@ const Signin = ({
     GleanMetrics.cachedLogin.success();
   }, []);
 
-  const signInWithPassword = useCallback(async (password: string) => {
-    GleanMetrics.login.submit();
+  const signInWithPassword = useCallback(
+    async (password: string) => {
+      GleanMetrics.login.submit();
 
-    setSigninLoading(true);
-    const { data, error } = await beginSigninHandler(email, password);
+      setSigninLoading(true);
+      const { data, error } = await beginSigninHandler(email, password);
 
-    if (data) {
-      GleanMetrics.login.success();
+      if (data) {
+        GleanMetrics.login.success();
 
-      const accountData: StoredAccountData = {
-        email,
-        uid: data.signIn.uid,
-        lastLogin: Date.now(),
-        sessionToken: data.signIn.sessionToken,
-        verified: data.signIn.verified,
-        metricsEnabled: data.signIn.metricsEnabled,
-      };
+        const accountData: StoredAccountData = {
+          email,
+          uid: data.signIn.uid,
+          lastLogin: Date.now(),
+          sessionToken: data.signIn.sessionToken,
+          verified: data.signIn.verified,
+          metricsEnabled: data.signIn.metricsEnabled,
+        };
 
-      storeAccountData(accountData);
-      // check verification method and navigate accordingly
-      // if 'totp-2fa', go to signin_totp_code
-      navigate('/settings');
-    }
-    if (error) {
-      const { message, ftlId, errno } = error;
-      // if auth-error-103
-      if (
-        errno === AuthUiErrors.PASSWORD_REQUIRED.errno ||
-        errno === AuthUiErrors.INCORRECT_PASSWORD.errno
-      ) {
-        setPasswordTooltipErrorText(ftlMsgResolver.getMsg(ftlId, message));
-      } else {
-        setBannerErrorText(ftlMsgResolver.getMsg(ftlId, message));
+        storeAccountData(accountData);
+        // check verification method and navigate accordingly
+        // if 'totp-2fa', go to signin_totp_code
+        navigate('/settings');
       }
-      // if the request errored, loading state must be marked as false to reenable submission
-      setSigninLoading(false);
-    }
-  }, []);
+      if (error) {
+        const { message, ftlId, errno } = error;
+        // if auth-error-103
+        if (
+          errno === AuthUiErrors.PASSWORD_REQUIRED.errno ||
+          errno === AuthUiErrors.INCORRECT_PASSWORD.errno
+        ) {
+          setPasswordTooltipErrorText(ftlMsgResolver.getMsg(ftlId, message));
+        } else {
+          if (errno === AuthUiErrors.SESSION_EXPIRED.errno) {
+            isPasswordNeededRef.current = true;
+          }
+
+          setBannerErrorText(ftlMsgResolver.getMsg(ftlId, message));
+        }
+        // if the request errored, loading state must be marked as false to reenable submission
+        setSigninLoading(false);
+      }
+    },
+    [beginSigninHandler, email, ftlMsgResolver, navigate]
+  );
 
   const onSubmit = useCallback(
     async ({ password }: { password: string }) => {
-      if (isPasswordNeeded && password === '') {
+      if (isPasswordNeededRef.current && password === '') {
         setPasswordTooltipErrorText(localizedValidPasswordError);
         return;
       }
 
-      isPasswordNeeded
+      isPasswordNeededRef.current
         ? signInWithPassword(password)
         : signInWithCachedAccount();
     },
     [
       signInWithCachedAccount,
       signInWithPassword,
-      isPasswordNeeded,
+      isPasswordNeededRef,
       localizedValidPasswordError,
     ]
   );
@@ -169,7 +183,7 @@ const Signin = ({
   return (
     <AppLayout>
       <BrandMessagingPortal {...{ viewName }} />
-      {isPasswordNeeded ? (
+      {isPasswordNeededRef.current ? (
         <CardHeader
           headingText="Enter your password"
           headingAndSubheadingFtlId="signin-password-needed-header-2"
@@ -215,7 +229,7 @@ const Signin = ({
         <form onSubmit={handleSubmit(onSubmit)}>
           <input type="email" className="hidden" value={email} disabled />
 
-          {isPasswordNeeded && (
+          {isPasswordNeededRef.current && (
             <InputPassword
               name="password"
               anchorPosition="start"

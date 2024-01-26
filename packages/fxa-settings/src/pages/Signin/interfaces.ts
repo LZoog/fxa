@@ -18,7 +18,7 @@ export interface SigninProps {
   integration: SigninIntegration;
   email: string;
   beginSigninHandler: BeginSigninHandler;
-  isPasswordNeeded: boolean;
+  sessionToken?: hexstring;
   hasLinkedAccount: boolean;
   hasPassword: boolean;
   serviceName: MozServices;

@@ -13,7 +13,7 @@ import {
 import { MozServices } from '../../lib/types';
 import { useValidatedQueryParams } from '../../lib/hooks/useValidate';
 import { SigninQueryParams } from '../../models/pages/signin';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import firefox from '../../lib/channels/firefox';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { currentAccount } from '../../lib/cache';
@@ -98,19 +98,12 @@ const SigninContainer = ({
     const storedLocalAccount = currentAccount();
     email = storedLocalAccount?.email;
     sessionToken = storedLocalAccount?.sessionToken;
-    // uid = storedLocalAccount?.uid;
   }
 
   const isOAuth = isOAuthIntegration(integration);
   const isSyncOAuth = isOAuth && integration.isSync();
   const isSyncDesktopV3 = isSyncDesktopV3Integration(integration);
   const isSyncWebChannel = isSyncOAuth || isSyncDesktopV3;
-
-  // On click of "Sign in" we update isPasswordNeeded and display error message: "Session expired. Sign in to continue."
-  const isPasswordNeeded =
-    !sessionToken ||
-    !hasPassword ||
-    (isOAuth && (integration.wantsKeys() || integration.wantsLogin()));
 
   useEffect(() => {
     (async () => {
@@ -159,11 +152,12 @@ const SigninContainer = ({
 
   const beginSigninHandler: BeginSigninHandler = useCallback(
     async (email: string, password: string) => {
+      // TODO in oauth ticket
       // const service = integration.getService();
-      // const options: BeginSignUpOptions = {
       const options = {
         verificationMethod: 'email-otp',
       };
+      // TODO in oauth ticket
       //   // keys must be true to receive keyFetchToken for oAuth and syncDesktop
       //   keys: isOAuth || isSyncDesktopV3,
       //   service: service !== MozServices.Default ? service : undefined,
@@ -171,7 +165,6 @@ const SigninContainer = ({
       try {
         // const { authPW, unwrapBKey } = await getCredentials(email, password);
         const { authPW } = await getCredentials(email, password);
-        console.log('before data');
         const { data } = await beginSignin({
           variables: {
             input: {
@@ -183,7 +176,6 @@ const SigninContainer = ({
         });
 
         return { data };
-        // return data ? { data: { ...data, unwrapBKey } } : { data: null };
       } catch (error) {
         const graphQLError: GraphQLError = error.graphQLErrors?.[0];
         if (graphQLError && graphQLError.extensions?.errno) {
@@ -232,8 +224,7 @@ const SigninContainer = ({
         serviceName,
         email,
         beginSigninHandler,
-
-        isPasswordNeeded,
+        sessionToken,
         hasLinkedAccount,
         hasPassword,
         avatarData,
