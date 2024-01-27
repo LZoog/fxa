@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import VerificationMethods from '../../constants/verification-methods';
+import VerificationReasons from '../../constants/verification-reasons';
 import { AccountAvatar } from '../../lib/interfaces';
 import { MozServices } from '../../lib/types';
 import { Integration } from '../../models';
@@ -44,18 +46,20 @@ export interface BeginSigninResponse {
     authAt: number;
     metricsEnabled: boolean;
     verified: boolean;
-    verificationMethod?: string; // set up enum
-    verificationReason?: string; // set up enum (do we need this?)
+    verificationMethod?: VerificationMethods;
+    verificationReason?: VerificationReasons;
   };
+}
+
+export interface BeginSigninResultError {
+  errno: number;
+  verificationReason?: VerificationReasons;
+  verificationMethod?: VerificationMethods;
 }
 
 export interface BeginSigninResult {
   data?: BeginSigninResponse | null;
-  error?: {
-    errno: number;
-    message: string;
-    ftlId: string;
-  };
+  error?: BeginSigninResultError & { message: string; ftlId: string };
 }
 
 export interface SigninFormData {

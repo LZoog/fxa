@@ -13,7 +13,7 @@ import {
 import { MozServices } from '../../lib/types';
 import { useValidatedQueryParams } from '../../lib/hooks/useValidate';
 import { SigninQueryParams } from '../../models/pages/signin';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import firefox from '../../lib/channels/firefox';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { currentAccount } from '../../lib/cache';
@@ -24,6 +24,7 @@ import {
   AvatarResponse,
   BeginSigninHandler,
   BeginSigninResponse,
+  BeginSigninResultError,
 } from './interfaces';
 import { getCredentials } from 'fxa-auth-client/browser';
 import { GraphQLError } from 'graphql';
@@ -32,6 +33,8 @@ import {
   AuthUiErrors,
   composeAuthUiErrorTranslationId,
 } from '../../lib/auth-errors/auth-errors';
+import VerificationMethods from '../../constants/verification-methods';
+import VerificationReasons from '../../constants/verification-reasons';
 
 /*
  * In content-server, the `email` param is optional. If it's provided, we
@@ -155,7 +158,8 @@ const SigninContainer = ({
       // TODO in oauth ticket
       // const service = integration.getService();
       const options = {
-        verificationMethod: 'email-otp',
+        verificationMethod: VerificationMethods.EMAIL_OTP,
+        verificationReason: VerificationReasons.SIGN_IN,
       };
       // TODO in oauth ticket
       //   // keys must be true to receive keyFetchToken for oAuth and syncDesktop
@@ -163,7 +167,6 @@ const SigninContainer = ({
       //   service: service !== MozServices.Default ? service : undefined,
       // };
       try {
-        // const { authPW, unwrapBKey } = await getCredentials(email, password);
         const { authPW } = await getCredentials(email, password);
         const { data } = await beginSignin({
           variables: {
@@ -179,10 +182,15 @@ const SigninContainer = ({
       } catch (error) {
         const graphQLError: GraphQLError = error.graphQLErrors?.[0];
         if (graphQLError && graphQLError.extensions?.errno) {
-          const { errno } = graphQLError.extensions as { errno: number };
+          const { errno, verificationReason, verificationMethod } =
+            graphQLError.extensions as BeginSigninResultError & {
+              [key: string]: any;
+            };
           return {
             error: {
               errno,
+              verificationReason,
+              verificationMethod,
               message: AuthUiErrorNos[errno].message,
               ftlId: composeAuthUiErrorTranslationId({ errno }),
             },

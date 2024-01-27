@@ -32,6 +32,8 @@ import { StoredAccountData, storeAccountData } from '../../lib/storage-utils';
 import { useForm } from 'react-hook-form';
 import Banner, { BannerType } from '../../components/Banner';
 import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
+import VerificationMethods from '../../constants/verification-methods';
+import VerificationReasons from '../../constants/verification-reasons';
 
 export const viewName = 'signin';
 
@@ -130,30 +132,98 @@ const Signin = ({
         };
 
         storeAccountData(accountData);
-        // check verification method and navigate accordingly
-        // if 'totp-2fa', go to signin_totp_code
-        navigate('/settings');
+
+        if (!data.signIn.verified) {
+          const { verificationReason, verificationMethod } = data.signIn;
+
+          // TODO: Does force password change ever reach here, or can we move
+          // CHANGE_PASSWORD checks to another page? Do we need to check
+          // VerificationReasons.SIGN_IN at all? signin-mixin.js does some
+          // VerificationReasons.SIGN_UP checks we don't need here since Signup handles them
+          if (
+            ((verificationReason === VerificationReasons.SIGN_IN ||
+              verificationReason === VerificationReasons.CHANGE_PASSWORD) &&
+              verificationMethod === VerificationMethods.TOTP_2FA) ||
+            (isOAuth && integration.wantsTwoStepAuthentication())
+          ) {
+            // TODO with signin_totp_code ticket, content server says this (double check it):
+            // Login requests that ask for 2FA but don't have it setup on their account
+            // will return an error.
+            navigate('/signin_totp_code');
+          } else {
+            // TODO: Pretty sure we want this to be the default. The check used to be:
+            // if (
+            //   verificationMethod === VerificationMethods.EMAIL_OTP &&
+            //   (verificationReason === VerificationReasons.SIGN_IN || verificationReason === VerificationReasons.CHANGE_PASSWORD)
+            // ) {
+            navigate('/signin_token_code');
+            // }
+          }
+        } else {
+          navigate('/settings');
+        }
       }
       if (error) {
         const { message, ftlId, errno } = error;
-        // if auth-error-103
+
         if (
           errno === AuthUiErrors.PASSWORD_REQUIRED.errno ||
           errno === AuthUiErrors.INCORRECT_PASSWORD.errno
         ) {
           setPasswordTooltipErrorText(ftlMsgResolver.getMsg(ftlId, message));
         } else {
-          if (errno === AuthUiErrors.SESSION_EXPIRED.errno) {
-            isPasswordNeededRef.current = true;
+          switch (errno) {
+            case AuthUiErrors.SESSION_EXPIRED.errno:
+              isPasswordNeededRef.current = true;
+              break;
+            case AuthUiErrors.THROTTLED.errno:
+            case AuthUiErrors.REQUEST_BLOCKED.errno:
+              if (
+                error.verificationReason === VerificationReasons.SIGN_IN &&
+                error.verificationMethod === VerificationMethods.EMAIL_CAPTCHA
+              ) {
+                // TODO: This is a copy-and-paste from content-server.
+                // Check the comment and send the unblock email. FXA-9030
+                //
+                // Sending the unblock email could itself be rate limited.
+                // If it is, the error should be displayed on this screen
+                // and the user shouldn't even have the chance to continue.
+                // return account.sendUnblockEmail().then(() => {
+                //   return this.navigate('signin_unblock', {
+                //     account: account,
+                //     lastPage: this.currentPage,
+                //     password: password,
+                //   });
+                // });
+              } else {
+                // TODO: This is a copy-and-paste from content-server.
+                // Check if we should display the error message on this screen
+                // and/or what the behavior is. FXA-9030
+                //
+                // Signin is blocked and cannot be unblocked, show the
+                // error at another level.
+                // return Promise.reject(err);
+              }
+              break;
+            case AuthUiErrors.EMAIL_HARD_BOUNCE.errno:
+            case AuthUiErrors.EMAIL_SENT_COMPLAINT.errno:
+              navigate('/signin_bounced');
+              break;
+            case AuthUiErrors.TOTP_REQUIRED.errno:
+            case AuthUiErrors.INSUFFICIENT_ACR_VALUES.errno:
+              // TODO in Oauth ticket (this isn't in AuthUiErrors)
+              // case OAuthError.MISMATCH_ACR_VALUES.errno:
+              navigate('/inline_totp_setup');
+              break;
+            default:
+              break;
           }
-
+          // if the request errored, loading state must be marked as false to reenable submission
           setBannerErrorText(ftlMsgResolver.getMsg(ftlId, message));
         }
-        // if the request errored, loading state must be marked as false to reenable submission
-        setSigninLoading(false);
       }
     },
-    [beginSigninHandler, email, ftlMsgResolver, navigate]
+    [beginSigninHandler, email, ftlMsgResolver, navigate, integration, isOAuth]
   );
 
   const onSubmit = useCallback(
@@ -203,115 +273,112 @@ const Signin = ({
           <p>{bannerErrorText}</p>
         </Banner>
       )}
-      <section>
-        {/* TODO banner for success/error messages */}
-        <div className="mt-9">
-          {avatarData?.account.avatar ? (
-            <Avatar
-              className={avatarClassNames}
-              avatar={avatarData.account.avatar}
-            />
-          ) : avatarLoading ? (
-            <div
-              className={classNames(
-                avatarClassNames,
-                'flex justify-center items-center'
-              )}
-            >
-              <LoadingSpinner />
-            </div>
-          ) : (
-            // There was an error, so just show default avatar
-            <Avatar className={avatarClassNames} />
-          )}
-          <div className="my-5 text-base break-all">{email}</div>
-        </div>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <input type="email" className="hidden" value={email} disabled />
-
-          {isPasswordNeededRef.current && (
-            <InputPassword
-              name="password"
-              anchorPosition="start"
-              className="mb-5 text-start"
-              label={localizedPasswordFormLabel}
-              errorText={passwordTooltipErrorText}
-              tooltipPosition="bottom"
-              required
-              autoFocus
-              onChange={() => {
-                // clear error tooltip if user types in the field
-                if (passwordTooltipErrorText) {
-                  setPasswordTooltipErrorText('');
-                }
-              }}
-              inputRef={register()}
-            />
-          )}
-          {/* This non-fulfilled input tricks the browser, when trying to
-              sign in with the wrong password, into not showing the doorhanger.
-              TODO: this no work
-           */}
-          {/* <input className="hidden" required /> */}
-
-          <div className="flex">
-            <FtlMsg id="signin-button">
-              <button
-                className="cta-primary cta-xl"
-                type="submit"
-                disabled={signinLoading}
-              >
-                Sign in
-              </button>
-            </FtlMsg>
+      <div className="mt-9">
+        {avatarData?.account.avatar ? (
+          <Avatar
+            className={avatarClassNames}
+            avatar={avatarData.account.avatar}
+          />
+        ) : avatarLoading ? (
+          <div
+            className={classNames(
+              avatarClassNames,
+              'flex justify-center items-center'
+            )}
+          >
+            <LoadingSpinner />
           </div>
-        </form>
-
-        {showThirdPartyAuth && (
-          <ThirdPartyAuth showSeparator={!hasLinkedAccountAndNoPassword} />
+        ) : (
+          // There was an error, so just show default avatar
+          <Avatar className={avatarClassNames} />
         )}
+        <div className="my-5 text-base break-all">{email}</div>
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <input type="email" className="hidden" value={email} disabled />
 
-        <TermsPrivacyAgreement {...{ isPocketClient, isMonitorClient }} />
+        {isPasswordNeededRef.current && (
+          <InputPassword
+            name="password"
+            anchorPosition="start"
+            className="mb-5 text-start"
+            label={localizedPasswordFormLabel}
+            errorText={passwordTooltipErrorText}
+            tooltipPosition="bottom"
+            required
+            autoFocus
+            onChange={() => {
+              // clear error tooltip if user types in the field
+              if (passwordTooltipErrorText) {
+                setPasswordTooltipErrorText('');
+              }
+            }}
+            inputRef={register()}
+          />
+        )}
+        {/* This non-fulfilled input tricks the browser, when trying to
+              sign in with the wrong password, into not showing the doorhanger.
+              TODO: this causes problems with react-hook-form, do we even need it?
+           */}
+        {/* <input className="hidden" required /> */}
 
-        <div className="flex justify-between mt-5">
-          <FtlMsg id="signin-use-a-different-account">
-            <a
-              href="/"
-              className="text-sm link-blue"
-              onClick={(e) => {
-                e.preventDefault();
-                const params = new URLSearchParams(location.search);
-                // Tell content-server to stay on index and prefill the email
-                params.set('prefillEmail', email);
-                // Passing back the 'email' param causes various behaviors in
-                // content-server since it marks the email as "coming from a RP".
-                // Also remove other params that are passed when coming
-                // from content-server to Backbone, see Signup container component
-                // for more info.
-                params.delete('email');
-                params.delete('hasLinkedAccount');
-                params.delete('hasPassword');
-                params.delete('showReactApp');
-                hardNavigateToContentServer(`/?${params.toString()}`);
-              }}
+        <div className="flex">
+          <FtlMsg id="signin-button">
+            <button
+              className="cta-primary cta-xl"
+              type="submit"
+              disabled={signinLoading}
             >
-              Use a different account
-            </a>
+              Sign in
+            </button>
           </FtlMsg>
-          {!hasLinkedAccountAndNoPassword && (
-            <FtlMsg id="signin-forgot-password">
-              <Link
-                // TODO, pass params?
-                to="/reset_password"
-                className="text-sm link-blue"
-                onClick={() => GleanMetrics.login.forgotPassword}
-              >
-                Forgot password?
-              </Link>
-            </FtlMsg>
-          )}
         </div>
-      </section>
+      </form>
+
+      {showThirdPartyAuth && (
+        <ThirdPartyAuth showSeparator={!hasLinkedAccountAndNoPassword} />
+      )}
+
+      <TermsPrivacyAgreement {...{ isPocketClient, isMonitorClient }} />
+
+      <div className="flex justify-between mt-5">
+        <FtlMsg id="signin-use-a-different-account">
+          <a
+            href="/"
+            className="text-sm link-blue"
+            onClick={(e) => {
+              e.preventDefault();
+              const params = new URLSearchParams(location.search);
+              // Tell content-server to stay on index and prefill the email
+              params.set('prefillEmail', email);
+              // Passing back the 'email' param causes various behaviors in
+              // content-server since it marks the email as "coming from a RP".
+              // Also remove other params that are passed when coming
+              // from content-server to Backbone, see Signup container component
+              // for more info.
+              params.delete('email');
+              params.delete('hasLinkedAccount');
+              params.delete('hasPassword');
+              params.delete('showReactApp');
+              hardNavigateToContentServer(`/?${params.toString()}`);
+            }}
+          >
+            Use a different account
+          </a>
+        </FtlMsg>
+        {!hasLinkedAccountAndNoPassword && (
+          <FtlMsg id="signin-forgot-password">
+            <Link
+              // TODO, pass params?
+              to="/reset_password"
+              className="text-sm link-blue"
+              onClick={() => GleanMetrics.login.forgotPassword}
+            >
+              Forgot password?
+            </Link>
+          </FtlMsg>
+        )}
+      </div>
     </AppLayout>
   );
 };
