@@ -35,6 +35,7 @@ import {
 } from '../../lib/auth-errors/auth-errors';
 import VerificationMethods from '../../constants/verification-methods';
 import VerificationReasons from '../../constants/verification-reasons';
+import AuthenticationMethods from '../../constants/authentication-methods';
 
 /*
  * In content-server, the `email` param is optional. If it's provided, we
@@ -118,6 +119,7 @@ const SigninContainer = ({
           accountStatus.hasLinkedAccount === undefined ||
           accountStatus.hasPassword === undefined
         ) {
+          // TODO: error handling for this (and in SignUp)
           const { exists, hasLinkedAccount, hasPassword } =
             await authClient.accountStatusByEmail(email, {
               thirdPartyAuthStatus: true,
@@ -213,6 +215,23 @@ const SigninContainer = ({
     [beginSignin]
   );
 
+  // TODO finish this
+  const cachedSigninHandler = useCallback(async (sessionToken: hexstring) => {
+    try {
+      // might need scope `profile:amr` for OAuth
+      const {
+        authenticationMethods,
+      }: { authenticationMethods: AuthenticationMethods[] } =
+        await authClient.accountProfile(sessionToken);
+
+      if (authenticationMethods.includes(AuthenticationMethods.OTP)) {
+        return {
+          verificationMethod: VerificationMethods.TOTP_2FA,
+        };
+      }
+    } catch (error) {}
+  }, []);
+
   // TODO: if validationError is 'email', in content-server we show "Bad request email param"
   // For now, just redirect to index-first, until FXA-8289 is done
   if (!email || validationError) {
@@ -232,6 +251,7 @@ const SigninContainer = ({
         serviceName,
         email,
         beginSigninHandler,
+        cachedSigninHandler,
         sessionToken,
         hasLinkedAccount,
         hasPassword,

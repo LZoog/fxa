@@ -49,6 +49,7 @@ const Signin = ({
   serviceName,
   hasLinkedAccount,
   beginSigninHandler,
+  cachedSigninHandler,
   hasPassword,
   avatarData,
   avatarLoading,
@@ -101,16 +102,21 @@ const Signin = ({
     }
   }, [isPasswordNeededRef]);
 
-  const signInWithCachedAccount = useCallback(() => {
-    GleanMetrics.cachedLogin.submit();
+  const signInWithCachedAccount = useCallback(
+    async (sessionToken: hexstring) => {
+      GleanMetrics.cachedLogin.submit();
 
-    // TODO: add in functionality to sign in using the logged in account
-    // return an error to be displayed if anythign goes wrong.
+      const { data, error } = await cachedSigninHandler(sessionToken);
 
-    // Move this event if necessary.  The branching logic for a successful or
-    // failed login has not been implemented when the event was added.
-    GleanMetrics.cachedLogin.success();
-  }, []);
+      // TODO: add in functionality to sign in using the logged in account
+      // return an error to be displayed if anythign goes wrong.
+
+      // Move this event if necessary.  The branching logic for a successful or
+      // failed login has not been implemented when the event was added.
+      GleanMetrics.cachedLogin.success();
+    },
+    []
+  );
 
   const signInWithPassword = useCallback(
     async (password: string) => {
@@ -173,6 +179,7 @@ const Signin = ({
           setPasswordTooltipErrorText(ftlMsgResolver.getMsg(ftlId, message));
         } else {
           switch (errno) {
+            // TODO: move this to cachedcredentials handler
             case AuthUiErrors.SESSION_EXPIRED.errno:
               isPasswordNeededRef.current = true;
               break;
@@ -233,15 +240,16 @@ const Signin = ({
         return;
       }
 
-      isPasswordNeededRef.current
-        ? signInWithPassword(password)
-        : signInWithCachedAccount();
+      !isPasswordNeededRef.current && sessionToken
+        ? signInWithCachedAccount(sessionToken)
+        : signInWithPassword(password);
     },
     [
       signInWithCachedAccount,
       signInWithPassword,
       isPasswordNeededRef,
       localizedValidPasswordError,
+      sessionToken,
     ]
   );
 
