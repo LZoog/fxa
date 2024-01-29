@@ -25,6 +25,8 @@ import {
   BeginSigninHandler,
   BeginSigninResponse,
   BeginSigninResultError,
+  LocationState,
+  SigninContainerIntegration,
 } from './interfaces';
 import { getCredentials } from 'fxa-auth-client/browser';
 import { GraphQLError } from 'graphql';
@@ -52,17 +54,6 @@ import AuthenticationMethods from '../../constants/authentication-methods';
  * email from local storage, we perform the check and redirect existing user emails to
  * `/signup` to match content-server functionality.
  */
-
-export type SigninContainerIntegration = Pick<
-  Integration,
-  'type' | 'isSync' | 'getService'
->;
-
-type LocationState = {
-  email?: string;
-  hasLinkedAccount?: boolean;
-  hasPassword?: boolean;
-};
 
 const SigninContainer = ({
   integration,

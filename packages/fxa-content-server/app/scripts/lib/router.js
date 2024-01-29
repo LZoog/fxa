@@ -409,16 +409,12 @@ Router = Router.extend({
     },
     'signin(/)': function () {
       this.createReactOrBackboneViewHandler('signin', SignInPasswordView, {
+        // see comment in fxa-settings/src/pages/Signin/container.tsx for param explanation
         ...Url.searchParams(this.window.location.search),
-
         email: this.user.get('emailFromIndex'),
         hasLinkedAccount: this.user.get('hasLinkedAccount'),
         hasPassword: this.user.get('hasPassword'),
       });
-      // clear out because users can be navigated to `/signin` in flows that aren't
-      // directly from email-first/index, and we want an `email` query param to take
-      // precedence but want to read from local storage otherwise
-      // this.user.set('emailFromIndex', '');
     },
     'signin_bounced(/)': function () {
       this.createReactOrBackboneViewHandler(
@@ -464,15 +460,12 @@ Router = Router.extend({
     'signup(/)': function () {
       this.createReactOrBackboneViewHandler('signup', SignUpPasswordView, {
         ...Url.searchParams(this.window.location.search),
-        // see comment in fxa-settings/src/pages/Signin/container.tsx for param explanation
+        // see comment in fxa-settings/src/pages/Signup/container.tsx for param explanation
         email: this.user.get('emailFromIndex'),
         ...(this.user.get('emailFromIndex') && {
           emailStatusChecked: 'true',
         }),
       });
-      // clear out since we use this for /signin as well, and we'll set this again on
-      // email-first submission
-      // this.user.set('emailFromIndex', '');
     },
     'signup_confirmed(/)': function () {
       this.createReactOrBackboneViewHandler(

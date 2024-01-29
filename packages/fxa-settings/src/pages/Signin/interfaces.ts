@@ -16,6 +16,17 @@ export interface AvatarResponse {
 
 export type SigninIntegration = Pick<Integration, 'type' | 'isSync'>;
 
+export type SigninContainerIntegration = Pick<
+  Integration,
+  'type' | 'isSync' | 'getService'
+>;
+
+export interface LocationState {
+  email?: string;
+  hasLinkedAccount?: boolean;
+  hasPassword?: boolean;
+}
+
 export interface SigninProps {
   integration: SigninIntegration;
   email: string;

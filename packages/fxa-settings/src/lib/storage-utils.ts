@@ -45,8 +45,8 @@ export function clearOAuthData() {
 
 /**
  * `lastLogin`, `email`, `metricsEnabled`, and `verified` should always be defined.
- *  However, since this is data in local storage, we can't make any guaruntees.
- *  `uid` should always be set because it's the key used for the accounts object.
+ *  However, since this is data in local storage, we can't make any guarantees.
+ *  `uid` will always be set because it's the key used for the accounts object.
  * */
 export interface StoredAccountData {
   uid: hexstring;
