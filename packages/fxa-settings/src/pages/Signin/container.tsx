@@ -5,7 +5,6 @@
 import { RouteComponentProps, useLocation, useNavigate } from '@reach/router';
 import Signin from '.';
 import {
-  Integration,
   isOAuthIntegration,
   isSyncDesktopV3Integration,
   useAuthClient,
@@ -21,10 +20,12 @@ import { useMutation, useQuery } from '@apollo/client';
 import { AVATAR_QUERY, BEGIN_SIGNIN_MUTATION } from './gql';
 import { hardNavigateToContentServer } from 'fxa-react/lib/utils';
 import {
+  RecoveryEmailStatusResponse,
   AvatarResponse,
   BeginSigninHandler,
   BeginSigninResponse,
   BeginSigninResultError,
+  CachedSigninHandler,
   LocationState,
   SigninContainerIntegration,
 } from './interfaces';
@@ -87,12 +88,14 @@ const SigninContainer = ({
 
   const nonCachedEmail = queryParamModel.email || emailFromLocationState;
   let email = nonCachedEmail;
-  let sessionToken: string | undefined;
+  let sessionToken: hexstring | undefined;
+  let uid: hexstring | undefined;
   // only read from local storage if email isn't provided via query param or router state
   if (!nonCachedEmail) {
     const storedLocalAccount = currentAccount();
     email = storedLocalAccount?.email;
     sessionToken = storedLocalAccount?.sessionToken;
+    uid = storedLocalAccount?.uid;
   }
 
   const isOAuth = isOAuthIntegration(integration);
@@ -152,7 +155,6 @@ const SigninContainer = ({
       // const service = integration.getService();
       const options = {
         verificationMethod: VerificationMethods.EMAIL_OTP,
-        verificationReason: VerificationReasons.SIGN_IN,
       };
       // TODO in oauth ticket
       //   // keys must be true to receive keyFetchToken for oAuth and syncDesktop
@@ -206,22 +208,58 @@ const SigninContainer = ({
     [beginSignin]
   );
 
-  // TODO finish this
-  const cachedSigninHandler = useCallback(async (sessionToken: hexstring) => {
-    try {
-      // might need scope `profile:amr` for OAuth
-      const {
-        authenticationMethods,
-      }: { authenticationMethods: AuthenticationMethods[] } =
-        await authClient.accountProfile(sessionToken);
+  const cachedSigninHandler: CachedSigninHandler = useCallback(
+    async (sessionToken: hexstring) => {
+      try {
+        // might need scope `profile:amr` for OAuth
+        const {
+          authenticationMethods,
+        }: { authenticationMethods: AuthenticationMethods[] } =
+          await authClient.accountProfile(sessionToken);
 
-      if (authenticationMethods.includes(AuthenticationMethods.OTP)) {
+        // after accountProfile data is retreived we must check verified status
+        // TODO: `uid` should never be undefined here, fix type
+        const {
+          verified,
+          sessionVerified,
+          emailVerified,
+        }: RecoveryEmailStatusResponse = await authClient.recoveryEmailStatus(
+          sessionToken
+        );
+
+        const verificationMethod = authenticationMethods.includes(
+          AuthenticationMethods.OTP
+        )
+          ? VerificationMethods.TOTP_2FA
+          : VerificationMethods.EMAIL_OTP;
+
+        const verificationReason = emailVerified
+          ? VerificationReasons.SIGN_IN
+          : VerificationReasons.SIGN_UP;
+
         return {
-          verificationMethod: VerificationMethods.TOTP_2FA,
+          data: {
+            verificationMethod,
+            verificationReason,
+            verified,
+            sessionVerified,
+            emailVerified, // might not need
+          },
+        };
+      } catch (error: any) {
+        const { errno } = error;
+        return {
+          data: null,
+          error: {
+            errno,
+            ftlId: composeAuthUiErrorTranslationId(errno),
+            message: AuthUiErrorNos[errno].message,
+          },
         };
       }
-    } catch (error) {}
-  }, []);
+    },
+    [authClient]
+  );
 
   // TODO: if validationError is 'email', in content-server we show "Bad request email param"
   // For now, just redirect to index-first, until FXA-8289 is done

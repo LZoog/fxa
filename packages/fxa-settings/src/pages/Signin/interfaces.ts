@@ -31,6 +31,7 @@ export interface SigninProps {
   integration: SigninIntegration;
   email: string;
   beginSigninHandler: BeginSigninHandler;
+  cachedSigninHandler: CachedSigninHandler;
   sessionToken?: hexstring;
   hasLinkedAccount: boolean;
   hasPassword: boolean;
@@ -57,8 +58,8 @@ export interface BeginSigninResponse {
     authAt: number;
     metricsEnabled: boolean;
     verified: boolean;
-    verificationMethod?: VerificationMethods;
-    verificationReason?: VerificationReasons;
+    verificationMethod: VerificationMethods;
+    verificationReason: VerificationReasons;
   };
 }
 
@@ -71,6 +72,26 @@ export interface BeginSigninResultError {
 export interface BeginSigninResult {
   data?: BeginSigninResponse | null;
   error?: BeginSigninResultError & { message: string; ftlId: string };
+}
+
+export type CachedSigninHandler = (
+  sessionToken: hexstring
+) => Promise<CachedSigninHandlerResponse>;
+
+export interface RecoveryEmailStatusResponse {
+  verified: boolean;
+  sessionVerified: boolean;
+  emailVerified: boolean;
+}
+
+export interface CachedSigninHandlerResponse {
+  data:
+    | ({
+        verificationMethod: VerificationMethods;
+        verificationReason: VerificationReasons;
+      } & RecoveryEmailStatusResponse)
+    | null;
+  error?: { errno: number; ftlId: string; message: string };
 }
 
 export interface SigninFormData {

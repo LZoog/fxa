@@ -6,7 +6,7 @@
 enum AuthenticationMethods {
   PWD = 'pwd',
   EMAIL = 'email',
-  // TOTP token
+  // TOTP / 2FA token
   OTP = 'otp',
 }
 

@@ -102,20 +102,77 @@ const Signin = ({
     }
   }, [isPasswordNeededRef]);
 
+  const navigationHandler = useCallback(
+    ({
+      verified,
+      verificationReason,
+      verificationMethod,
+      sessionVerified,
+    }: {
+      verified: boolean;
+      verificationReason: VerificationReasons;
+      verificationMethod: VerificationMethods;
+      sessionVerified?: boolean;
+    }) => {
+      // Note, all navigations are missing query params. Add these when working on
+      // subsequent tickets.
+      if (!verified) {
+        // TODO: Does force password change ever reach here, or can we move
+        // CHANGE_PASSWORD checks to another page?
+        if (
+          ((verificationReason === VerificationReasons.SIGN_IN ||
+            verificationReason === VerificationReasons.CHANGE_PASSWORD) &&
+            verificationMethod === VerificationMethods.TOTP_2FA) ||
+          (isOAuth && integration.wantsTwoStepAuthentication())
+        ) {
+          // TODO with signin_totp_code ticket, content server says this (double check it):
+          // Login requests that ask for 2FA but don't have it setup on their account
+          // will return an error.
+          navigate('/signin_totp_code');
+        } else if (verificationReason === VerificationReasons.SIGN_UP) {
+          // do we need this?
+          // if (verificationMethod !== VerificationMethods.EMAIL_OTP) {
+          //  send email verification since this screen doesn't do it automatically
+          // }
+          navigate('/confirm_signup_code');
+        } else {
+          // TODO: Pretty sure we want this to be the default. The check used to be:
+          // if (
+          //   verificationMethod === VerificationMethods.EMAIL_OTP &&
+          //   (verificationReason === VerificationReasons.SIGN_IN || verificationReason === VerificationReasons.CHANGE_PASSWORD)) {
+          navigate('/signin_token_code');
+        }
+        // Verified account, but session hasn't been verified
+      } else if (sessionVerified === false) {
+        navigate('/signin_token_code');
+      } else {
+        navigate('/settings');
+      }
+    },
+    [integration, isOAuth, navigate]
+  );
+
   const signInWithCachedAccount = useCallback(
     async (sessionToken: hexstring) => {
+      setSigninLoading(true);
       GleanMetrics.cachedLogin.submit();
 
       const { data, error } = await cachedSigninHandler(sessionToken);
 
-      // TODO: add in functionality to sign in using the logged in account
-      // return an error to be displayed if anythign goes wrong.
+      if (data) {
+        GleanMetrics.cachedLogin.success();
 
-      // Move this event if necessary.  The branching logic for a successful or
-      // failed login has not been implemented when the event was added.
-      GleanMetrics.cachedLogin.success();
+        navigationHandler(data);
+      }
+      if (error) {
+        if (error.errno === AuthUiErrors.SESSION_EXPIRED.errno) {
+          isPasswordNeededRef.current = true;
+        }
+        setBannerErrorText(ftlMsgResolver.getMsg(error.ftlId, error.message));
+        setSigninLoading(false);
+      }
     },
-    []
+    [cachedSigninHandler, ftlMsgResolver, navigationHandler]
   );
 
   const signInWithPassword = useCallback(
@@ -138,36 +195,7 @@ const Signin = ({
         };
 
         storeAccountData(accountData);
-
-        if (!data.signIn.verified) {
-          const { verificationReason, verificationMethod } = data.signIn;
-
-          // TODO: Does force password change ever reach here, or can we move
-          // CHANGE_PASSWORD checks to another page? Do we need to check
-          // VerificationReasons.SIGN_IN at all? signin-mixin.js does some
-          // VerificationReasons.SIGN_UP checks we don't need here since Signup handles them
-          if (
-            ((verificationReason === VerificationReasons.SIGN_IN ||
-              verificationReason === VerificationReasons.CHANGE_PASSWORD) &&
-              verificationMethod === VerificationMethods.TOTP_2FA) ||
-            (isOAuth && integration.wantsTwoStepAuthentication())
-          ) {
-            // TODO with signin_totp_code ticket, content server says this (double check it):
-            // Login requests that ask for 2FA but don't have it setup on their account
-            // will return an error.
-            navigate('/signin_totp_code');
-          } else {
-            // TODO: Pretty sure we want this to be the default. The check used to be:
-            // if (
-            //   verificationMethod === VerificationMethods.EMAIL_OTP &&
-            //   (verificationReason === VerificationReasons.SIGN_IN || verificationReason === VerificationReasons.CHANGE_PASSWORD)
-            // ) {
-            navigate('/signin_token_code');
-            // }
-          }
-        } else {
-          navigate('/settings');
-        }
+        navigationHandler(data.signIn);
       }
       if (error) {
         const { message, ftlId, errno } = error;
@@ -179,10 +207,6 @@ const Signin = ({
           setPasswordTooltipErrorText(ftlMsgResolver.getMsg(ftlId, message));
         } else {
           switch (errno) {
-            // TODO: move this to cachedcredentials handler
-            case AuthUiErrors.SESSION_EXPIRED.errno:
-              isPasswordNeededRef.current = true;
-              break;
             case AuthUiErrors.THROTTLED.errno:
             case AuthUiErrors.REQUEST_BLOCKED.errno:
               if (
@@ -226,11 +250,12 @@ const Signin = ({
               break;
           }
           // if the request errored, loading state must be marked as false to reenable submission
+          setSigninLoading(false);
           setBannerErrorText(ftlMsgResolver.getMsg(ftlId, message));
         }
       }
     },
-    [beginSigninHandler, email, ftlMsgResolver, navigate, integration, isOAuth]
+    [beginSigninHandler, email, ftlMsgResolver, navigate, navigationHandler]
   );
 
   const onSubmit = useCallback(
