@@ -9,7 +9,7 @@ import SigninUnblock, { viewName } from '.';
 import { usePageViewEvent } from '../../../lib/metrics';
 import { REACT_ENTRYPOINT } from '../../../constants';
 import { LocationProvider } from '@reach/router';
-import { MOCK_EMAIL, MOCK_OAUTH_FLOW_HANDLER_RESPONSE } from '../../mocks';
+import { MOCK_EMAIL, mockFinishOAuthFlowHandler } from '../../mocks';
 import {
   createBeginSigninResponse,
   createBeginSigninResponseError,
@@ -52,9 +52,7 @@ const renderWithSuccess = () => {
   resendUnblockCodeHandler = jest.fn().mockReturnValue({ success: true });
   const finishOAuthFlowHandler = jest
     .fn()
-    .mockReturnValueOnce(() =>
-      Promise.resolve(MOCK_OAUTH_FLOW_HANDLER_RESPONSE)
-    );
+    .mockReturnValueOnce(mockFinishOAuthFlowHandler);
   const integration = createMockSigninWebIntegration();
 
   renderWithLocalizationProvider(
@@ -82,6 +80,7 @@ const renderWithError = (errno = AuthUiErrors.UNEXPECTED_ERROR.errno) => {
     success: false,
     localizedErrorMessage: 'Something went wrong',
   });
+  const integration = createMockSigninWebIntegration();
 
   renderWithLocalizationProvider(
     <LocationProvider>
@@ -91,6 +90,8 @@ const renderWithError = (errno = AuthUiErrors.UNEXPECTED_ERROR.errno) => {
           hasLinkedAccount,
           hasPassword,
           signinWithUnblockCode,
+          integration,
+          finishOAuthFlowHandler: mockFinishOAuthFlowHandler,
           resendUnblockCodeHandler,
         }}
       />

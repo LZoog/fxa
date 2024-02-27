@@ -14,8 +14,8 @@ import {
   MOCK_SESSION_TOKEN,
   MOCK_UID,
   MOCK_AVATAR_NON_DEFAULT,
-  MOCK_OAUTH_FLOW_HANDLER_RESPONSE,
   MOCK_UNWRAP_BKEY,
+  mockFinishOAuthFlowHandler,
 } from '../mocks';
 import {
   BeginSigninError,
@@ -66,6 +66,7 @@ export function createMockSigninSyncIntegration(): SigninIntegration {
   return {
     type: IntegrationType.OAuth,
     isSync: () => true,
+    wantsKeys: () => true,
     getService: () => MozServices.FirefoxSync,
   };
 }
@@ -75,6 +76,7 @@ export function createMockSigninOAuthIntegration(): SigninOAuthIntegration {
     type: IntegrationType.OAuth,
     getService: () => MozServices.Monitor,
     isSync: () => false,
+    wantsKeys: () => true,
     wantsTwoStepAuthentication: () => false,
   };
 }
@@ -178,8 +180,7 @@ export const Subject = ({
   beginSigninHandler = mockBeginSigninHandler,
   cachedSigninHandler = mockCachedSigninHandler,
   sendUnblockEmailHandler = mockSendUnblockEmailHandler,
-  finishOAuthFlowHandler = () =>
-    Promise.resolve(MOCK_OAUTH_FLOW_HANDLER_RESPONSE),
+  finishOAuthFlowHandler = mockFinishOAuthFlowHandler,
   ...props // overrides
 }: Partial<SigninProps> = {}) => (
   <LocationProvider>

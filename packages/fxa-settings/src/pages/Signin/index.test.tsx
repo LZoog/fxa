@@ -17,11 +17,11 @@ import {
 import {
   MOCK_EMAIL,
   MOCK_KEY_FETCH_TOKEN,
-  MOCK_OAUTH_FLOW_HANDLER_RESPONSE,
   MOCK_PASSWORD,
   MOCK_SESSION_TOKEN,
   MOCK_UID,
   MOCK_UNWRAP_BKEY,
+  mockFinishOAuthFlowHandler,
 } from '../mocks';
 import { MozServices } from '../../lib/types';
 import * as utils from 'fxa-react/lib/utils';
@@ -297,9 +297,7 @@ describe('Signin', () => {
               );
               const finishOAuthFlowHandler = jest
                 .fn()
-                .mockReturnValueOnce(() =>
-                  Promise.resolve(MOCK_OAUTH_FLOW_HANDLER_RESPONSE)
-                );
+                .mockReturnValueOnce(mockFinishOAuthFlowHandler);
               const integration = createMockSigninOAuthIntegration();
               render({
                 beginSigninHandler,

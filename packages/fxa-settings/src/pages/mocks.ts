@@ -37,3 +37,5 @@ export const MOCK_OAUTH_FLOW_HANDLER_RESPONSE = {
   code: 'someCode',
   state: 'someState',
 };
+export const mockFinishOAuthFlowHandler = () =>
+  Promise.resolve(MOCK_OAUTH_FLOW_HANDLER_RESPONSE);
