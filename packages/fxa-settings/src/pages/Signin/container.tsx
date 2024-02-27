@@ -79,6 +79,20 @@ import { wantsKeyFetchToken } from '../../lib/integrations/utils';
  * `/signup` to match content-server functionality.
  */
 
+function getAccountInfo(nonCachedEmail?: string) {
+  let email = nonCachedEmail;
+  let sessionToken: hexstring | undefined;
+  let uid: hexstring | undefined;
+  // only read from local storage if email isn't provided via query param or router state
+  if (!nonCachedEmail) {
+    const storedLocalAccount = currentAccount();
+    email = storedLocalAccount?.email;
+    sessionToken = storedLocalAccount?.sessionToken;
+    uid = storedLocalAccount?.uid;
+  }
+  return { email, sessionToken, uid };
+}
+
 const SigninContainer = ({
   integration,
   serviceName,
@@ -119,15 +133,9 @@ const SigninContainer = ({
   });
   const { hasLinkedAccount, hasPassword } = accountStatus;
 
-  const nonCachedEmail = queryParamModel.email || emailFromLocationState;
-  let email = nonCachedEmail;
-  let sessionToken: hexstring | undefined;
-  // only read from local storage if email isn't provided via query param or router state
-  if (!nonCachedEmail) {
-    const storedLocalAccount = currentAccount();
-    email = storedLocalAccount?.email;
-    sessionToken = storedLocalAccount?.sessionToken;
-  }
+  const { email, sessionToken, uid } = getAccountInfo(
+    queryParamModel.email || emailFromLocationState
+  );
 
   const isOAuth = isOAuthIntegration(integration);
   const isSyncOAuth = isOAuth && integration.isSync();
@@ -408,6 +416,8 @@ const SigninContainer = ({
             verificationMethod,
             verificationReason,
             verified,
+            // Because the cached signin was a success, we know 'uid' exists
+            uid: uid!,
             sessionVerified, // might not need
             emailVerified, // might not need
           },
@@ -423,7 +433,7 @@ const SigninContainer = ({
         return { error };
       }
     },
-    [authClient]
+    [authClient, uid]
   );
 
   const sendUnblockEmailHandler = useCallback(

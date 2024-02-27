@@ -9,6 +9,7 @@ import { IntegrationType } from '../../../models';
 import {
   MOCK_EMAIL,
   MOCK_KEY_FETCH_TOKEN,
+  MOCK_OAUTH_FLOW_HANDLER_RESPONSE,
   MOCK_SESSION_TOKEN,
   MOCK_UID,
   MOCK_UNWRAP_BKEY,
@@ -55,11 +56,7 @@ export const Subject = ({
           integration,
         }}
         finishOAuthFlowHandler={() =>
-          Promise.resolve({
-            redirect: 'someUri',
-            code: 'someCode',
-            state: 'someState',
-          })
+          Promise.resolve(MOCK_OAUTH_FLOW_HANDLER_RESPONSE)
         }
       />
     </LocationProvider>

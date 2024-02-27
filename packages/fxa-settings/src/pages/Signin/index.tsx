@@ -36,7 +36,6 @@ import {
   getLocalizedErrorMessage,
 } from '../../lib/auth-errors/auth-errors';
 import { handleNavigation } from './utils';
-import { currentAccount } from '../../lib/cache';
 
 export const viewName = 'signin';
 
@@ -119,17 +118,14 @@ const Signin = ({
       if (data) {
         GleanMetrics.cachedLogin.success();
 
-        const storedLocalAccount = currentAccount();
         const navigationOptions = {
           email,
           signinData: {
             verified: data.verified,
             verificationMethod: data.verificationMethod,
             verificationReason: data.verificationReason,
-            // Because the cached signin was a success, we know
-            // these values exist
-            uid: storedLocalAccount!.uid,
-            sessionToken: storedLocalAccount!.sessionToken!,
+            uid: data.uid,
+            sessionToken,
           },
           integration,
           finishOAuthFlowHandler,

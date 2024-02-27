@@ -16,7 +16,14 @@ export interface AvatarResponse {
   };
 }
 
-export type SigninIntegration = Pick<Integration, 'type' | 'isSync'>;
+export type SigninIntegration =
+  | Pick<Integration, 'type' | 'isSync' | 'getService'>
+  | SigninOAuthIntegration;
+
+export type SigninOAuthIntegration = Pick<
+  Integration,
+  'type' | 'isSync' | 'getService' | 'wantsTwoStepAuthentication'
+>;
 
 export interface LocationState {
   email?: string;
@@ -89,6 +96,7 @@ export interface CachedSigninHandlerResponse {
   data?: {
     verificationMethod: VerificationMethods;
     verificationReason: VerificationReasons;
+    uid: hexstring;
   } & RecoveryEmailStatusResponse;
   error?: AuthUiError;
 }
@@ -143,7 +151,7 @@ export interface SendUnblockEmailHandlerResponse {
 export interface NavigationOptions {
   email?: string;
   signinData: {
-    uid: string;
+    uid: hexstring;
     sessionToken: hexstring;
     verified: boolean;
     verificationMethod: VerificationMethods;

@@ -9,10 +9,11 @@ import SigninUnblock, { viewName } from '.';
 import { usePageViewEvent } from '../../../lib/metrics';
 import { REACT_ENTRYPOINT } from '../../../constants';
 import { LocationProvider } from '@reach/router';
-import { MOCK_EMAIL } from '../../mocks';
+import { MOCK_EMAIL, MOCK_OAUTH_FLOW_HANDLER_RESPONSE } from '../../mocks';
 import {
   createBeginSigninResponse,
   createBeginSigninResponseError,
+  createMockSigninWebIntegration,
 } from '../mocks';
 import GleanMetrics from '../../../lib/glean';
 import { AuthUiErrors } from '../../../lib/auth-errors/auth-errors';
@@ -49,6 +50,12 @@ const renderWithSuccess = () => {
     .fn()
     .mockReturnValue(createBeginSigninResponse());
   resendUnblockCodeHandler = jest.fn().mockReturnValue({ success: true });
+  const finishOAuthFlowHandler = jest
+    .fn()
+    .mockReturnValueOnce(() =>
+      Promise.resolve(MOCK_OAUTH_FLOW_HANDLER_RESPONSE)
+    );
+  const integration = createMockSigninWebIntegration();
 
   renderWithLocalizationProvider(
     <LocationProvider>
@@ -57,6 +64,8 @@ const renderWithSuccess = () => {
           email,
           hasLinkedAccount,
           hasPassword,
+          integration,
+          finishOAuthFlowHandler,
           signinWithUnblockCode,
           resendUnblockCodeHandler,
         }}

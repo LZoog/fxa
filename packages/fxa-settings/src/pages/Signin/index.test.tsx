@@ -11,9 +11,18 @@ import {
   createBeginSigninResponse,
   createBeginSigninResponseError,
   createCachedSigninResponseError,
+  createMockSigninOAuthIntegration,
   Subject,
 } from './mocks';
-import { MOCK_EMAIL, MOCK_PASSWORD, MOCK_SESSION_TOKEN } from '../mocks';
+import {
+  MOCK_EMAIL,
+  MOCK_KEY_FETCH_TOKEN,
+  MOCK_OAUTH_FLOW_HANDLER_RESPONSE,
+  MOCK_PASSWORD,
+  MOCK_SESSION_TOKEN,
+  MOCK_UID,
+  MOCK_UNWRAP_BKEY,
+} from '../mocks';
 import { MozServices } from '../../lib/types';
 import * as utils from 'fxa-react/lib/utils';
 import { storeAccountData } from '../../lib/storage-utils';
@@ -236,7 +245,15 @@ describe('Signin', () => {
 
             enterPasswordAndSubmit();
             await waitFor(() => {
-              expect(mockNavigate).toHaveBeenCalledWith('/confirm_signup_code');
+              expect(mockNavigate).toHaveBeenCalledWith(
+                '/confirm_signup_code',
+                {
+                  state: {
+                    keyFetchToken: undefined,
+                    unwrapBKey: undefined,
+                  },
+                }
+              );
             });
           });
           it('navigates to /signin_token_code when conditions are met', async () => {
@@ -266,6 +283,46 @@ describe('Signin', () => {
             enterPasswordAndSubmit();
             await waitFor(() => {
               expect(mockNavigate).toHaveBeenCalledWith('/settings');
+            });
+          });
+
+          describe('OAuth integration, wants keys', () => {
+            it('navigates to /confirm_signup_code with router state when conditions are met', async () => {
+              const beginSigninHandler = jest.fn().mockReturnValueOnce(
+                createBeginSigninResponse({
+                  verified: false,
+                  verificationReason: VerificationReasons.SIGN_UP,
+                  keyFetchToken: MOCK_KEY_FETCH_TOKEN,
+                })
+              );
+              const finishOAuthFlowHandler = jest
+                .fn()
+                .mockReturnValueOnce(() =>
+                  Promise.resolve(MOCK_OAUTH_FLOW_HANDLER_RESPONSE)
+                );
+              const integration = createMockSigninOAuthIntegration();
+              render({
+                beginSigninHandler,
+                integration,
+                finishOAuthFlowHandler,
+              });
+
+              enterPasswordAndSubmit();
+              await waitFor(() => {
+                expect(finishOAuthFlowHandler).toHaveBeenCalledWith(
+                  MOCK_UID,
+                  MOCK_SESSION_TOKEN,
+                  MOCK_KEY_FETCH_TOKEN,
+                  MOCK_UNWRAP_BKEY
+                );
+                expect(mockNavigate).toHaveBeenCalledWith(
+                  '/confirm_signup_code',
+                  {
+                    keyFetchToken: MOCK_KEY_FETCH_TOKEN,
+                    unwrapBKey: MOCK_UNWRAP_BKEY,
+                  }
+                );
+              });
             });
           });
         });

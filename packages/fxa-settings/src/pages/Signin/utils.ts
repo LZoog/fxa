@@ -33,7 +33,11 @@ export async function handleNavigation(
     hardNavigate(to);
     return;
   }
-  navigate(to, { state });
+  if (state) {
+    navigate(to, { state });
+  } else {
+    navigate(to);
+  }
 }
 
 const getNavigationTarget = async ({
@@ -98,6 +102,9 @@ const getNavigationTarget = async ({
       };
     }
   }
+
+  console.log('isOAuth!!!!', isOAuth);
+  console.log('integration', integration);
 
   if (isOAuth) {
     const { redirect, code, state } = await finishOAuthFlowHandler(
