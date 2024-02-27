@@ -427,6 +427,7 @@ describe('signin container', () => {
             authPW: MOCK_AUTH_PW,
             options: {
               verificationMethod: VerificationMethods.EMAIL_OTP,
+              keys: false,
             },
           },
         },
@@ -477,6 +478,7 @@ describe('signin container', () => {
               authPW: MOCK_AUTH_PW,
               options: {
                 verificationMethod: VerificationMethods.EMAIL_OTP,
+                keys: false,
               },
             },
           },

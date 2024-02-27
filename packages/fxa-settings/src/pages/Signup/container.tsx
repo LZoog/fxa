@@ -39,6 +39,7 @@ import { createSaltV2 } from 'fxa-auth-client/lib/salt';
 import { KeyStretchExperiment } from '../../models/experiments/key-stretch-experiment';
 import { handleGQLError } from './utils';
 import { wantsKeyFetchToken } from '../../lib/integrations/utils';
+import VerificationMethods from '../../constants/verification-methods';
 
 /*
  * In content-server, the `email` param is optional. If it's provided, we
@@ -194,9 +195,9 @@ const SignupContainer = ({
     async (email, password, atLeast18AtReg) => {
       const service = integration.getService();
       const options: BeginSignUpOptions = {
-        verificationMethod: 'email-otp',
+        verificationMethod: VerificationMethods.EMAIL_OTP,
         keys: wantsKeyFetchToken(integration),
-        service: service !== MozServices.Default ? service : undefined,
+        ...(service !== MozServices.Default && { service }),
         atLeast18AtReg,
       };
       try {

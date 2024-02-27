@@ -214,7 +214,7 @@ const SigninContainer = ({
       const options = {
         verificationMethod: VerificationMethods.EMAIL_OTP,
         keys: wantsKeyFetchToken(integration),
-        service: service !== MozServices.Default ? service : undefined,
+        ...(service !== MozServices.Default && { service }),
       };
 
       const v1Credentials = await getCredentials(email, password);
