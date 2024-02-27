@@ -53,6 +53,7 @@ function mockWebIntegration() {
     type: IntegrationType.Web,
     getService: () => MozServices.Default,
     isSync: () => false,
+    wantsKeys: () => false,
   };
 }
 

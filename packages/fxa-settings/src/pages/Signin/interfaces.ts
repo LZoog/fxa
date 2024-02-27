@@ -22,7 +22,7 @@ export type SigninIntegration =
 
 export type SigninOAuthIntegration = Pick<
   Integration,
-  'type' | 'isSync' | 'getService' | 'wantsTwoStepAuthentication'
+  'type' | 'isSync' | 'getService' | 'wantsTwoStepAuthentication' | 'wantsKeys'
 >;
 
 export interface LocationState {

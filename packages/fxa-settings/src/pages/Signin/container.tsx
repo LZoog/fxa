@@ -61,7 +61,6 @@ import { handleGQLError } from './utils';
 import { useFinishOAuthFlowHandler } from '../../lib/oauth/hooks';
 import AppLayout from '../../components/AppLayout';
 import CardHeader from '../../components/CardHeader';
-import { wantsKeyFetchToken } from '../../lib/integrations/utils';
 
 /*
  * In content-server, the `email` param is optional. If it's provided, we
@@ -213,7 +212,7 @@ const SigninContainer = ({
       const service = integration.getService();
       const options = {
         verificationMethod: VerificationMethods.EMAIL_OTP,
-        keys: wantsKeyFetchToken(integration),
+        keys: integration.wantsKeys(),
         ...(service !== MozServices.Default && { service }),
       };
 

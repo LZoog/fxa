@@ -38,7 +38,6 @@ import { Constants } from '../../lib/constants';
 import { createSaltV2 } from 'fxa-auth-client/lib/salt';
 import { KeyStretchExperiment } from '../../models/experiments/key-stretch-experiment';
 import { handleGQLError } from './utils';
-import { wantsKeyFetchToken } from '../../lib/integrations/utils';
 import VerificationMethods from '../../constants/verification-methods';
 
 /*
@@ -65,7 +64,7 @@ import VerificationMethods from '../../constants/verification-methods';
 
 export type SignupContainerIntegration = Pick<
   Integration,
-  'type' | 'getService' | 'features' | 'isSync'
+  'type' | 'getService' | 'features' | 'isSync' | 'wantsKeys'
 >;
 
 type LocationState = {
@@ -196,7 +195,7 @@ const SignupContainer = ({
       const service = integration.getService();
       const options: BeginSignUpOptions = {
         verificationMethod: VerificationMethods.EMAIL_OTP,
-        keys: wantsKeyFetchToken(integration),
+        keys: integration.wantsKeys(),
         ...(service !== MozServices.Default && { service }),
         atLeast18AtReg,
       };
