@@ -7,11 +7,16 @@ import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { useCallback, useEffect, useState } from 'react';
 import InlineTotpSetup, { TotpToken } from '.';
 import { MozServices } from '../../lib/types';
-import { OAuthIntegration, useAccount, useSession } from '../../models';
+import { OAuthIntegration, useSession } from '../../models';
 import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
 import { checkCode } from '../../lib/totp';
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { CREATE_TOTP_MUTATION } from './gql';
+import { getSigninState } from '../Signin/utils';
+import { SigninLocationState } from '../Signin/interfaces';
+import { GET_TOTP_STATUS } from '../../components/App/gql';
+import { TotpStatusResponse } from '../Signin/SigninTokenCode/interfaces';
+import { SigninRecoveryLocationState } from '../InlineRecoverySetup/interfaces';
 
 export const InlineTotpSetupContainer = ({
   isSignedIn,
@@ -23,15 +28,20 @@ export const InlineTotpSetupContainer = ({
   serviceName: MozServices;
 } & RouteComponentProps) => {
   const [totp, setTotp] = useState<TotpToken>();
-
-  const account = useAccount();
-  const session = useSession();
-  const location = useLocation();
+  const location = useLocation() as ReturnType<typeof useLocation> & {
+    state: SigninLocationState;
+  };
   const navigate = useNavigate();
+  const session = useSession();
 
   const [createTotp] = useMutation<{ createTotp: TotpToken }>(
     CREATE_TOTP_MUTATION
   );
+
+  const { data: totpData, loading: totpLoading } =
+    useQuery<TotpStatusResponse>(GET_TOTP_STATUS);
+
+  const signinState = getSigninState(location.state);
 
   const navTo = useCallback(
     (
@@ -40,7 +50,7 @@ export const InlineTotpSetupContainer = ({
         | 'signin_token_code'
         | 'signin_totp_code'
         | 'inline_recovery_setup',
-      state?: Record<string, any>
+      state?: SigninLocationState | SigninRecoveryLocationState
     ) => {
       navigate(`/${uri}${location.search}`, { state });
     },
@@ -68,34 +78,32 @@ export const InlineTotpSetupContainer = ({
           throw AuthUiErrors.INVALID_TOTP_CODE;
         }
 
-        navTo('inline_recovery_setup', { totp });
+        const state = {
+          ...Object.assign({}, signinState),
+          ...(totp ? { totp } : {}),
+        };
+        navTo(
+          'inline_recovery_setup',
+          Object.keys(state).length > 0 ? state : undefined
+        );
       } catch (error) {
         throw AuthUiErrors.INVALID_TOTP_CODE;
       }
     },
-    [navTo, totp]
+    [navTo, totp, signinState]
   );
 
   useEffect(() => {
-    // The user is navigated to this page by the web application in response to
-    // a sign-in attempt.  But let's do some sanity checks.
-
-    if (!isSignedIn || !account || !session) {
-      navTo('signup');
-      return;
-    }
-
     (async () => {
       try {
+        // The user is navigated to this page by the web application in response to
+        // a sign-in attempt.  But let's do some sanity checks.
         const sessionVerified = await session.isSessionVerified();
         if (!sessionVerified) {
-          navTo('signin_token_code');
+          navTo('signin_token_code', signinState ? signinState : undefined);
         }
-
-        await account.refresh('account');
-
-        if (account.totpActive) {
-          navTo('signin_totp_code');
+        if (totpData?.account.totp.verified) {
+          navTo('signin_totp_code', signinState ? signinState : undefined);
         }
 
         const totpResp = await createTotp({ variables: { input: {} } });
@@ -105,19 +113,28 @@ export const InlineTotpSetupContainer = ({
         navTo('signup');
       }
     })();
-  }, [isSignedIn, account, session, navTo, createTotp]);
+  }, [
+    isSignedIn,
+    signinState,
+    session,
+    navTo,
+    createTotp,
+    totpData?.account.totp.verified,
+  ]);
 
-  if (!totp) {
+  if (totpLoading || !totp) {
+    return <LoadingSpinner fullScreen />;
+  }
+
+  if (!isSignedIn || !signinState) {
+    navTo('signup');
     return <LoadingSpinner fullScreen />;
   }
 
   return (
     <InlineTotpSetup
-      totp={totp!}
-      email={account.email}
-      serviceName={serviceName}
-      cancelSetupHandler={cancelSetupHandler}
-      verifyCodeHandler={verifyCodeHandler}
+      {...{ totp, serviceName, cancelSetupHandler, verifyCodeHandler }}
+      email={signinState.email}
     />
   );
 };

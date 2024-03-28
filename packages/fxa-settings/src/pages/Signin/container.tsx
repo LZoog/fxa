@@ -433,7 +433,8 @@ const SigninContainer = ({
           AuthenticationMethods.OTP
         );
         if (totpIsActive) {
-          // Cache this for /signin_token_code and /settings
+          console.log('before');
+          // Cache this for subsequent requests
           cache.modify({
             id: cache.identify({ __typename: 'Account' }),
             fields: {
@@ -442,6 +443,7 @@ const SigninContainer = ({
               },
             },
           });
+          console.log('after');
         }
 
         // after accountProfile data is retrieved we must check verified status

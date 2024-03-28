@@ -29,6 +29,7 @@ export type DataBlockProps = {
   onAction?: actionFn;
   isIOS?: boolean;
   isInline?: boolean;
+  email: string;
 };
 
 export const DataBlock = ({
@@ -40,6 +41,7 @@ export const DataBlock = ({
   onAction = () => {},
   isIOS = false,
   isInline = false,
+  email,
 }: DataBlockProps) => {
   const valueIsArray = Array.isArray(value);
   const [performedAction, setPerformedAction] = useState<actions>();
@@ -106,7 +108,13 @@ export const DataBlock = ({
       )}
       {!isIOS && !isInline && (
         <GetDataTrio
-          {...{ value, contentType, onAction: actionCb, setTooltipVisible }}
+          {...{
+            value,
+            contentType,
+            onAction: actionCb,
+            setTooltipVisible,
+            email,
+          }}
         />
       )}
     </div>
