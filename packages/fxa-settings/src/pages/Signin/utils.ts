@@ -53,6 +53,7 @@ export async function handleNavigation(
   const { to, state, shouldHardNavigate } = await getNavigationTarget(
     navigationOptions
   );
+  console.log('to and state', to, state);
   if (shouldHardNavigate) {
     if (tempHandleSyncLogin && navigationOptions.integration.isSync()) {
       firefox.fxaLogin({
