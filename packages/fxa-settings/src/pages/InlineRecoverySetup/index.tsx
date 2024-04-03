@@ -4,7 +4,6 @@
 
 import React, { useCallback, useState } from 'react';
 import { RouteComponentProps } from '@reach/router';
-import { MozServices } from '../../lib/types';
 import { FtlMsg } from 'fxa-react/lib/utils';
 import { useFtlMsgResolver } from '../../models';
 import DataBlock from '../../components/DataBlock';
@@ -18,15 +17,7 @@ import {
   AuthUiErrors,
   composeAuthUiErrorTranslationId,
 } from '../../lib/auth-errors/auth-errors';
-
-export type InlineRecoverySetupProps = {
-  recoveryCodes: Array<string>;
-  serviceName?: MozServices;
-  cancelSetupHandler: () => void;
-  verifyTotpHandler: () => Promise<boolean>;
-  successfulSetupHandler: () => void;
-  email: string;
-};
+import { InlineRecoverySetupProps } from './interfaces';
 
 const InlineRecoverySetup = ({
   recoveryCodes,
