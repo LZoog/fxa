@@ -41,7 +41,7 @@ const SigninTokenCodeContainer = ({
   const { data: totpData, loading: totpLoading } =
     useQuery<TotpStatusResponse>(GET_TOTP_STATUS);
 
-  if (signinState) {
+  if (!signinState) {
     hardNavigateToContentServer(`/${location.search || ''}`);
     return <LoadingSpinner fullScreen />;
   }
@@ -68,6 +68,8 @@ const SigninTokenCodeContainer = ({
       </AppLayout>
     );
   }
+
+  console.log(signinState);
 
   return (
     <SigninTokenCode

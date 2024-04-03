@@ -8,7 +8,7 @@ import { ReactComponent as CopyIcon } from './copy.svg';
 import { ReactComponent as InlineCopyIcon } from './copy-inline.svg';
 import { ReactComponent as DownloadIcon } from './download.svg';
 import { ReactComponent as PrintIcon } from './print.svg';
-import { useAccount, useFtlMsgResolver } from '../../models';
+import { useFtlMsgResolver } from '../../models';
 import { FtlMsg } from 'fxa-react/lib/utils';
 
 export type DownloadContentType =

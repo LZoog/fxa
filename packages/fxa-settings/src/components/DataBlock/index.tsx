@@ -97,13 +97,13 @@ export const DataBlock = ({
         )}
         {isInline && (
           <GetDataCopySingletonInline
-            {...{ value, onAction: actionCb, setTooltipVisible }}
+            {...{ value, onAction: actionCb, setTooltipVisible, email }}
           />
         )}
       </div>
       {isIOS && !isInline && (
         <GetDataCopySingleton
-          {...{ value, onAction: actionCb, setTooltipVisible }}
+          {...{ value, onAction: actionCb, setTooltipVisible, email }}
         />
       )}
       {!isIOS && !isInline && (

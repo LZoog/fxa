@@ -5,7 +5,7 @@
 import { RouteComponentProps, useLocation, useNavigate } from '@reach/router';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { useCallback, useEffect, useState } from 'react';
-import InlineTotpSetup, { TotpToken } from '.';
+import InlineTotpSetup from '.';
 import { MozServices } from '../../lib/types';
 import { OAuthIntegration, useSession } from '../../models';
 import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
@@ -13,7 +13,7 @@ import { checkCode } from '../../lib/totp';
 import { useMutation, useQuery } from '@apollo/client';
 import { CREATE_TOTP_MUTATION } from './gql';
 import { getSigninState } from '../Signin/utils';
-import { SigninLocationState } from '../Signin/interfaces';
+import { SigninLocationState, TotpToken } from '../Signin/interfaces';
 import { GET_TOTP_STATUS } from '../../components/App/gql';
 import { TotpStatusResponse } from '../Signin/SigninTokenCode/interfaces';
 import { SigninRecoveryLocationState } from '../InlineRecoverySetup/interfaces';

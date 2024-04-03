@@ -40,7 +40,7 @@ export const InlineRecoverySetupContainer = ({
   const location = useLocation() as ReturnType<typeof useLocation> & {
     state: SigninRecoveryLocationState;
   };
-  const signinState = location.state;
+  const signinRecoveryLocationState = location.state;
   const totp = location.state?.totp;
 
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>();
@@ -61,17 +61,17 @@ export const InlineRecoverySetupContainer = ({
 
   const successfulSetupHandler = useCallback(async () => {
     const { redirect } = await finishOAuthFlowHandler(
-      signinState.uid,
-      signinState.sessionToken,
-      signinState.keyFetchToken,
-      signinState.unwrapBKey
+      signinRecoveryLocationState.uid,
+      signinRecoveryLocationState.sessionToken,
+      signinRecoveryLocationState.keyFetchToken,
+      signinRecoveryLocationState.unwrapBKey
     );
     hardNavigate(redirect);
   }, [
-    signinState.uid,
-    signinState.sessionToken,
-    signinState.keyFetchToken,
-    signinState.unwrapBKey,
+    signinRecoveryLocationState.uid,
+    signinRecoveryLocationState.sessionToken,
+    signinRecoveryLocationState.keyFetchToken,
+    signinRecoveryLocationState.unwrapBKey,
     finishOAuthFlowHandler,
   ]);
 
@@ -96,13 +96,13 @@ export const InlineRecoverySetupContainer = ({
   }
 
   // Some basic sanity checks
-  if (!isSignedIn || !signinState) {
+  if (!isSignedIn || !signinRecoveryLocationState) {
     navigate(`/signup${location.search}`);
     return;
   }
   if (totpData?.account.totp.verified) {
     navigate(`/signin_totp_code${location.search}`, {
-      state: { signinState },
+      state: { signinRecoveryLocationState },
     });
     return;
   }
@@ -127,7 +127,7 @@ export const InlineRecoverySetupContainer = ({
         cancelSetupHandler,
         verifyTotpHandler,
         successfulSetupHandler,
-        email: signinState.email,
+        email: signinRecoveryLocationState.email,
       }}
     />
   );
