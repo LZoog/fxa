@@ -36,7 +36,6 @@ import {
   POCKET_CLIENTIDS,
 } from '../../models/integrations/client-matching';
 import firefox from '../../lib/channels/firefox';
-import { navigate } from '@reach/router';
 
 // import { getFtlBundle, testAllL10n } from 'fxa-react/lib/test-utils';
 // import { FluentBundle } from '@fluent/bundle';
@@ -80,7 +79,7 @@ const mockLocation = () => {
 const mockNavigate = jest.fn();
 jest.mock('@reach/router', () => ({
   ...jest.requireActual('@reach/router'),
-  navigate: jest.fn(),
+  navigate: mockNavigate,
   useNavigate: () => mockNavigate,
   useLocation: () => mockLocation(),
 }));
@@ -249,7 +248,7 @@ describe('Signin', () => {
 
             enterPasswordAndSubmit();
             await waitFor(() => {
-              expect(navigate).toHaveBeenCalledWith('/signin_totp_code', {
+              expect(mockNavigate).toHaveBeenCalledWith('/signin_totp_code', {
                 state: {
                   email: MOCK_EMAIL,
                   uid: MOCK_UID,
@@ -273,16 +272,19 @@ describe('Signin', () => {
 
             enterPasswordAndSubmit();
             await waitFor(() => {
-              expect(navigate).toHaveBeenCalledWith('/confirm_signup_code', {
-                state: {
-                  email: MOCK_EMAIL,
-                  uid: MOCK_UID,
-                  sessionToken: MOCK_SESSION_TOKEN,
-                  verified: false,
-                  verificationReason: 'signup',
-                  verificationMethod: 'email-otp',
-                },
-              });
+              expect(mockNavigate).toHaveBeenCalledWith(
+                '/confirm_signup_code',
+                {
+                  state: {
+                    email: MOCK_EMAIL,
+                    uid: MOCK_UID,
+                    sessionToken: MOCK_SESSION_TOKEN,
+                    verified: false,
+                    verificationReason: 'signup',
+                    verificationMethod: 'email-otp',
+                  },
+                }
+              );
             });
           });
 
@@ -296,7 +298,7 @@ describe('Signin', () => {
 
             enterPasswordAndSubmit();
             await waitFor(() => {
-              expect(navigate).toHaveBeenCalledWith('/signin_token_code', {
+              expect(mockNavigate).toHaveBeenCalledWith('/signin_token_code', {
                 state: {
                   email: MOCK_EMAIL,
                   uid: MOCK_UID,
@@ -317,7 +319,7 @@ describe('Signin', () => {
 
             enterPasswordAndSubmit();
             await waitFor(() => {
-              expect(navigate).toHaveBeenCalledWith('/settings');
+              expect(mockNavigate).toHaveBeenCalledWith('/settings');
             });
           });
 
@@ -384,18 +386,21 @@ describe('Signin', () => {
 
               enterPasswordAndSubmit();
               await waitFor(() => {
-                expect(navigate).toHaveBeenCalledWith('/confirm_signup_code', {
-                  state: {
-                    email: MOCK_EMAIL,
-                    uid: MOCK_UID,
-                    sessionToken: MOCK_SESSION_TOKEN,
-                    verified: false,
-                    verificationReason: 'signup',
-                    verificationMethod: 'email-otp',
-                    keyFetchToken: MOCK_KEY_FETCH_TOKEN,
-                    unwrapBKey: MOCK_UNWRAP_BKEY,
-                  },
-                });
+                expect(mockNavigate).toHaveBeenCalledWith(
+                  '/confirm_signup_code',
+                  {
+                    state: {
+                      email: MOCK_EMAIL,
+                      uid: MOCK_UID,
+                      sessionToken: MOCK_SESSION_TOKEN,
+                      verified: false,
+                      verificationReason: 'signup',
+                      verificationMethod: 'email-otp',
+                      keyFetchToken: MOCK_KEY_FETCH_TOKEN,
+                      unwrapBKey: MOCK_UNWRAP_BKEY,
+                    },
+                  }
+                );
               });
             });
             it('unverified, does not want keys, navigates to /confirm_signup_code without keys', async () => {
@@ -414,16 +419,19 @@ describe('Signin', () => {
 
               enterPasswordAndSubmit();
               await waitFor(() => {
-                expect(navigate).toHaveBeenCalledWith('/confirm_signup_code', {
-                  state: {
-                    email: MOCK_EMAIL,
-                    uid: MOCK_UID,
-                    sessionToken: MOCK_SESSION_TOKEN,
-                    verified: false,
-                    verificationReason: 'signup',
-                    verificationMethod: 'email-otp',
-                  },
-                });
+                expect(mockNavigate).toHaveBeenCalledWith(
+                  '/confirm_signup_code',
+                  {
+                    state: {
+                      email: MOCK_EMAIL,
+                      uid: MOCK_UID,
+                      sessionToken: MOCK_SESSION_TOKEN,
+                      verified: false,
+                      verificationReason: 'signup',
+                      verificationMethod: 'email-otp',
+                    },
+                  }
+                );
               });
             });
             it('verified, not sync, navigates to RP redirect', async () => {
@@ -691,7 +699,7 @@ describe('with sessionToken', () => {
 
         enterPasswordAndSubmit();
         await waitFor(() => {
-          expect(navigate).toHaveBeenCalledWith('/inline_totp_setup', {
+          expect(mockNavigate).toHaveBeenCalledWith('/inline_totp_setup', {
             state: {
               email: MOCK_EMAIL,
               keyFetchToken: signinResponse.data.signIn.keyFetchToken,

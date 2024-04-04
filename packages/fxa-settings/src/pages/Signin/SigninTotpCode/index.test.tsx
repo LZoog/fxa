@@ -46,10 +46,12 @@ const mockLocation = () => {
     pathname: '/signin_totp_cpde',
   };
 };
+
 const mockNavigate = jest.fn();
 jest.mock('@reach/router', () => ({
   ...jest.requireActual('@reach/router'),
   useNavigate: () => mockNavigate,
+  navigate: mockNavigate,
   useLocation: () => mockLocation(),
 }));
 

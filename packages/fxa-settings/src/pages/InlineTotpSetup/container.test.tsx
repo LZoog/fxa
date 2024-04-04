@@ -42,12 +42,10 @@ jest.mock('@reach/router', () => {
   };
 });
 
-let mockAccountHook: () => any = () => null;
 let mockSessionHook: () => any = () => null;
 jest.mock('../../models', () => {
   return {
     ...jest.requireActual('../../models'),
-    useAccount: jest.fn(() => mockAccountHook()),
     useSession: jest.fn(() => mockSessionHook()),
   };
 });
