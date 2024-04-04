@@ -25,6 +25,7 @@ import {
 import { createMockSigninLocationState } from './mocks';
 import VerificationReasons from '../../../constants/verification-reasons';
 import firefox from '../../../lib/channels/firefox';
+import { navigate } from '@reach/router';
 
 jest.mock('../../../lib/metrics', () => ({
   usePageViewEvent: jest.fn(),
@@ -52,11 +53,12 @@ function applyDefaultMocks() {
 
 const mockNavigate = jest.fn();
 jest.mock('@reach/router', () => {
+  const originalModule = jest.requireActual('@reach/router');
   return {
-    __esModule: true,
-    ...jest.requireActual('@reach/router'),
+    ...originalModule,
     navigate: mockNavigate,
-    useLocation: () => () => {},
+    useNavigate: () => mockNavigate,
+    useLocation: () => originalModule.useLocation(),
   };
 });
 

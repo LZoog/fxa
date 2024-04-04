@@ -17,6 +17,7 @@ import { SigninLocationState, TotpToken } from '../Signin/interfaces';
 import { GET_TOTP_STATUS } from '../../components/App/gql';
 import { TotpStatusResponse } from '../Signin/SigninTokenCode/interfaces';
 import { SigninRecoveryLocationState } from '../InlineRecoverySetup/interfaces';
+import { hardNavigate } from 'fxa-react/lib/utils';
 
 export const InlineTotpSetupContainer = ({
   isSignedIn,
@@ -38,7 +39,7 @@ export const InlineTotpSetupContainer = ({
     CREATE_TOTP_MUTATION
   );
 
-  const { data: totpData, loading: totpLoading } =
+  const { data: totpStatus, loading: totpStatusLoading } =
     useQuery<TotpStatusResponse>(GET_TOTP_STATUS);
 
   const signinState = getSigninState(location.state);
@@ -62,7 +63,7 @@ export const InlineTotpSetupContainer = ({
 
     if (integration.returnOnError()) {
       const url = integration.getRedirectWithErrorUrl(error);
-      window.location.assign(url);
+      hardNavigate(url);
       return;
     }
 
@@ -102,7 +103,8 @@ export const InlineTotpSetupContainer = ({
         if (!sessionVerified) {
           navTo('signin_token_code', signinState ? signinState : undefined);
         }
-        if (totpData?.account.totp.verified) {
+        console.log('totpStatus', totpStatus);
+        if (totpStatus?.account.totp.verified) {
           navTo('signin_totp_code', signinState ? signinState : undefined);
         }
 
@@ -119,10 +121,10 @@ export const InlineTotpSetupContainer = ({
     session,
     navTo,
     createTotp,
-    totpData?.account.totp.verified,
+    totpStatus?.account.totp.verified,
   ]);
 
-  if (totpLoading || !totp) {
+  if (totpStatusLoading || !totp) {
     return <LoadingSpinner fullScreen />;
   }
 
