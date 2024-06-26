@@ -4,15 +4,25 @@
 
 import React, { useState } from 'react';
 import Avatar from '../Avatar';
-import { useAccount, useAlertBar, useSession } from '../../../models';
+import {
+  Integration,
+  useAccount,
+  useAlertBar,
+  useSession,
+} from '../../../models';
 import { useClickOutsideEffect } from 'fxa-react/lib/hooks';
 import { useEscKeydownEffect } from '../../../lib/hooks';
 import { ReactComponent as SignOut } from './sign-out.svg';
 import { logViewEvent, settingsViewName } from '../../../lib/metrics';
 import { Localized, useLocalization } from '@fluent/react';
+import firefox from '../../../lib/channels/firefox';
 
-export const DropDownAvatarMenu = () => {
-  const { displayName, primaryEmail, avatar } = useAccount();
+export const DropDownAvatarMenu = ({
+  integration,
+}: {
+  integration: Integration;
+}) => {
+  const { displayName, primaryEmail, avatar, uid } = useAccount();
   const session = useSession();
   const [isRevealed, setRevealed] = useState(false);
   const toggleRevealed = () => setRevealed(!isRevealed);
@@ -32,6 +42,11 @@ export const DropDownAvatarMenu = () => {
     if (session.destroy) {
       try {
         await session.destroy();
+
+        if (integration.isSync()) {
+          firefox.fxaLogout({ uid });
+        }
+
         logViewEvent(settingsViewName, 'signout.success');
         window.location.assign(window.location.origin);
       } catch (e) {

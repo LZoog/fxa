@@ -7,6 +7,7 @@ import AppLayout from './AppLayout';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import AppErrorDialog from 'fxa-react/components/AppErrorDialog';
 import {
+  Integration,
   useAccount,
   useConfig,
   useInitialSettingsState,
@@ -31,7 +32,9 @@ import PageRecentActivity from './PageRecentActivity';
 import PageRecoveryKeyCreate from './PageRecoveryKeyCreate';
 import { hardNavigate } from 'fxa-react/lib/utils';
 
-export const Settings = (_: RouteComponentProps) => {
+export const Settings = ({
+  integration,
+}: { integration: Integration } & RouteComponentProps) => {
   const config = useConfig();
   const { metricsEnabled, hasPassword } = useAccount();
   const session = useSession();
@@ -68,7 +71,7 @@ export const Settings = (_: RouteComponentProps) => {
   }
 
   return (
-    <AppLayout>
+    <AppLayout {...{ integration }}>
       <Head />
       <Router basepath={HomePath}>
         <ScrollToTop default>
