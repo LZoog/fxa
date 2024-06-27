@@ -4,6 +4,9 @@
 
 import { IntegrationType } from '../../../models';
 
-export interface IntegrationSubsetType {
+export interface IntegrationSubset {
   type: IntegrationType;
+  isSync: boolean;
 }
+
+export type IntegrationSubsetType = Pick<IntegrationSubset, 'type'>;

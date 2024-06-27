@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { IntegrationType } from '../../models';
-import { IntegrationSubsetType } from './interfaces';
+import { IntegrationSubset, IntegrationSubsetType } from './interfaces';
 
 export function createMockWebIntegration(): IntegrationSubsetType {
   return {
@@ -14,5 +14,18 @@ export function createMockWebIntegration(): IntegrationSubsetType {
 export function createMockSyncDesktopV3Integration(): IntegrationSubsetType {
   return {
     type: IntegrationType.SyncDesktopV3,
+  };
+}
+
+export function createMockIntegration({
+  type = IntegrationType.Web,
+  isSync = false,
+}: {
+  type?: IntegrationType;
+  isSync?: boolean;
+}): IntegrationSubset {
+  return {
+    type,
+    isSync,
   };
 }
