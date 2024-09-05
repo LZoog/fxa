@@ -7,6 +7,7 @@ import { useAccount, useAlertBar, useFtlMsgResolver } from '../../models';
 import { pdf } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
 import { RecoveryKeyPDF } from '../ButtonDownloadRecoveryKeyPDF/RecoveryKeyPDF';
+import { ReactComponent as RecoveryKey } from '../images/graphic_recovery_key.svg';
 import {
   FtlMsg,
   LocalizedDateOptions,
@@ -33,6 +34,29 @@ interface ButtonDownloadRecoveryKeyPDFProps {
   navigateForward?: () => void;
   recoveryKeyValue: string;
   viewName: string;
+}
+
+async function svgToPng(inlinedSvg: string, width: number, height: number) {
+  // Convert the SVG string to a Base64 string
+  const svgBase64 = `data:image/svg+xml;base64,${btoa(inlinedSvg)}`;
+
+  // Convert the Base64 SVG to a PNG using a canvas
+  return new Promise((resolve, reject) => {
+    const svgImage = new Image();
+    svgImage.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = width || svgImage.width;
+      canvas.height = height || svgImage.height;
+      const context = canvas.getContext('2d');
+      context?.drawImage(svgImage, 0, 0);
+
+      const pngDataUrl = canvas.toDataURL('image/png');
+      resolve(pngDataUrl);
+    };
+
+    svgImage.onerror = () => reject(new Error('Failed to load SVG image'));
+    svgImage.src = svgBase64;
+  });
 }
 
 export const getFilename = (email: string) => {
@@ -117,6 +141,8 @@ export const ButtonDownloadRecoveryKeyPDF = ({
 
   // File download test coverage is provided by Playwright functional test
   const downloadFile = async () => {
+    // const recoveryKeyImagePng =
+
     const doc = (
       <RecoveryKeyPDF
         {...{ recoveryKeyValue, requiredFont, email, localizedText }}

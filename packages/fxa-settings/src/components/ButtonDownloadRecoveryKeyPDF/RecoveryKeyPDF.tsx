@@ -19,7 +19,7 @@ import {
   KeySvg,
   LockSvg,
   PrinterSvg,
-  SecurityShieldSvg,
+  RecoveryKeySvg,
   MozillaLogoSvg,
 } from './VectorImagesForPdf';
 import notoSansMonoSemiBold from './fonts/NotoSansMono-SemiBold.ttf';
@@ -31,6 +31,25 @@ interface RecoveryKeyPDFProps {
   requiredFont: FontData;
   email: string;
 }
+
+// function svgToPng(base64Svg: string, width: number, height: number) {
+//   return new Promise((resolve, reject) => {
+//     const svgImage = new Image();
+//     svgImage.onload = function () {
+//       const canvas = document.createElement('canvas');
+//       canvas.width = width || svgImage.width;
+//       canvas.height = height || svgImage.height;
+//       const context = canvas.getContext('2d');
+//       context?.drawImage(svgImage, 0, 0);
+
+//       const pngDataUrl = canvas.toDataURL('image/png');
+//       resolve(pngDataUrl);
+//     };
+
+//     svgImage.onerror = reject;
+//     svgImage.src = base64Svg;
+//   });
+// }
 
 export const RecoveryKeyPDF = ({
   recoveryKeyValue,
@@ -146,7 +165,7 @@ export const RecoveryKeyPDF = ({
           <MozillaLogoSvg />
         </View>
         <View style={styles.purpleSection}>
-          <SecurityShieldSvg />
+          <RecoveryKeySvg />
           <Text style={styles.heading}>{localizedText.heading}</Text>
           {/* TODO in FXA-8313: Verify formatting of RTL dates - bidirectionality markers are not respected
           and numeric values are incorrectly reversed (e.g., 3202 instead of 2023) */}
