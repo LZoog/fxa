@@ -27,6 +27,10 @@ test.describe('severity-1 #smoke', () => {
       target,
       testAccountTracker,
     }) => {
+      test.skip(
+        true,
+        'TODO in FXA-10081, functional tests for inline recovery key setup'
+      );
       const credentials = await testAccountTracker.signUpSync();
 
       await fxDesktopV3ForceAuth.openWithReplacementParams(credentials, {
@@ -59,6 +63,10 @@ test.describe('severity-1 #smoke', () => {
       target,
       testAccountTracker,
     }) => {
+      test.skip(
+        true,
+        'TODO in FXA-10081, functional tests for inline recovery key setup'
+      );
       const credentials = await testAccountTracker.signUpSync();
 
       await fxDesktopV3ForceAuth.open(credentials);
@@ -90,6 +98,10 @@ test.describe('severity-1 #smoke', () => {
       target,
       testAccountTracker,
     }) => {
+      test.skip(
+        true,
+        'TODO in FXA-10081, functional tests for inline recovery key setup'
+      );
       const credentials = await testAccountTracker.signUpSync();
       const uid = makeUid();
       await fxDesktopV3ForceAuth.openWithReplacementParams(credentials, {

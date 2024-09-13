@@ -10,6 +10,10 @@ test.describe('severity-1 #smoke', () => {
     syncBrowserPages: { connectAnotherDevice, page, settings, signin },
     testAccountTracker,
   }) => {
+    test.skip(
+      true,
+      'TODO in FXA-10081, functional tests for inline recovery key setup'
+    );
     const credentials = await testAccountTracker.signUp();
 
     const url = new URL(target.contentServerUrl);

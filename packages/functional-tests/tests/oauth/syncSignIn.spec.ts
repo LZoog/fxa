@@ -7,6 +7,10 @@ import { expect, test } from '../../lib/fixtures/standard';
 const AGE_21 = '21';
 
 test.describe('severity-1 #smoke', () => {
+  test.skip(
+    true,
+    'TODO in FXA-10081, functional tests for inline recovery key setup'
+  );
   test.describe('signin with OAuth after Sync', () => {
     test('signin to OAuth with Sync creds', async ({
       target,

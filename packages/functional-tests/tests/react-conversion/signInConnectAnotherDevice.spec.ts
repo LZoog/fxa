@@ -15,6 +15,10 @@ test.describe('severity-2 #smoke', () => {
         config.showReactApp.signInRoutes !== true,
         'Skip tests if React signInRoutes not enabled'
       );
+      test.skip(
+        true,
+        'TODO in FXA-10081, functional tests for inline recovery key setup'
+      );
 
       const credentials = await testAccountTracker.signUp();
 

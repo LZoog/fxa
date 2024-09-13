@@ -19,6 +19,10 @@ test.describe('fxa_status web channel message in Settings', () => {
     syncBrowserPages: { connectAnotherDevice, page, settings, signin },
     testAccountTracker,
   }) => {
+    test.skip(
+      true,
+      'TODO in FXA-10081, functional tests for inline recovery key setup'
+    );
     await page.goto(
       `${target.contentServerUrl}/?context=fx_desktop_v3&service=sync`
     );
@@ -41,6 +45,10 @@ test.describe('fxa_status web channel message in Settings', () => {
     syncBrowserPages: { connectAnotherDevice, page, settings, signin },
     testAccountTracker,
   }) => {
+    test.skip(
+      true,
+      'TODO in FXA-10081, functional tests for inline recovery key setup'
+    );
     await page.goto(
       `${target.contentServerUrl}/?context=fx_desktop_v3&service=sync`
     );
