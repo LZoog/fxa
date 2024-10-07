@@ -4,14 +4,7 @@
 
 import { RouteComponentProps } from '@reach/router';
 import { FinishOAuthFlowHandler } from '../../../lib/oauth/hooks';
-import {
-  BaseIntegration,
-  BaseIntegrationData,
-  Integration,
-  IntegrationType,
-  OAuthIntegration,
-  OAuthIntegrationData,
-} from '../../../models';
+import { Integration } from '../../../models';
 import { StoredAccountData } from '../../../lib/storage-utils';
 import { QueryParams } from '../../..';
 
@@ -49,33 +42,25 @@ export interface ConfirmSignupCodeFormData {
   code: string;
 }
 
-export interface ConfirmSignupCodeBaseIntegration {
-  type: IntegrationType;
-  data: {
-    uid: BaseIntegrationData['uid'];
-    redirectTo: BaseIntegrationData['redirectTo'];
-  };
-  getService: BaseIntegration['getService'];
-}
+export type ConfirmSignupCodeBaseIntegration = Pick<
+  Integration,
+  'type' | 'data' | 'getService' | 'isOAuth'
+>;
 
-export interface ConfirmSignupCodeOAuthIntegration {
-  type: IntegrationType.OAuth;
-  data: {
-    uid: OAuthIntegrationData['uid'];
-    redirectTo: OAuthIntegrationData['redirectTo'];
-  };
-  getService: () => ReturnType<OAuthIntegration['getService']>;
-  getRedirectUri: () => ReturnType<OAuthIntegration['getRedirectUri']>;
-  wantsTwoStepAuthentication: () => ReturnType<
-    OAuthIntegration['wantsTwoStepAuthentication']
-  >;
-  isSync: () => ReturnType<OAuthIntegration['isSync']>;
-  getPermissions: () => ReturnType<OAuthIntegration['getPermissions']>;
-}
+export type ConfirmSignupCodeOAuthIntegration = Pick<
+  Integration,
+  | 'type'
+  | 'data'
+  | 'isOAuth'
+  | 'getService'
+  | 'getRedirectUri'
+  | 'wantsTwoStepAuthentication'
+  | 'isSync'
+>;
 
 export type ConfirmSignupCodeIntegration =
-  | ConfirmSignupCodeOAuthIntegration
-  | ConfirmSignupCodeBaseIntegration;
+  | ConfirmSignupCodeBaseIntegration
+  | ConfirmSignupCodeOAuthIntegration;
 
 export interface GetEmailBounceStatusResponse {
   emailBounceStatus: { hasHardBounce: boolean };

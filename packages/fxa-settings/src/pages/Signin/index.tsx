@@ -23,7 +23,6 @@ import GleanMetrics from '../../lib/glean';
 import { usePageViewEvent } from '../../lib/metrics';
 import { StoredAccountData, storeAccountData } from '../../lib/storage-utils';
 import {
-  isOAuthIntegration,
   useSensitiveDataClient,
   useFtlMsgResolver,
   isWebIntegration,
@@ -75,7 +74,7 @@ const Signin = ({
   const [signinLoading, setSigninLoading] = useState<boolean>(false);
   const [hasEngaged, setHasEngaged] = useState<boolean>(false);
 
-  const isOAuth = isOAuthIntegration(integration);
+  const isOAuth = integration.isOAuth();
   const clientId = integration.getService();
   const isPocketClient = isOAuth && isClientPocket(clientId);
   const isMonitorClient = isOAuth && isClientMonitor(clientId);

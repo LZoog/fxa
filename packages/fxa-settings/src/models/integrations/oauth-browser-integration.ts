@@ -1,0 +1,90 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import { Constants } from '../../lib/constants';
+import { ModelDataStore } from '../../lib/model-data';
+import { Integration, IntegrationType } from './base-integration';
+import { OAuthIntegration, OAuthIntegrationOptions } from './oauth-integration';
+
+export function isOAuthBrowserIntegration(integration: {
+  type: IntegrationType;
+}): integration is OAuthIntegration {
+  return (
+    (integration as OAuthIntegration).type === IntegrationType.OAuthBrowser
+  );
+}
+
+/**
+ * A convenience function for the OAuthBrowserIntegration type guard + isSync().
+ */
+export const isOAuthBrowserIntegrationSync = (
+  integration: Pick<Integration, 'type'>
+) => isOAuthBrowserIntegration(integration) && integration.isSync();
+
+/**
+ * This integration is used for OAuth implementations by the browser including
+ * mobile clients (currently all Sync), the oauth desktop sync flow, and the oauth
+ * desktop flow for other services.
+ *
+ * FxA sends and receives web channel messages if this integration is created.
+ */
+export class OAuthBrowserIntegration extends OAuthIntegration {
+  constructor(
+    data: ModelDataStore,
+    protected readonly storageData: ModelDataStore,
+    public readonly opts: OAuthIntegrationOptions
+  ) {
+    super(data, storageData, opts, IntegrationType.OAuthBrowser);
+  }
+
+  isSync() {
+    // For now, all mobile clients are Sync. This may change in the future,
+    // in which case we'll want a similar check to `isSyncDesktop`.
+    return this.isDesktopSync() || this.isFirefoxMobileClient();
+  }
+
+  isDesktopSync() {
+    return (
+      this.isFirefoxDesktopClient() &&
+      // Sync oauth desktop should always provide a `service=sync` parameter but
+      // we'll also default to Sync if it's missing.
+      (this.data.service === undefined || this.data.service === 'sync')
+    );
+  }
+
+  // TODO, a better way to check these client IDs?
+  isFirefoxMobileClient() {
+    return (
+      // Firefox for iOS
+      this.clientInfo?.clientId === '1b1a3e44c54fbb58' ||
+      // Fenix
+      this.clientInfo?.clientId === 'a2270f727f45f648' ||
+      // Fennec
+      this.clientInfo?.clientId === '3332a18d142636cb'
+    );
+  }
+
+  isFirefoxDesktopClient() {
+    return this.clientInfo?.clientId === '5882386c6d801776';
+  }
+
+  wantsKeys() {
+    return true;
+  }
+
+  // TODO, clientId should always be provided so do we need this fallback?
+  // prefer client id if available (for oauth) otherwise fallback to service (e.g. for sync)
+  getService() {
+    return this.data.clientId || this.data.service;
+  }
+
+  // TODO in FXA-10313, check for "Relay" or whatever makes sense at implementation
+  get serviceName() {
+    if (this.data.service === 'sync') {
+      return Constants.RELIER_SYNC_SERVICE_NAME;
+    } else {
+      return 'Firefox';
+    }
+  }
+}

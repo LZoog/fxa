@@ -5,35 +5,67 @@
 import React from 'react';
 import { LocationProvider } from '@reach/router';
 import { MozServices } from '../../lib/types';
-import { IntegrationType } from '../../models';
+import { IntegrationType, OAuthIntegration } from '../../models';
 import { IndexIntegration } from './interfaces';
 import Index from '.';
 import { MOCK_CLIENT_ID } from '../mocks';
 
+class MockIndexWebIntegration implements IndexIntegration {
+  type = IntegrationType.Web;
+  isSync() {
+    return false;
+  }
+  getService() {
+    return undefined;
+  }
+  isOAuth(): this is OAuthIntegration {
+    return false;
+  }
+}
 export function createMockIndexWebIntegration(): IndexIntegration {
-  return {
-    type: IntegrationType.Web,
-    isSync: () => false,
-    getService: () => undefined,
-  };
+  return new MockIndexWebIntegration();
+}
+
+class MockIndexSyncIntegration implements IndexIntegration {
+  type = IntegrationType.OAuth;
+  clientId: string;
+  constructor(clientId = MOCK_CLIENT_ID) {
+    this.clientId = clientId;
+  }
+  isSync() {
+    return true;
+  }
+  getService() {
+    return this.clientId;
+  }
+  isOAuth(): this is OAuthIntegration {
+    return true;
+  }
 }
 
 export function createMockIndexSyncIntegration(): IndexIntegration {
-  return {
-    type: IntegrationType.OAuth,
-    isSync: () => true,
-    getService: () => MOCK_CLIENT_ID,
-  };
+  return new MockIndexSyncIntegration();
 }
 
-export function createMockIndexOAuthIntegration({
-  clientId = MOCK_CLIENT_ID,
-}): IndexIntegration {
-  return {
-    type: IntegrationType.OAuth,
-    isSync: () => false,
-    getService: () => clientId,
-  };
+class MockIndexOAuthIntegration implements IndexIntegration {
+  type = IntegrationType.OAuth;
+  clientId: string;
+  constructor(clientId = MOCK_CLIENT_ID) {
+    this.clientId = clientId;
+  }
+  isSync() {
+    return false;
+  }
+  getService() {
+    return this.clientId;
+  }
+  isOAuth(): this is OAuthIntegration {
+    return true;
+  }
+}
+
+export function createMockIndexOAuthIntegration(): IndexIntegration {
+  return new MockIndexOAuthIntegration();
 }
 
 export const Subject = ({

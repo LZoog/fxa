@@ -18,12 +18,16 @@ export interface AvatarResponse {
 }
 
 export type SigninIntegration =
-  | Pick<Integration, 'type' | 'isSync' | 'getService' | 'wantsKeys' | 'data'>
+  | Pick<
+      Integration,
+      'type' | 'isSync' | 'getService' | 'wantsKeys' | 'data' | 'isOAuth'
+    >
   | SigninOAuthIntegration;
 
 export type SigninOAuthIntegration = Pick<
   Integration,
   | 'type'
+  | 'isOAuth'
   | 'isSync'
   | 'getService'
   | 'wantsTwoStepAuthentication'

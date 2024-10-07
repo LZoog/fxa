@@ -11,7 +11,6 @@ import InputText from '../../components/InputText';
 import { FtlMsg } from 'fxa-react/lib/utils';
 import ThirdPartyAuth from '../../components/ThirdPartyAuth';
 import TermsPrivacyAgreement from '../../components/TermsPrivacyAgreement';
-import { isOAuthIntegration } from '../../models';
 import {
   isClientMonitor,
   isClientPocket,
@@ -23,7 +22,7 @@ export const Index = ({
 }: IndexProps & RouteComponentProps) => {
   const clientId = integration.getService();
   const isSync = integration.isSync();
-  const isOAuth = isOAuthIntegration(integration);
+  const isOAuth = integration.isOAuth();
   const isPocketClient = isOAuth && isClientPocket(clientId);
   const isMonitorClient = isOAuth && isClientMonitor(clientId);
   return (

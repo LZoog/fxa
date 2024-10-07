@@ -5,11 +5,7 @@
 import { LocationProvider } from '@reach/router';
 import Signup from '.';
 import { MozServices } from '../../lib/types';
-import {
-  IntegrationType,
-  isSyncDesktopV3Integration,
-  isSyncOAuthIntegration,
-} from '../../models';
+import { IntegrationType } from '../../models';
 import { mockUrlQueryData } from '../../models/mocks';
 import { SignupQueryParams } from '../../models/pages/signup';
 import {
@@ -118,7 +114,6 @@ export const Subject = ({
 }) => {
   const urlQueryData = mockUrlQueryData(queryParams);
   const queryParamModel = new SignupQueryParams(urlQueryData);
-  const isSyncOAuth = isSyncOAuthIntegration(integration);
   return (
     <LocationProvider>
       <Signup
@@ -126,9 +121,6 @@ export const Subject = ({
           integration,
           queryParamModel,
           beginSignupHandler,
-          isSyncOAuth,
-          isSyncWebChannel:
-            isSyncOAuth || isSyncDesktopV3Integration(integration),
           webChannelEngines: getSyncEngineIds(),
         }}
       />

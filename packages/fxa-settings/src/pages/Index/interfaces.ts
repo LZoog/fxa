@@ -7,7 +7,7 @@ import { Integration } from '../../models';
 
 export type IndexIntegration = Pick<
   Integration,
-  'type' | 'isSync' | 'getService'
+  'type' | 'isSync' | 'getService' | 'isOAuth'
 >;
 
 export interface IndexProps {

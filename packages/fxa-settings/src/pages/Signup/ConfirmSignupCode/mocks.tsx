@@ -51,7 +51,6 @@ export function createMockOAuthIntegration(
     getRedirectUri: () => MOCK_REDIRECT_URI,
     getService: () => serviceName,
     wantsTwoStepAuthentication: () => false,
-    getPermissions: () => [],
     isSync: () => false,
   };
 }

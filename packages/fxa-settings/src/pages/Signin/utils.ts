@@ -68,7 +68,7 @@ export async function handleNavigation(
   }: { handleFxaLogin?: boolean; handleFxaOAuthLogin?: boolean } = {}
 ) {
   const { integration } = navigationOptions;
-  const isOAuth = isOAuthIntegration(integration);
+  const isOAuth = integration.isOAuth();
   const isSync = integration.isSync();
 
   if (!navigationOptions.signinData.verified) {
@@ -163,7 +163,7 @@ const createSigninLocationState = (
 };
 
 function sendFxaLogin(navigationOptions: NavigationOptions) {
-  const isOAuth = isOAuthIntegration(navigationOptions.integration);
+  const isOAuth = navigationOptions.integration.isOAuth();
   firefox.fxaLogin({
     email: navigationOptions.email,
     sessionToken: navigationOptions.signinData.sessionToken,
@@ -189,7 +189,7 @@ const getUnverifiedNavigationTarget = (
   const { verificationReason, verificationMethod } =
     navigationOptions.signinData;
   const { integration, queryParams } = navigationOptions;
-  const isOAuth = isOAuthIntegration(integration);
+  const isOAuth = integration.isOAuth();
 
   const getUnverifiedNavTo = () => {
     // TODO in FXA-9177 Consider storing state in Apollo cache instead of location state

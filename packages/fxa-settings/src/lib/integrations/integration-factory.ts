@@ -4,6 +4,7 @@
 
 import {
   OAuthIntegration,
+  OAuthBrowserIntegration,
   PairingAuthorityIntegration,
   PairingSupplicantIntegration,
   Integration,
@@ -106,7 +107,11 @@ export class IntegrationFactory {
     } else if (flags.isDevicePairingAsSupplicant()) {
       return this.createPairingSupplicationIntegration(data, storageData);
     } else if (flags.isOAuth()) {
-      return this.createOAuthIntegration(data, storageData);
+      if (flags.isOAuthWebChannelContext()) {
+        return this.createOAuthBrowserIntegration(data, storageData);
+      } else {
+        return this.createOAuthIntegration(data, storageData);
+      }
     } else if (flags.isV3DesktopContext()) {
       return this.createSyncDesktopV3Integration(data);
     } else if (flags.isServiceSync()) {
@@ -150,6 +155,21 @@ export class IntegrationFactory {
   ) {
     // Resolve configuration settings for oauth relier
     const integration = new OAuthIntegration(data, storageData, config.oauth);
+    this.initIntegration(integration);
+    this.initOAuthIntegration(integration, this.flags);
+    this.initClientInfo(integration);
+    return integration;
+  }
+
+  private createOAuthBrowserIntegration(
+    data: ModelDataStore,
+    storageData: ModelDataStore
+  ) {
+    const integration = new OAuthBrowserIntegration(
+      data,
+      storageData,
+      config.oauth
+    );
     this.initIntegration(integration);
     this.initOAuthIntegration(integration, this.flags);
     this.initClientInfo(integration);
