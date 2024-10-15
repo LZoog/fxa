@@ -41,15 +41,6 @@ type OAuthIntegrationTypes =
 
 export type SearchParam = IntegrationFlags['searchParam'];
 
-export function isOAuthIntegration(integration: {
-  type: IntegrationType;
-}): integration is OAuthIntegration {
-  return (
-    (integration as OAuthIntegration).type === IntegrationType.OAuthWeb ||
-    (integration as OAuthIntegration).type === IntegrationType.OAuthNative
-  );
-}
-
 // TODO: probably move this somewhere else
 export class OAuthIntegrationData extends BaseIntegrationData {
   // TODO - Validation - Can we get a set of known client ids from config or api call? See https://github.com/mozilla/fxa/pull/15677#discussion_r1291534277
@@ -177,7 +168,7 @@ export type OAuthIntegrationOptions = {
  *
  * This is a base class for OAuthNativeIntegration.
  */
-export class OAuthIntegration extends BaseIntegration {
+export class OAuthWebIntegration extends BaseIntegration {
   constructor(
     data: ModelDataStore,
     protected readonly storageData: ModelDataStore,

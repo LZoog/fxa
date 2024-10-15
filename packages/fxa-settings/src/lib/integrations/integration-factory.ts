@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {
-  OAuthIntegration,
+  OAuthWebIntegration,
   OAuthNativeIntegration,
   PairingAuthorityIntegration,
   PairingSupplicantIntegration,
@@ -110,7 +110,7 @@ export class IntegrationFactory {
       if (flags.isOAuthWebChannelContext()) {
         return this.createOAuthNativeIntegration(data, storageData);
       } else {
-        return this.createOAuthIntegration(data, storageData);
+        return this.OAuthWebIntegration(data, storageData);
       }
     } else if (flags.isV3DesktopContext()) {
       return this.createSyncDesktopV3Integration(data);
@@ -149,12 +149,16 @@ export class IntegrationFactory {
     return integration;
   }
 
-  private createOAuthIntegration(
+  private createOAuthWebIntegration(
     data: ModelDataStore,
     storageData: ModelDataStore
   ) {
     // Resolve configuration settings for oauth relier
-    const integration = new OAuthIntegration(data, storageData, config.oauth);
+    const integration = new OAuthWebIntegration(
+      data,
+      storageData,
+      config.oauth
+    );
     this.initIntegration(integration);
     this.initOAuthIntegration(integration, this.flags);
     this.initClientInfo(integration);

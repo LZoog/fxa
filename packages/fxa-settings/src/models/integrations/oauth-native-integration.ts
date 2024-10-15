@@ -5,12 +5,28 @@
 import { Constants } from '../../lib/constants';
 import { ModelDataStore } from '../../lib/model-data';
 import { Integration, IntegrationType } from './base-integration';
-import { OAuthIntegration, OAuthIntegrationOptions } from './oauth-integration';
+import {
+  OAuthIntegrationOptions,
+  OAuthWebIntegration,
+} from './oauth-integration';
 
 export function isOAuthNativeIntegration(integration: {
   type: IntegrationType;
+}): integration is OAuthNativeIntegration {
+  return (
+    (integration as OAuthNativeIntegration).type === IntegrationType.OAuthNative
+  );
+}
+
+export type OAuthIntegration = OAuthWebIntegration | OAuthNativeIntegration;
+
+export function isOAuthIntegration(integration: {
+  type: IntegrationType;
 }): integration is OAuthIntegration {
-  return (integration as OAuthIntegration).type === IntegrationType.OAuthNative;
+  return (
+    (integration as OAuthWebIntegration).type === IntegrationType.OAuthWeb ||
+    (integration as OAuthNativeIntegration).type === IntegrationType.OAuthNative
+  );
 }
 
 /**
@@ -27,7 +43,7 @@ export const isOAuthNativeIntegrationSync = (
  *
  * FxA sends and receives web channel messages if this integration is created.
  */
-export class OAuthNativeIntegration extends OAuthIntegration {
+export class OAuthNativeIntegration extends OAuthWebIntegration {
   constructor(
     data: ModelDataStore,
     protected readonly storageData: ModelDataStore,

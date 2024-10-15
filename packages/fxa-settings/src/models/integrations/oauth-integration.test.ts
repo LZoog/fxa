@@ -3,12 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { ModelDataStore, GenericData } from '../../lib/model-data';
-import { OAuthIntegration, replaceItemInArray } from './oauth-integration';
+import { OAuthWebIntegration, replaceItemInArray } from './oauth-integration';
 
 describe('models/integrations/oauth-relier', function () {
   let data: ModelDataStore;
   let oauthData: ModelDataStore;
-  let model: OAuthIntegration;
+  let model: OAuthWebIntegration;
 
   beforeEach(function () {
     data = new GenericData({
@@ -17,7 +17,7 @@ describe('models/integrations/oauth-relier', function () {
     oauthData = new GenericData({
       scope: 'profile',
     });
-    model = new OAuthIntegration(data, oauthData, {
+    model = new OAuthWebIntegration(data, oauthData, {
       scopedKeysEnabled: true,
       scopedKeysValidation: {},
       isPromptNoneEnabled: true,
@@ -39,7 +39,7 @@ describe('models/integrations/oauth-relier', function () {
     const SCOPE_WITH_OPENID = 'profile:email profile:uid openid';
 
     function getIntegrationWithScope(scope: string) {
-      const integration = new OAuthIntegration(
+      const integration = new OAuthWebIntegration(
         new GenericData({
           scope,
         }),
