@@ -46,12 +46,24 @@ export function createMockSignupSyncDesktopV3Integration(): SignupBaseIntegratio
   };
 }
 
-export function createMockSignupOAuthIntegration(
-  clientId?: string,
-  isSync = false
+export function createMockSignupOAuthWebIntegration(
+  clientId?: string
 ): SignupOAuthIntegration {
   return {
     type: IntegrationType.OAuthWeb,
+    getRedirectUri: () => MOCK_REDIRECT_URI,
+    saveOAuthState: () => {},
+    getService: () => clientId || MOCK_CLIENT_ID,
+    isSync: () => false,
+  };
+}
+
+export function createMockSignupOAuthNativeIntegration(
+  clientId?: string,
+  isSync = true
+): SignupOAuthIntegration {
+  return {
+    type: IntegrationType.OAuthNative,
     getRedirectUri: () => MOCK_REDIRECT_URI,
     saveOAuthState: () => {},
     getService: () => clientId || MOCK_CLIENT_ID,

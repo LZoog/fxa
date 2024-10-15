@@ -18,7 +18,10 @@ export interface AvatarResponse {
 }
 
 export type SigninIntegration =
-  | Pick<Integration, 'type' | 'isSync' | 'getService' | 'wantsKeys' | 'data'>
+  | Pick<
+      Integration,
+      'type' | 'isSync' | 'getService' | 'wantsKeys' | 'data' | 'isDesktopSync'
+    >
   | SigninOAuthIntegration;
 
 export type SigninOAuthIntegration = Pick<
@@ -30,6 +33,7 @@ export type SigninOAuthIntegration = Pick<
   | 'wantsKeys'
   | 'wantsLogin'
   | 'data'
+  | 'isDesktopSync'
 >;
 
 export interface LocationState {

@@ -1,0 +1,127 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import { ModelDataStore, GenericData } from '../../lib/model-data';
+import {
+  OAuthNativeClients,
+  OAuthNativeIntegration,
+} from './oauth-native-integration';
+import { OAuthWebIntegration } from './oauth-web-integration';
+
+describe('OAuthNativeIntegration', function () {
+  let data: ModelDataStore;
+  let oauthData: ModelDataStore;
+  let model: OAuthNativeIntegration;
+
+  beforeEach(function () {
+    data = new GenericData({
+      clientId: OAuthNativeClients.FirefoxIOS,
+      service: 'sync',
+    });
+    oauthData = new GenericData({
+      scope: 'profile',
+    });
+    model = new OAuthNativeIntegration(data, oauthData, {
+      scopedKeysEnabled: true,
+      scopedKeysValidation: {},
+      isPromptNoneEnabled: true,
+      isPromptNoneEnabledClientIds: [],
+    });
+  });
+
+  it('extends OAuthWebIntegration', () => {
+    expect(model instanceof OAuthWebIntegration).toBe(true);
+  });
+
+  describe('isSync', () => {
+    it('returns true for Firefox desktop client when service is sync', () => {
+      model.data.clientId = OAuthNativeClients.FirefoxDesktop;
+      model.data.service = 'sync';
+      expect(model.isSync()).toBe(true);
+    });
+
+    it('returns true for Firefox iOS client', () => {
+      model.data.clientId = OAuthNativeClients.FirefoxIOS;
+      expect(model.isSync()).toBe(true);
+    });
+
+    it('returns true for Fenix client', () => {
+      model.data.clientId = OAuthNativeClients.Fenix;
+      expect(model.isSync()).toBe(true);
+    });
+
+    it('returns false for non-Sync services', () => {
+      model.data.clientId = OAuthNativeClients.FirefoxDesktop;
+      model.data.service = 'relay';
+      expect(model.isSync()).toBe(false);
+    });
+  });
+
+  describe('isDesktopSync', () => {
+    it('returns true when client is Firefox desktop and service is sync', () => {
+      model.data.clientId = OAuthNativeClients.FirefoxDesktop;
+      model.data.service = 'sync';
+      expect(model.isDesktopSync()).toBe(true);
+    });
+
+    it('returns false for non-sync service', () => {
+      model.data.clientId = OAuthNativeClients.FirefoxDesktop;
+      model.data.service = 'relay';
+      expect(model.isDesktopSync()).toBe(false);
+    });
+  });
+
+  describe('isFirefoxMobileClient', () => {
+    it('returns true for Firefox iOS client ID', () => {
+      model.data.clientId = OAuthNativeClients.FirefoxIOS;
+      expect(model.isFirefoxMobileClient()).toBe(true);
+    });
+
+    it('returns true for Fenix client ID', () => {
+      model.data.clientId = OAuthNativeClients.Fenix;
+      expect(model.isFirefoxMobileClient()).toBe(true);
+    });
+
+    it('returns false for unknown client ID', () => {
+      model.data.clientId = 'unknown-client-id';
+      expect(model.isFirefoxMobileClient()).toBe(false);
+    });
+  });
+
+  describe('isFirefoxDesktopClient', () => {
+    it('returns true for Firefox desktop client ID', () => {
+      model.data.clientId = OAuthNativeClients.FirefoxDesktop;
+      expect(model.isFirefoxDesktopClient()).toBe(true);
+    });
+
+    it('returns false for other client IDs', () => {
+      expect(model.isFirefoxDesktopClient()).toBe(false);
+    });
+  });
+
+  describe('wantsKeys', () => {
+    it('returns true', () => {
+      expect(model.wantsKeys()).toBe(true);
+    });
+  });
+
+  describe('getService', () => {
+    it('returns clientId as service', () => {
+      model.data.clientId = 'some-client-id';
+      expect(model.getService()).toBe('some-client-id');
+    });
+  });
+
+  describe('serviceName', () => {
+    it('returns "Firefox" for non-sync services', () => {
+      model.data.service = 'non-sync-service';
+      expect(model.serviceName).toBe('Firefox');
+    });
+
+    it('returns Sync service name for sync service', () => {
+      model.data.service = 'sync';
+      expect(model.serviceName).toBe('Firefox Sync');
+    });
+  });
+});

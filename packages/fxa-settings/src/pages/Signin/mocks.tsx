@@ -104,6 +104,7 @@ export function createMockSigninWebIntegration(): SigninIntegration {
     getService: () => MozServices.Default,
     wantsKeys: () => false,
     data: {},
+    isDesktopSync: () => false,
   };
 }
 
@@ -116,6 +117,7 @@ export function createMockSigninSyncIntegration(
     wantsKeys: () => true,
     getService: () => MozServices.FirefoxSync,
     data: {},
+    isDesktopSync: () => true,
   };
 }
 
@@ -135,6 +137,7 @@ export function createMockSigninOAuthIntegration({
     wantsKeys: () => wantsKeys,
     wantsLogin: () => false,
     wantsTwoStepAuthentication: () => false,
+    isDesktopSync: () => isSync,
     data: {},
   };
 }

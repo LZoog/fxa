@@ -29,6 +29,13 @@ export function isOAuthIntegration(integration: {
   );
 }
 
+export enum OAuthNativeClients {
+  FirefoxIOS = '1b1a3e44c54fbb58',
+  FirefoxDesktop = '5882386c6d801776',
+  Fenix = 'a2270f727f45f648',
+  Fennec = '3332a18d142636cb',
+}
+
 /**
  * A convenience function for the OAuthNativeIntegration type guard + isSync().
  */
@@ -67,30 +74,24 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     );
   }
 
-  // TODO, a better way to check these client IDs?
   isFirefoxMobileClient() {
     return (
-      // Firefox for iOS
-      this.clientInfo?.clientId === '1b1a3e44c54fbb58' ||
-      // Fenix
-      this.clientInfo?.clientId === 'a2270f727f45f648' ||
-      // Fennec
-      this.clientInfo?.clientId === '3332a18d142636cb'
+      this.clientInfo?.clientId === OAuthNativeClients.FirefoxIOS ||
+      this.clientInfo?.clientId === OAuthNativeClients.Fenix ||
+      this.clientInfo?.clientId === OAuthNativeClients.Fenix
     );
   }
 
   isFirefoxDesktopClient() {
-    return this.clientInfo?.clientId === '5882386c6d801776';
+    return this.clientInfo?.clientId === OAuthNativeClients.FirefoxDesktop;
   }
 
   wantsKeys() {
     return true;
   }
 
-  // TODO, clientId should always be provided so do we need this fallback?
-  // prefer client id if available (for oauth) otherwise fallback to service (e.g. for sync)
   getService() {
-    return this.data.clientId || this.data.service;
+    return this.data.clientId;
   }
 
   // TODO in FXA-10313, check for "Relay" or whatever makes sense at implementation

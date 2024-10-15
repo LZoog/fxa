@@ -20,7 +20,8 @@ import {
   BEGIN_SIGNUP_HANDLER_RESPONSE,
   MOCK_SEARCH_PARAMS,
   Subject,
-  createMockSignupOAuthIntegration,
+  createMockSignupOAuthWebIntegration,
+  createMockSignupOAuthNativeIntegration,
   createMockSignupSyncDesktopV3Integration,
 } from './mocks';
 import {
@@ -178,7 +179,7 @@ describe('Signup page', () => {
   it('shows an info banner and Pocket-specific TOS when client is Pocket', async () => {
     renderWithLocalizationProvider(
       <Subject
-        integration={createMockSignupOAuthIntegration(POCKET_CLIENTIDS[0])}
+        integration={createMockSignupOAuthWebIntegration(POCKET_CLIENTIDS[0])}
       />
     );
 
@@ -590,11 +591,11 @@ describe('Signup page', () => {
           });
         });
 
-        describe('on success with Sync OAuth integration', () => {
+        describe('on success with OAuthNative integration with Sync', () => {
           beforeEach(() => {
             renderWithLocalizationProvider(
               <Subject
-                integration={createMockSignupOAuthIntegration('', true)}
+                integration={createMockSignupOAuthNativeIntegration()}
                 beginSignupHandler={mockBeginSignupHandler}
               />
             );
@@ -711,14 +712,14 @@ describe('Signup page', () => {
         });
       });
 
-      it('on success with OAuth integration', async () => {
+      it('on success with OAuth Web integration', async () => {
         const mockBeginSignupHandler = jest
           .fn()
           .mockResolvedValue(BEGIN_SIGNUP_HANDLER_RESPONSE);
 
         renderWithLocalizationProvider(
           <Subject
-            integration={createMockSignupOAuthIntegration(MOCK_CLIENT_ID)}
+            integration={createMockSignupOAuthWebIntegration()}
             beginSignupHandler={mockBeginSignupHandler}
           />
         );
