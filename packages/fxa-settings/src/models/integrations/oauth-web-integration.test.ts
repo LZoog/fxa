@@ -3,7 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { ModelDataStore, GenericData } from '../../lib/model-data';
-import { OAuthWebIntegration, replaceItemInArray } from './oauth-integration';
+import {
+  OAuthWebIntegration,
+  replaceItemInArray,
+} from './oauth-web-integration';
 
 describe('models/integrations/oauth-relier', function () {
   let data: ModelDataStore;

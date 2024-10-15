@@ -8,7 +8,7 @@ import { Integration, IntegrationType } from './base-integration';
 import {
   OAuthIntegrationOptions,
   OAuthWebIntegration,
-} from './oauth-integration';
+} from './oauth-web-integration';
 
 export function isOAuthNativeIntegration(integration: {
   type: IntegrationType;

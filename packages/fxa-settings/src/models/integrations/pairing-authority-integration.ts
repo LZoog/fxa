@@ -8,7 +8,7 @@ import {
   OAuthIntegration,
   OAuthIntegrationData,
   OAuthIntegrationOptions,
-} from './oauth-integration';
+} from './oauth-web-integration';
 import { bind, KeyTransforms as T } from '../../lib/model-data';
 import { IsBase64, IsNotEmpty } from 'class-validator';
 
