@@ -8,6 +8,7 @@ import {
   Integration,
   IntegrationType,
   OAuthIntegration,
+  OAuthWebIntegration,
   PairingAuthorityIntegration,
   PairingSupplicantIntegration,
   RelierClientInfo,
@@ -206,7 +207,7 @@ describe('lib/integrations/integration-factory', () => {
     // TODO: Port remaining tests from content-server
   });
 
-  describe('OAuthIntegration creation', () => {
+  describe('OAuthWebIntegration creation', () => {
     let integration: OAuthIntegration;
 
     describe('OAuth redirect', () => {
@@ -214,7 +215,7 @@ describe('lib/integrations/integration-factory', () => {
         integration = await setup<OAuthIntegration>(
           { isOAuth: true },
           { initIntegration: 1, initOAuthIntegration: 1, initClientInfo: 1 },
-          (i: Integration) => i instanceof OAuthIntegration
+          (i: Integration) => i instanceof OAuthWebIntegration
         );
       });
 
@@ -231,7 +232,7 @@ describe('lib/integrations/integration-factory', () => {
         integration = await setup<OAuthIntegration>(
           { isOAuth: true },
           { initIntegration: 1, initOAuthIntegration: 1, initClientInfo: 1 },
-          (i: Integration) => i instanceof OAuthIntegration
+          (i: Integration) => i instanceof OAuthWebIntegration
         );
         await mockSearchParams({
           scope: Constants.OAUTH_OLDSYNC_SCOPE,

@@ -6,7 +6,7 @@ import { RouteComponentProps, useLocation } from '@reach/router';
 import { useNavigateWithQuery as useNavigate } from '../../lib/hooks/useNavigateWithQuery';
 import {
   Integration,
-  isOAuthBrowserIntegrationSync,
+  isOAuthNativeIntegrationSync,
   isSyncDesktopV3Integration,
   useAuthClient,
   useConfig,
@@ -96,7 +96,7 @@ const SignupContainer = ({
     string[] | undefined
   >();
 
-  const isSyncOAuth = isOAuthBrowserIntegrationSync(integration);
+  const isSyncOAuth = isOAuthNativeIntegrationSync(integration);
   const isSyncDesktopV3 = isSyncDesktopV3Integration(integration);
   const isSync = integration.isSync();
   const wantsKeys = integration.wantsKeys();

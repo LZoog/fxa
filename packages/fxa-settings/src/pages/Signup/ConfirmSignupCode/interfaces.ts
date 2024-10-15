@@ -44,14 +44,13 @@ export interface ConfirmSignupCodeFormData {
 
 export type ConfirmSignupCodeBaseIntegration = Pick<
   Integration,
-  'type' | 'data' | 'getService' | 'isOAuth'
+  'type' | 'data' | 'getService'
 >;
 
 export type ConfirmSignupCodeOAuthIntegration = Pick<
   Integration,
   | 'type'
   | 'data'
-  | 'isOAuth'
   | 'getService'
   | 'getRedirectUri'
   | 'wantsTwoStepAuthentication'

@@ -6,7 +6,7 @@ import { OAuthIntegrationData } from '.';
 import { IntegrationType } from './base-integration';
 import { bind } from '../../lib/model-data';
 import {
-  OAuthIntegration,
+  OAuthWebIntegration,
   OAuthIntegrationOptions,
 } from './oauth-web-integration';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
@@ -22,7 +22,7 @@ export class PairingSupplicantIntegrationData extends OAuthIntegrationData {
   scope: string | undefined = '';
 }
 
-export class PairingSupplicantIntegration extends OAuthIntegration {
+export class PairingSupplicantIntegration extends OAuthWebIntegration {
   constructor(
     data: ModelDataStore,
     protected readonly storageData: ModelDataStore,

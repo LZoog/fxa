@@ -40,7 +40,7 @@ import {
 import { StoredAccountData, storeAccountData } from '../../lib/storage-utils';
 import { MozServices } from '../../lib/types';
 import {
-  isOAuthBrowserIntegrationSync,
+  isOAuthNativeIntegrationSync,
   isSyncDesktopV3Integration,
   useFtlMsgResolver,
 } from '../../models';
@@ -64,7 +64,7 @@ export const Signup = ({
     GleanMetrics.registration.view();
   }, []);
 
-  const isSyncOAuth = isOAuthBrowserIntegrationSync(integration);
+  const isSyncOAuth = isOAuthNativeIntegrationSync(integration);
   const isSyncDesktopV3 = isSyncDesktopV3Integration(integration);
   const isSync = integration.isSync();
   const email = queryParamModel.email;

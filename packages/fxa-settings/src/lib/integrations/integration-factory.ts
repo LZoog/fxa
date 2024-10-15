@@ -13,6 +13,7 @@ import {
   WebIntegration,
   RelierClientInfo,
   RelierSubscriptionInfo,
+  OAuthIntegration,
 } from '../../models/integrations';
 import {
   ModelDataStore,
@@ -110,7 +111,7 @@ export class IntegrationFactory {
       if (flags.isOAuthWebChannelContext()) {
         return this.createOAuthNativeIntegration(data, storageData);
       } else {
-        return this.OAuthWebIntegration(data, storageData);
+        return this.createOAuthWebIntegration(data, storageData);
       }
     } else if (flags.isV3DesktopContext()) {
       return this.createSyncDesktopV3Integration(data);
