@@ -46,7 +46,7 @@ export function createMockOAuthIntegration(
   serviceName = MOCK_SERVICE
 ): ConfirmSignupCodeOAuthIntegration {
   return {
-    type: IntegrationType.OAuth,
+    type: IntegrationType.OAuthWeb,
     data: { uid: MOCK_UID, redirectTo: undefined },
     getRedirectUri: () => MOCK_REDIRECT_URI,
     getService: () => serviceName,

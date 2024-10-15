@@ -7,20 +7,18 @@ import { ModelDataStore } from '../../lib/model-data';
 import { Integration, IntegrationType } from './base-integration';
 import { OAuthIntegration, OAuthIntegrationOptions } from './oauth-integration';
 
-export function isOAuthBrowserIntegration(integration: {
+export function isOAuthNativeIntegration(integration: {
   type: IntegrationType;
 }): integration is OAuthIntegration {
-  return (
-    (integration as OAuthIntegration).type === IntegrationType.OAuthBrowser
-  );
+  return (integration as OAuthIntegration).type === IntegrationType.OAuthNative;
 }
 
 /**
- * A convenience function for the OAuthBrowserIntegration type guard + isSync().
+ * A convenience function for the OAuthNativeIntegration type guard + isSync().
  */
-export const isOAuthBrowserIntegrationSync = (
+export const isOAuthNativeIntegrationSync = (
   integration: Pick<Integration, 'type'>
-) => isOAuthBrowserIntegration(integration) && integration.isSync();
+) => isOAuthNativeIntegration(integration) && integration.isSync();
 
 /**
  * This integration is used for OAuth implementations by the browser including
@@ -29,13 +27,13 @@ export const isOAuthBrowserIntegrationSync = (
  *
  * FxA sends and receives web channel messages if this integration is created.
  */
-export class OAuthBrowserIntegration extends OAuthIntegration {
+export class OAuthNativeIntegration extends OAuthIntegration {
   constructor(
     data: ModelDataStore,
     protected readonly storageData: ModelDataStore,
     public readonly opts: OAuthIntegrationOptions
   ) {
-    super(data, storageData, opts, IntegrationType.OAuthBrowser);
+    super(data, storageData, opts, IntegrationType.OAuthNative);
   }
 
   isSync() {

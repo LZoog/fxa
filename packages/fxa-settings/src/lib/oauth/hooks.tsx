@@ -7,7 +7,8 @@ import { useCallback } from 'react';
 import {
   Integration,
   OAuthIntegration,
-  isOAuthBrowserIntegrationSync,
+  isOAuthNativeIntegrationSync,
+  isOAuthIntegration,
 } from '../../models';
 import { createEncryptedBundle } from '../crypto/scoped-keys';
 import { Constants } from '../constants';
@@ -180,7 +181,7 @@ export function useFinishOAuthFlowHandler(
   authClient: AuthClient,
   integration: Integration
 ): UseFinishOAuthFlowHandlerResult {
-  const isSyncOAuth = isOAuthBrowserIntegrationSync(integration);
+  const isSyncOAuth = isOAuthNativeIntegrationSync(integration);
 
   const finishOAuthFlowHandler: FinishOAuthFlowHandler = useCallback(
     async (accountUid, sessionToken, keyFetchToken, unwrapBKey) => {
@@ -276,7 +277,7 @@ export function useFinishOAuthFlowHandler(
    *
    * P.S. we can't return early regardless because `useCallback` can't be set conditionally.
    */
-  if (integration.isOAuth()) {
+  if (isOAuthIntegration(integration)) {
     const oAuthDataError = checkOAuthData(integration);
     return { oAuthDataError, finishOAuthFlowHandler };
   }

@@ -34,21 +34,20 @@ export enum OAuthPrompt {
 }
 
 type OAuthIntegrationTypes =
-  | IntegrationType.OAuth
-  | IntegrationType.OAuthBrowser
+  | IntegrationType.OAuthWeb
+  | IntegrationType.OAuthNative
   | IntegrationType.PairingSupplicant
   | IntegrationType.PairingAuthority;
 
 export type SearchParam = IntegrationFlags['searchParam'];
 
-/*
- * Only use this type guard to check for an RP specific OAuth integration.
- * If your check needs to include mobile or oauth desktop, use `isOAuth()`.
- */
 export function isOAuthIntegration(integration: {
   type: IntegrationType;
 }): integration is OAuthIntegration {
-  return (integration as OAuthIntegration).type === IntegrationType.OAuth;
+  return (
+    (integration as OAuthIntegration).type === IntegrationType.OAuthWeb ||
+    (integration as OAuthIntegration).type === IntegrationType.OAuthNative
+  );
 }
 
 // TODO: probably move this somewhere else
@@ -176,24 +175,20 @@ export type OAuthIntegrationOptions = {
  * This integration is used for relying party OAuth implementations. FxA should
  * not send or receive web channel messages if this integration is created.
  *
- * This is a base class for OAuthBrowserIntegration.
+ * This is a base class for OAuthNativeIntegration.
  */
 export class OAuthIntegration extends BaseIntegration {
   constructor(
     data: ModelDataStore,
     protected readonly storageData: ModelDataStore,
     public readonly opts: OAuthIntegrationOptions,
-    type: OAuthIntegrationTypes = IntegrationType.OAuth
+    type: OAuthIntegrationTypes = IntegrationType.OAuthWeb
   ) {
     super(type, new OAuthIntegrationData(data));
     this.setFeatures({
       handleSignedInNotification: false,
       reuseExistingSession: true,
     });
-  }
-
-  isOAuth(): this is OAuthIntegration {
-    return true;
   }
 
   getRedirectUri() {

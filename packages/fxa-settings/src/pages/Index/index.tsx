@@ -15,6 +15,7 @@ import {
   isClientMonitor,
   isClientPocket,
 } from '../../models/integrations/client-matching';
+import { isOAuthIntegration } from '../../models';
 
 export const Index = ({
   integration,
@@ -22,7 +23,7 @@ export const Index = ({
 }: IndexProps & RouteComponentProps) => {
   const clientId = integration.getService();
   const isSync = integration.isSync();
-  const isOAuth = integration.isOAuth();
+  const isOAuth = isOAuthIntegration(integration);
   const isPocketClient = isOAuth && isClientPocket(clientId);
   const isMonitorClient = isOAuth && isClientMonitor(clientId);
   return (

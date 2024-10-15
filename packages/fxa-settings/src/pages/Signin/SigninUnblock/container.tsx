@@ -60,8 +60,7 @@ const SigninUnblockContainer = ({
 
   const { email, hasLinkedAccount, hasPassword } = location.state || {};
 
-  const wantsTwoStepAuthentication =
-    integration.isOAuth() && integration.wantsTwoStepAuthentication();
+  const wantsTwoStepAuthentication = integration.wantsTwoStepAuthentication();
 
   const { finishOAuthFlowHandler, oAuthDataError } = useFinishOAuthFlowHandler(
     authClient,

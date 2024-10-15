@@ -6,7 +6,7 @@ import { Integration, IntegrationType } from '../../../models';
 
 export const mockResetPasswordOAuthIntegration = () => {
   const mockIntegration = {
-    type: IntegrationType.OAuth,
+    type: IntegrationType.OAuthNative,
     getService: () => 'sync',
     isSync: () => true,
     wantsKeys: () => true,

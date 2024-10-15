@@ -10,62 +10,29 @@ import { IndexIntegration } from './interfaces';
 import Index from '.';
 import { MOCK_CLIENT_ID } from '../mocks';
 
-class MockIndexWebIntegration implements IndexIntegration {
-  type = IntegrationType.Web;
-  isSync() {
-    return false;
-  }
-  getService() {
-    return undefined;
-  }
-  isOAuth(): this is OAuthIntegration {
-    return false;
-  }
+export function createMockIndexOAuthIntegration({
+  clientId = MOCK_CLIENT_ID,
+}): IndexIntegration {
+  return {
+    type: IntegrationType.OAuthWeb,
+    isSync: () => false,
+    getService: () => clientId,
+  };
 }
-export function createMockIndexWebIntegration(): IndexIntegration {
-  return new MockIndexWebIntegration();
-}
-
-class MockIndexSyncIntegration implements IndexIntegration {
-  type = IntegrationType.OAuth;
-  clientId: string;
-  constructor(clientId = MOCK_CLIENT_ID) {
-    this.clientId = clientId;
-  }
-  isSync() {
-    return true;
-  }
-  getService() {
-    return this.clientId;
-  }
-  isOAuth(): this is OAuthIntegration {
-    return true;
-  }
-}
-
 export function createMockIndexSyncIntegration(): IndexIntegration {
-  return new MockIndexSyncIntegration();
+  return {
+    type: IntegrationType.OAuthNative,
+    isSync: () => true,
+    getService: () => MOCK_CLIENT_ID,
+  };
 }
 
-class MockIndexOAuthIntegration implements IndexIntegration {
-  type = IntegrationType.OAuth;
-  clientId: string;
-  constructor(clientId = MOCK_CLIENT_ID) {
-    this.clientId = clientId;
-  }
-  isSync() {
-    return false;
-  }
-  getService() {
-    return this.clientId;
-  }
-  isOAuth(): this is OAuthIntegration {
-    return true;
-  }
-}
-
-export function createMockIndexOAuthIntegration(): IndexIntegration {
-  return new MockIndexOAuthIntegration();
+export function createMockIndexWebIntegration(): IndexIntegration {
+  return {
+    type: IntegrationType.Web,
+    isSync: () => false,
+    getService: () => undefined,
+  };
 }
 
 export const Subject = ({

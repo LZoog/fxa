@@ -219,7 +219,7 @@ describe('lib/integrations/integration-factory', () => {
       });
 
       it('has correct state', async () => {
-        expect(integration.type).toEqual(IntegrationType.OAuth);
+        expect(integration.type).toEqual(IntegrationType.OAuthWeb);
         expect(integration.isSync()).toBeFalsy();
         expect(integration.wantsKeys()).toBeFalsy();
         expect(integration.isTrusted()).toBeTruthy();
@@ -240,7 +240,7 @@ describe('lib/integrations/integration-factory', () => {
       });
 
       it('has correct state', async () => {
-        expect(integration.type).toEqual(IntegrationType.OAuth);
+        expect(integration.type).toEqual(IntegrationType.OAuthWeb);
         expect(integration.isSync()).toBeTruthy();
         expect(integration.wantsKeys()).toBeTruthy();
         expect(integration.isTrusted()).toBeTruthy();

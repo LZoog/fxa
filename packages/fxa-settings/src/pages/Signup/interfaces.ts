@@ -52,7 +52,7 @@ export interface SignupProps {
 export type SignupIntegration = SignupOAuthIntegration | SignupBaseIntegration;
 
 export interface SignupOAuthIntegration {
-  type: IntegrationType.OAuth;
+  type: IntegrationType.OAuthWeb;
   isSync: () => ReturnType<OAuthIntegration['isSync']>;
   getRedirectUri: () => ReturnType<OAuthIntegration['getRedirectUri']>;
   saveOAuthState: () => ReturnType<OAuthIntegration['saveOAuthState']>;

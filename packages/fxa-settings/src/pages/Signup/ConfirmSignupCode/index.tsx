@@ -127,7 +127,7 @@ const ConfirmSignupCode = ({
 
       const options = {
         ...(hasSelectedNewsletters && { ...{ newsletters } }),
-        ...(integration.isOAuth() && {
+        ...(isOAuthIntegration(integration) && {
           scopes: integration.getPermissions(),
         }),
         ...(service !== MozServices.Default && { service }),
@@ -161,7 +161,7 @@ const ConfirmSignupCode = ({
       if (isSyncDesktopV3Integration(integration)) {
         const { to } = getSyncNavigate(location.search);
         hardNavigate(to);
-      } else if (integration.isOAuth()) {
+      } else if (isOAuthIntegration(integration)) {
         // Check to see if the relier wants TOTP.
         // Newly created accounts wouldn't have this so lets redirect them to signin.
         // Certain reliers may require users to set up 2FA / TOTP

@@ -26,6 +26,7 @@ import {
   useSensitiveDataClient,
   useFtlMsgResolver,
   isWebIntegration,
+  isOAuthIntegration,
 } from '../../models';
 import {
   isClientMonitor,
@@ -74,7 +75,7 @@ const Signin = ({
   const [signinLoading, setSigninLoading] = useState<boolean>(false);
   const [hasEngaged, setHasEngaged] = useState<boolean>(false);
 
-  const isOAuth = integration.isOAuth();
+  const isOAuth = isOAuthIntegration(integration);
   const clientId = integration.getService();
   const isPocketClient = isOAuth && isClientPocket(clientId);
   const isMonitorClient = isOAuth && isClientMonitor(clientId);

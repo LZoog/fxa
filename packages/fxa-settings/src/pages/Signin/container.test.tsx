@@ -78,7 +78,7 @@ function mockSyncOAuthIntegration(
   { data }: { data?: { service?: string } } = { data: { service: 'sync' } }
 ) {
   integration = {
-    type: IntegrationType.OAuth,
+    type: IntegrationType.OAuthWeb,
     getService: () => 'sync',
     isSync: () => true,
     wantsKeys: () => true,

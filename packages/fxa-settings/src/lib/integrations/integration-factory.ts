@@ -4,7 +4,7 @@
 
 import {
   OAuthIntegration,
-  OAuthBrowserIntegration,
+  OAuthNativeIntegration,
   PairingAuthorityIntegration,
   PairingSupplicantIntegration,
   Integration,
@@ -108,7 +108,7 @@ export class IntegrationFactory {
       return this.createPairingSupplicationIntegration(data, storageData);
     } else if (flags.isOAuth()) {
       if (flags.isOAuthWebChannelContext()) {
-        return this.createOAuthBrowserIntegration(data, storageData);
+        return this.createOAuthNativeIntegration(data, storageData);
       } else {
         return this.createOAuthIntegration(data, storageData);
       }
@@ -161,11 +161,11 @@ export class IntegrationFactory {
     return integration;
   }
 
-  private createOAuthBrowserIntegration(
+  private createOAuthNativeIntegration(
     data: ModelDataStore,
     storageData: ModelDataStore
   ) {
-    const integration = new OAuthBrowserIntegration(
+    const integration = new OAuthNativeIntegration(
       data,
       storageData,
       config.oauth

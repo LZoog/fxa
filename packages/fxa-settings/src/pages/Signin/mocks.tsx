@@ -108,7 +108,7 @@ export function createMockSigninWebIntegration(): SigninIntegration {
 }
 
 export function createMockSigninSyncIntegration(
-  type = IntegrationType.OAuth
+  type = IntegrationType.OAuthNative
 ): SigninIntegration {
   return {
     type,
@@ -129,7 +129,7 @@ export function createMockSigninOAuthIntegration({
   isSync?: boolean;
 } = {}): SigninOAuthIntegration {
   return {
-    type: IntegrationType.OAuth,
+    type: IntegrationType.OAuthWeb,
     getService: () => clientId || MOCK_CLIENT_ID,
     isSync: () => isSync,
     wantsKeys: () => wantsKeys,

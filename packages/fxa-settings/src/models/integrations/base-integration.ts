@@ -3,11 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { MozServices } from '../../lib/types';
-import { OAuthIntegration } from '.';
 
 export enum IntegrationType {
-  OAuth = 'OAuth', // OAuth for non-browser services/RPs
-  OAuthBrowser = 'OAuthBrowser', // OAuth for desktop & mobile clients
+  OAuthWeb = 'OAuthWeb', // OAuth for non-browser services/RPs
+  OAuthNative = 'OAuthNative', // OAuth for desktop & mobile clients
   PairingAuthority = 'PairingAuthority', // TODO
   PairingSupplicant = 'PairingSupplicant', // TODO
   SyncBasic = 'SyncBasic',
@@ -96,14 +95,6 @@ export abstract class Integration<
 
   protected setFeatures(features: Partial<T>) {
     this.features = { ...this.features, ...features } as T;
-  }
-
-  /**
-   * This type guard determines if the integration is for an OAuth flow, meaning
-   * OAuthIntegration _or_ an extension of OAuthIntegration (e.g. OAuthBrowserIntegration).
-   */
-  isOAuth(): this is OAuthIntegration {
-    return this instanceof OAuthIntegration;
   }
 
   isSync() {

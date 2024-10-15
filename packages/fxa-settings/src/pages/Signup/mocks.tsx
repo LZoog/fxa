@@ -51,7 +51,7 @@ export function createMockSignupOAuthIntegration(
   isSync = false
 ): SignupOAuthIntegration {
   return {
-    type: IntegrationType.OAuth,
+    type: IntegrationType.OAuthWeb,
     getRedirectUri: () => MOCK_REDIRECT_URI,
     saveOAuthState: () => {},
     getService: () => clientId || MOCK_CLIENT_ID,
