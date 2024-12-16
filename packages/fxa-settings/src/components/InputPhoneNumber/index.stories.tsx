@@ -3,19 +3,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from 'react';
-import InputPhoneNumber from '.';
+import { InputPhoneNumber, InputPhoneNumberNative } from '.';
 import { withLocalization } from 'fxa-react/lib/storybooks';
 import { Meta } from '@storybook/react';
 import AppLayout from '../AppLayout';
 
 export default {
   title: 'Components/InputPhoneNumber',
-  component: InputPhoneNumber,
+  // component: InputPhoneNumber,
   decorators: [withLocalization],
 } as Meta;
 
-export const Default = () => (
+export const ComboBox = () => (
   <AppLayout>
     <InputPhoneNumber />
+  </AppLayout>
+);
+
+export const NativeElements = () => (
+  <AppLayout>
+    <InputPhoneNumberNative />
   </AppLayout>
 );
