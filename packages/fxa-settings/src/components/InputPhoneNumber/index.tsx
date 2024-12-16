@@ -8,8 +8,10 @@ import { useFtlMsgResolver } from '../../models';
 import { InputModeEnum } from '../FormVerifyCode';
 
 const countries = [
-  { code: '+1', flag: '🇺🇸', name: 'United States' },
-  { code: '+44', flag: '🇨🇦', name: 'Canada' },
+  // We have to use an 'id' here because country codes can be the same, and countries
+  // can have multiple country codes, so 'name' isn't necessarily unique
+  { id: 1, code: '+1', flag: '🇺🇸', name: 'United States' },
+  { id: 2, code: '+1', flag: '🇨🇦', name: 'Canada' },
 ];
 
 const InputPhoneNumber = () => {
@@ -30,7 +32,7 @@ const InputPhoneNumber = () => {
 
   const handleCountryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = countries.find(
-      (country) => country.code === event.target.value
+      (country) => country.id === parseInt(event.target.value, 10)
     );
     if (selected) {
       setSelectedCountry(selected);
@@ -41,15 +43,23 @@ const InputPhoneNumber = () => {
     <div className="flex">
       <select
         onChange={handleCountryChange}
-        value={selectedCountry.code}
+        value={selectedCountry.id}
         // TODO, use intended flag image and adjust spacing
         className="bg-transparent border border-grey-200 rounded-md py-2 pe-6 ps-3 w-[52px] me-2"
       >
-        {countries.map((country) => (
-          <option key={country.code} value={country.code}>
-            {country.flag} {country.name} ({country.code}){' '}
-          </option>
-        ))}
+        {/* Selected country is always first */}
+        <option>
+          {selectedCountry.flag} {selectedCountry.name} ({selectedCountry.code})
+        </option>
+        <hr className="my-1" />
+
+        {countries
+          .filter((country) => country.id !== selectedCountry.id)
+          .map((country) => (
+            <option key={country.id} value={country.id}>
+              {country.flag} {country.name} ({country.code})
+            </option>
+          ))}
       </select>
 
       {/* Using `type="text" inputmode="numeric"` shows the numeric keyboard on mobile
