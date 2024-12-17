@@ -3,25 +3,47 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from 'react';
-import { InputPhoneNumber, InputPhoneNumberNative } from '.';
+import InputPhoneNumber, { defaultCountries } from '.';
 import { withLocalization } from 'fxa-react/lib/storybooks';
 import { Meta } from '@storybook/react';
 import AppLayout from '../AppLayout';
+import { Subject } from './mocks';
 
 export default {
   title: 'Components/InputPhoneNumber',
-  // component: InputPhoneNumber,
+  component: InputPhoneNumber,
   decorators: [withLocalization],
 } as Meta;
 
-export const ComboBox = () => (
-  <AppLayout>
-    <InputPhoneNumber />
-  </AppLayout>
-);
+export const Default = () => <Subject />;
 
-export const NativeElements = () => (
-  <AppLayout>
-    <InputPhoneNumberNative />
-  </AppLayout>
-);
+export const WithMoreOptions = () => {
+  const extendedCountryOptions = [
+    ...defaultCountries,
+    {
+      id: 100,
+      code: '+44',
+      classNameFlag: 'bg-flag-usa',
+      name: 'Murica',
+    },
+    {
+      id: 101,
+      code: '+11',
+      classNameFlag: 'bg-flag-canada',
+      name: 'Sorry Canada',
+    },
+    {
+      id: 103,
+      code: '+50',
+      classNameFlag: 'bg-flag-usa',
+      name: 'Eagle Country',
+    },
+    {
+      id: 104,
+      code: '+27',
+      classNameFlag: 'bg-flag-canada',
+      name: 'Maple Country',
+    },
+  ];
+  return <Subject countries={extendedCountryOptions} />;
+};
