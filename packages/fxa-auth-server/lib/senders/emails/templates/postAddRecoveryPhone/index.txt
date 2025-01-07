@@ -1,8 +1,11 @@
-<% if (locals.lastFourPhoneNumber) { locals.maskedLastFourPhoneNumber = `••••••${lastFourPhoneNumber}` %><% } %>
+<% if (locals.lastFourPhoneNumber) { locals.maskedLastFourPhoneNumber = `••••••${lastFourPhoneNumber}` } %>
 
 postAddRecoveryPhone-title = "You created a new backup recovery method"
 
-postAddRecoveryPhone-description = "You added <%- locals.maskedLastFourPhoneNumber %> as your backup recovery phone"
+<% if (locals.maskedLastFourPhoneNumber) { %>
+postAddRecoveryPhone-description = "You added <%- maskedLastFourPhoneNumber %> as your backup recovery phone"
+<% } %>
+
 postAddRecoveryPhone-how-protect-plaintext = "How this protects your account:"
 <%- twoFactorSupportLink %>
 
