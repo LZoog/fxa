@@ -10,7 +10,7 @@
     </mj-text>
 
     <mj-text css-class="text-body-no-margin">
-      <spa dir="ltr" data-l10n-id="postAddRecoveryPhone-description" data-l10n-args="<%= JSON.stringify({ maskedLastFourPhoneNumber: locals.maskedLastFourPhoneNumber }) %>">You added <%- locals.maskedLastFourPhoneNumber %> as your backup recovery phone</span>
+      <span dir="ltr" data-l10n-id="postAddRecoveryPhone-description" data-l10n-args="<%= JSON.stringify({ maskedLastFourPhoneNumber: locals.maskedLastFourPhoneNumber }) %>">You added <%- locals.maskedLastFourPhoneNumber %> as your backup recovery phone</span>
     </mj-text>
     <mj-text css-class="text-body">
       <a class="link-blue" href="<%- twoFactorSupportLink %>">

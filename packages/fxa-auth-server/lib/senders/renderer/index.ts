@@ -163,6 +163,14 @@ class Renderer extends Localizer {
     }
     const ftlContext = flattenNestedObjects(context);
 
+    // console.log('ftlContext', ftlContext);
+
+    // If a variable is set in the plain text, then include it in the ftlContext.
+    // Otherwise, only template value variables will be passed to Fluent.
+
+    // add code here
+    // console.log('text!', text);
+
     const plainTextArr = text.split('\n');
     for (const i in plainTextArr) {
       // match the lines that are of format key = "value" since we will be extracting the key
@@ -185,6 +193,17 @@ export function splitPlainTextLine(plainText: string) {
   const val = matches?.groups?.val;
 
   return { key, val };
+}
+
+// match EJS assignment statements: <% key = "value" %>, <% key = 'value' %>, or <% key = `value` %>
+const reEJSAssignmentLine =
+  /<%\s*(?<key>[a-zA-Z0-9-_]+)\s*=\s*(['"`])(?<val>.*?)\2\s*%>/g;
+export function splitEJSAssignmentLine(plainText: string) {
+  const match = reEJSAssignmentLine.exec(plainText);
+  if (match?.groups?.key && match.groups.val !== undefined) {
+    return { key: match.groups.key, val: match.groups.val };
+  }
+  return null;
 }
 
 /*

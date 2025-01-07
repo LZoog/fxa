@@ -68,6 +68,7 @@ export type TemplateResult = {
   html: string;
   text: string;
   rootElement: Element;
+  rawPlainText: string;
 };
 export type RendererOpts = RenderOpts & LocalizerOpts;
 type ComponentType = 'templates' | 'layouts';
@@ -95,10 +96,8 @@ export abstract class RendererBindings implements ILocalizerBindings {
   ): Promise<TemplateResult> {
     context = { ...context, template };
 
-    let component = this.renderEjsComponent(
-      await this.getComponent('templates', template),
-      context
-    );
+    const ejsComponent = await this.getComponent('templates', template);
+    let component = this.renderEjsComponent(ejsComponent, context);
 
     // Wrap component with layout
     if (layout) {
@@ -112,7 +111,7 @@ export abstract class RendererBindings implements ILocalizerBindings {
     const { mjml, text } = component;
     const html = this.mjml2html(mjml);
     const rootElement = this.produceRootElement(html);
-    return { html, text, rootElement };
+    return { html, text, rootElement, rawPlainText: ejsComponent.text };
   }
 
   protected async getComponent(type: ComponentType, name: string) {
@@ -136,9 +135,11 @@ export abstract class RendererBindings implements ILocalizerBindings {
     body?: EjsComponent
   ): EjsComponent {
     const { mjml, text } = component;
+    console.log('text', text);
     return {
       mjml: this.renderEjs(mjml, context, body?.mjml),
       text: this.renderEjs(text, context, body?.text),
+      rawText: text,
     };
   }
 

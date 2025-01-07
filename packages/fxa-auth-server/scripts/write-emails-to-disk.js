@@ -214,7 +214,11 @@ function getMailerMessageTypes(mailer) {
 }
 
 function getMessageTypesToWrite(mailer) {
-  return getMailerMessageTypes(mailer);
+  // Hardcode the desired email template name
+  const desiredTemplate = 'postAddRecoveryPhoneEmail';
+  return getMailerMessageTypes(mailer).filter(
+    (type) => type === desiredTemplate
+  );
 }
 
 function ensureTargetDirectoryExists() {
