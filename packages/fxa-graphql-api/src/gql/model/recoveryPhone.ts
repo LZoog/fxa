@@ -13,7 +13,8 @@ export class RecoveryPhone {
 
   @Field({
     nullable: true,
-    description: 'The registered recovery phone number',
+    description:
+      'The registered recovery phone number. If the user does not have a verified session, this field will return the last 4 digits of the phone number with a mask on the rest.',
   })
   public phoneNumber!: string;
 }

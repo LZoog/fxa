@@ -9,6 +9,7 @@ import { useFtlMsgResolver } from '../../../models';
 import VerifiedSessionGuard from '../VerifiedSessionGuard';
 import FlowSetupRecoveryPhoneConfirmCode from '../FlowSetupRecoveryPhoneConfirmCode';
 import FlowSetupRecoveryPhoneSubmitNumber from '../FlowSetupRecoveryPhoneSubmitNumber';
+import { RouteComponentProps } from '@reach/router';
 
 const numberOfSteps = 2;
 
@@ -21,7 +22,7 @@ type PageRecoveryPhoneSetupProps = {
 export const PageRecoveryPhoneSetup = ({
   testPhoneNumber,
   testStep,
-}: PageRecoveryPhoneSetupProps) => {
+}: PageRecoveryPhoneSetupProps & RouteComponentProps) => {
   const ftlMsgResolver = useFtlMsgResolver();
   const navigate = useNavigate();
 

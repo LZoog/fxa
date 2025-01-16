@@ -25,6 +25,10 @@ export const INITIAL_METRICS_QUERY = gql`
         exists
         verified
       }
+      recoveryPhone {
+        exists
+        phoneNumber
+      }
     }
   }
 `;
