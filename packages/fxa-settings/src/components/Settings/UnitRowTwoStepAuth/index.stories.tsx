@@ -10,6 +10,7 @@ import UnitRowTwoStepAuth from '.';
 import { Account, AppContext } from 'fxa-settings/src/models';
 import { mockAppContext } from 'fxa-settings/src/models/mocks';
 import { action } from '@storybook/addon-actions';
+import { Config, getDefault } from '../../../lib/config';
 
 export default {
   title: 'Components/Settings/UnitRowTwoStepAuth',
@@ -90,11 +91,18 @@ export const TwoFAEnabledWithBackupCodesNoBackupPhone = () => (
         hasPassword: true,
         totp: { exists: true, verified: true },
         backupCodes: { hasBackupCodes: true, count: 3 },
+        recoveryPhone: { exists: false, phoneNumber: '' },
       } as unknown as Account,
+      config: {
+        ...getDefault(),
+        featureFlags: {
+          enableAdding2FABackupPhone: true,
+        },
+      },
     })}
   >
     <UnitRowTwoStepAuth
-      backupPhoneSubRowProps={{ onCtaClick: () => action('Add clicked') }}
+    // backupPhoneSubRowProps={{ onCtaClick: () => action('Add clicked') }}
     />
   </AppContext.Provider>
 );
@@ -110,10 +118,10 @@ export const TwoFAEnabledWithBackupPhoneNoBackupCodes = () => (
     })}
   >
     <UnitRowTwoStepAuth
-      backupPhoneSubRowProps={{
-        phoneNumber: '555-555-1234',
-        onCtaClick: () => action('Change clicked'),
-      }}
+    // backupPhoneSubRowProps={{
+    //   phoneNumber: '555-555-1234',
+    //   onCtaClick: () => action('Change clicked'),
+    // }}
     />
   </AppContext.Provider>
 );
@@ -129,12 +137,12 @@ export const TwoFAEnabledWithBackupCodesAndBackupPhone = () => (
     })}
   >
     <UnitRowTwoStepAuth
-      backupPhoneSubRowProps={{
-        phoneNumber: '555-555-1234',
-        onCtaClick: () => action('Change clicked'),
-        onDeleteClick: () => action('Delete clicked'),
-        showDescription: true,
-      }}
+    // backupPhoneSubRowProps={{
+    //   phoneNumber: '555-555-1234',
+    //   onCtaClick: () => action('Change clicked'),
+    //   onDeleteClick: () => action('Delete clicked'),
+    //   showDescription: true,
+    // }}
     />
   </AppContext.Provider>
 );
@@ -151,9 +159,9 @@ export const TwoFAEnabledNoBackupCodesNoBackupPhone = () => (
     })}
   >
     <UnitRowTwoStepAuth
-      backupPhoneSubRowProps={{
-        onCtaClick: () => action('Add clicked'),
-      }}
+    // backupPhoneSubRowProps={{
+    //   onCtaClick: () => action('Add clicked'),
+    // }}
     />
   </AppContext.Provider>
 );

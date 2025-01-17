@@ -167,7 +167,9 @@ export const Settings = ({
               />
               <PageTwoStepAuthentication path="/two_step_authentication" />
               <Page2faReplaceRecoveryCodes path="/two_step_authentication/replace_codes" />
-              <PageRecoveryPhoneSetup path="/recovery_phone/setup" />
+              {config.featureFlags?.enableAdding2FABackupPhone === true && (
+                <PageRecoveryPhoneSetup path="/recovery_phone/setup" />
+              )}
             </>
           ) : (
             <>

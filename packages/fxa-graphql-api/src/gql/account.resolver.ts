@@ -4,6 +4,7 @@
 import { Inject, UseGuards } from '@nestjs/common';
 import {
   Args,
+  Context,
   Info,
   Mutation,
   Parent,
@@ -146,6 +147,29 @@ export class AccountResolver {
       info.returnType
     );
     return simplified.fields.hasOwnProperty('securityEvents');
+  }
+
+  private shouldIncludeRecoveryPhoneAvailability(
+    info: GraphQLResolveInfo
+  ): boolean {
+    // Introspect the query to determine if we should check recovery phone availability
+    const parsed: ResolveTree = parseResolveInfo(info) as ResolveTree;
+    const simplified = simplifyParsedResolveInfoFragmentWithType(
+      parsed,
+      info.returnType
+    ) as {
+      fields: {
+        recoveryPhone?: {
+          fields: {
+            available?: boolean;
+          };
+        };
+      };
+    };
+
+    return !!simplified.fields.recoveryPhone?.fields.hasOwnProperty(
+      'available'
+    );
   }
 
   @Mutation((returns) => CreateTotpPayload, {
@@ -850,8 +874,28 @@ export class AccountResolver {
   }
 
   @ResolveField()
-  public async recoveryPhone(@Parent() account: Account) {
-    return this.recoveryPhoneService.hasConfirmed(account.uid);
+  public async recoveryPhone(
+    @Parent() account: Account
+    // @Info() info: GraphQLResolveInfo,
+    // @Context() context: any
+  ) {
+    console.log('in recovery phone resolver');
+    // const includeAvailability =
+    //   this.shouldIncludeRecoveryPhoneAvailability(info);
+    const recoveryPhone = await this.recoveryPhoneService.hasConfirmed(
+      account.uid
+    );
+
+    // if (includeAvailability) {
+    //   console.log('should include availability');
+    //   const availability = await this.recoveryPhoneService.available(
+    //     account.uid,
+    //     context.req?.app?.geo?.location
+    //   );
+    //   return { ...recoveryPhone, availability };
+    // }
+
+    return recoveryPhone;
   }
 
   @ResolveField()

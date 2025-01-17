@@ -114,6 +114,11 @@ export interface AccountData {
   linkedAccounts: LinkedAccount[];
   totp: AccountTotp;
   backupCodes: AccountBackupCodes;
+  recoveryPhone: {
+    exists: boolean;
+    phoneNumber: string;
+    available: boolean;
+  };
   subscriptions: Subscription[];
   securityEvents: SecurityEvent[];
 }
@@ -196,6 +201,11 @@ export const GET_ACCOUNT = gql`
       backupCodes {
         hasBackupCodes
         count
+      }
+      recoveryPhone {
+        exists
+        phoneNumber
+        available
       }
       subscriptions {
         created
@@ -402,6 +412,10 @@ export class Account implements AccountData {
 
   get backupCodes() {
     return this.data.backupCodes;
+  }
+
+  get recoveryPhone() {
+    return this.data.recoveryPhone;
   }
 
   get attachedClients() {

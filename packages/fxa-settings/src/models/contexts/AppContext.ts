@@ -100,6 +100,10 @@ export function defaultAppContext(context?: AppContextValue) {
     },
     linkedAccounts: [],
     securityEvents: [],
+    recoveryPhone: {
+      exists: false,
+      phoneNumber: '',
+    },
   };
   const session = {
     verified: true,
