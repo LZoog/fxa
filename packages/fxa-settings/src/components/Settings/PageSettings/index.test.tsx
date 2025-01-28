@@ -19,7 +19,7 @@ import {
   ALL_PRODUCT_PROMO_SUBSCRIPTIONS,
 } from '../../../pages/mocks';
 import { MOCK_SERVICES } from '../ConnectedServices/mocks';
-import { mockWebIntegration } from '../../../pages/Signin/SigninRecoveryCode/mocks';
+import { createMockSettingsIntegration } from '../mocks';
 
 jest.mock('../../../lib/metrics', () => ({
   setProperties: jest.fn(),
@@ -73,7 +73,9 @@ describe('PageSettings', () => {
   });
 
   it('renders without imploding when passing an integration', async () => {
-    renderWithRouter(<PageSettings integration={mockWebIntegration} />);
+    renderWithRouter(
+      <PageSettings integration={createMockSettingsIntegration()} />
+    );
 
     // assert all typical PageSetting elements
     expect(screen.getByTestId('settings-profile')).toBeInTheDocument();
@@ -143,11 +145,11 @@ describe('PageSettings', () => {
     });
     describe('inactive account verified', () => {
       it('user has seen the reactivation banner', async () => {
-        mockWebIntegration.data.utmCampaign =
-          'fx-account-inactive-reminder-third';
-        mockWebIntegration.data.utmMedium = 'email';
-        mockWebIntegration.data.utmContent = 'fx-account-deletion';
-        renderWithRouter(<PageSettings integration={mockWebIntegration} />);
+        const integration = createMockSettingsIntegration();
+        integration.data.utmCampaign = 'fx-account-inactive-reminder-third';
+        integration.data.utmMedium = 'email';
+        integration.data.utmContent = 'fx-account-deletion';
+        renderWithRouter(<PageSettings {...{ integration }} />);
 
         expect(
           screen.getByText(

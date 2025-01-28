@@ -150,7 +150,7 @@ export const Settings = ({
       <Head />
       <Router basepath={SETTINGS_PATH}>
         <ScrollToTop default>
-          <PageSettings path="/" integration={integration as Integration} />
+          <PageSettings path="/" {...{ integration }} />
           <PageDisplayName path="/display_name" />
           <PageAvatar path="/avatar" />
           {hasPassword ? (

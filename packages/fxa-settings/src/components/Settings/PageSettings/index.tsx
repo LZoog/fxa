@@ -28,10 +28,11 @@ import SideBar from '../Sidebar';
 import NotificationPromoBanner from '../../NotificationPromoBanner';
 import keyImage from '../../NotificationPromoBanner/key.svg';
 import Head from 'fxa-react/components/Head';
+import { SettingsIntegration } from '../interfaces';
 
 export const PageSettings = ({
   integration,
-}: RouteComponentProps & { integration?: Integration }) => {
+}: RouteComponentProps & { integration?: SettingsIntegration }) => {
   const { uid, recoveryKey, attachedClients, subscriptions } = useAccount();
   const ftlMsgResolver = useFtlMsgResolver();
   const alertBar = useAlertBar();
