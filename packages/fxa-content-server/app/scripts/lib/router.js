@@ -115,7 +115,9 @@ Cocktail.mixin(Router, ReactExperimentMixin);
 
 Router = Router.extend({
   routes: {
-    '(/)': createViewHandler(IndexView),
+    '(/)': function () {
+      this.createReactOrBackboneViewHandler('/', IndexView);
+    },
     'account_recovery_confirm_key(/)': function () {
       this.createReactOrBackboneViewHandler(
         'account_recovery_confirm_key',
