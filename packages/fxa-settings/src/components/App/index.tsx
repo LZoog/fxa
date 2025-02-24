@@ -87,6 +87,7 @@ import InlineRecoveryKeySetupContainer from '../../pages/InlineRecoveryKeySetup/
 import SetPasswordContainer from '../../pages/PostVerify/SetPassword/container';
 import SigninRecoveryChoiceContainer from '../../pages/Signin/SigninRecoveryChoice/container';
 import SigninRecoveryPhoneContainer from '../../pages/Signin/SigninRecoveryPhone/container';
+import Index from '../../pages/Index';
 
 const Settings = lazy(() => import('../Settings'));
 
@@ -310,6 +311,9 @@ const AuthAndAccountSetupRoutes = ({
 
   return (
     <Router>
+      {/* Index */}
+      <Index path="/" {...{ integration, serviceName }} />
+
       {/* Legal */}
       <Legal path="/legal/*" />
       <LegalPrivacy path="/:locale/legal/privacy/*" />
