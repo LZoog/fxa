@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from 'react';
-import { RouteComponentProps } from '@reach/router';
-import { IndexProps } from './interfaces';
+import { useForm } from 'react-hook-form';
+import { IndexFormData, IndexProps } from './interfaces';
 import AppLayout from '../../components/AppLayout';
 import CardHeader from '../../components/CardHeader';
 import InputText from '../../components/InputText';
@@ -21,7 +21,8 @@ import { isOAuthIntegration } from '../../models';
 export const Index = ({
   integration,
   serviceName,
-}: IndexProps & RouteComponentProps) => {
+  signUpOrSignInHandler,
+}: IndexProps) => {
   const clientId = integration.getClientId();
   const isSync = integration.isSync();
   const isDesktopRelay = integration.isDesktopRelay();
@@ -29,6 +30,24 @@ export const Index = ({
   const isPocketClient = isOAuth && isClientPocket(clientId);
   const isMonitorClient = isOAuth && isClientMonitor(clientId);
   const isRelayClient = isOAuth && isClientRelay(clientId);
+
+  const { handleSubmit, register } = useForm<IndexFormData>({
+    mode: 'onChange',
+    criteriaMode: 'all',
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  const onSubmit = async ({ email }: IndexFormData) => {
+    // TODO validation
+    // Check for `isEmail`
+
+    // "Email masks can't be used to create an account."
+    // This function handles navigation
+    await signUpOrSignInHandler(email);
+  };
+
   return (
     <AppLayout>
       {isSync ? (
@@ -55,14 +74,24 @@ export const Index = ({
           {...{ clientId, serviceName }}
         />
       )}
-      <FtlMsg id="index-email-input" attrs={{ label: true }}>
-        <InputText className="mt-8" type="email" label="Enter your email" />
-      </FtlMsg>
-      <div className="flex mt-5">
-        <button className="cta-primary cta-xl" type="submit">
-          <FtlMsg id="index-cta">Sign up or sign in</FtlMsg>
-        </button>
-      </div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <FtlMsg id="index-email-input" attrs={{ label: true }}>
+          {/* If prefillEmail param, set as fill here */}
+          <InputText
+            className="mt-8"
+            type="email"
+            name="email"
+            label="Enter your email"
+            inputRef={register({ required: true })}
+          />
+        </FtlMsg>
+        <div className="flex mt-5">
+          <button className="cta-primary cta-xl" type="submit">
+            <FtlMsg id="index-cta">Sign up or sign in</FtlMsg>
+          </button>
+        </div>
+      </form>
+
       {isSync ? (
         <p className="mt-5 text-xs text-grey-500">
           <FtlMsg id="index-account-info">

@@ -45,7 +45,7 @@ export const viewName = 'signup';
 
 export const Signup = ({
   integration,
-  queryParamModel,
+  email,
   beginSignupHandler,
   useSyncEnginesResult: {
     offeredSyncEngines,
@@ -66,7 +66,6 @@ export const Signup = ({
   const isSyncOAuth = isOAuthNativeIntegrationSync(integration);
   const isSync = integration.isSync();
   const isDesktopRelay = integration.isDesktopRelay();
-  const email = queryParamModel.email;
 
   const onFocusMetricsEvent = () => {
     logViewEvent(settingsViewName, `${viewName}.engage`);

@@ -10,7 +10,17 @@ export type IndexIntegration = Pick<
   'type' | 'isSync' | 'getClientId' | 'isDesktopRelay'
 >;
 
+export interface IndexContainerProps {
+  integration: IndexIntegration;
+  serviceName: MozServices;
+}
+
 export interface IndexProps {
   integration: IndexIntegration;
   serviceName: MozServices;
+  signUpOrSignInHandler: (email: string) => Promise<void>;
+}
+
+export interface IndexFormData {
+  email: string;
 }
