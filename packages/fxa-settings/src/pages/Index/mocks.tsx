@@ -48,6 +48,8 @@ export const Subject = ({
   return (
     <LocationProvider>
       <Index
+        // todo adjust this, just adding for build issue fixes
+        signUpOrSignInHandler={async () => {}}
         {...{
           integration,
           serviceName,

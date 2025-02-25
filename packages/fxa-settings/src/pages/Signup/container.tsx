@@ -17,7 +17,7 @@ import {
   SignupIntegration,
 } from './interfaces';
 import { BEGIN_SIGNUP_MUTATION } from './gql';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   getCredentials,
   getCredentialsV2,
@@ -215,10 +215,6 @@ const SignupContainer = ({
   if (window.document.cookie.indexOf('tooyoung') > -1) {
     navigate('/cannot_create_account');
   }
-
-  // if (showLoadingSpinner) {
-  //   return <LoadingSpinner fullScreen />;
-  // }
 
   if (validationError || !email) {
     hardNavigate('/', {}, true);
