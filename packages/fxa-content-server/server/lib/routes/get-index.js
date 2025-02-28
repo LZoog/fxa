@@ -9,7 +9,7 @@ const {
 } = require('./react-app/route-definition-index');
 
 /**
- * Remote index route ('/') from list if React feature flag is set to true
+ * Remove index route ('/') from list if React feature flag is set to true
  * and route is included in the emailFirstRoutes route group.
  */
 /** @type {import("./react-app/types").GetBackboneRouteDefinition} */

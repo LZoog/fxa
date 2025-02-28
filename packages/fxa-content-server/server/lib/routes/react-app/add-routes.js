@@ -35,11 +35,9 @@ function addAllReactRoutesConditionally(
           if (req.query.showReactApp === 'true' || fullProdRollout === true) {
             return middleware(req, res, next);
           } else {
-            console.log('calling next route', definition.path);
             next('route');
           }
         });
-        console.log('adding after:', definition.path);
         // Manually add route for content-server to serve; occurs when above next('route'); is called
         routeHelpers.addRoute(definition);
       });
