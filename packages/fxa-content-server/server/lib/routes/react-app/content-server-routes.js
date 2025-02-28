@@ -10,7 +10,6 @@
  */
 
 const FRONTEND_ROUTES = [
-  '/',
   'account_recovery_confirm_key',
   'account_recovery_reset_password',
   'authorization',

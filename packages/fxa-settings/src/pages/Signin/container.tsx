@@ -163,8 +163,8 @@ const SigninContainer = ({
       const queryParams = new URLSearchParams(location.search);
       // Tweak this once index page is converted to React
       if (!validationError && email) {
-        // if you directly hit /signin with email param or we read from localstorage
-        // this means the account status hasn't been checked
+        // if you directly hit /signin with email param, or we read from localstorage
+        // (on this page or email-first) this means the account status hasn't been checked
         if (
           accountStatus.hasLinkedAccount === undefined ||
           accountStatus.hasPassword === undefined
@@ -235,16 +235,13 @@ const SigninContainer = ({
 
   const beginSigninHandler: BeginSigninHandler = useCallback(
     async (email: string, password: string) => {
-      // If queryParamModel.hasLinkedAccount is defined, then we know the user
+      // If accountStatus.hasLinkedAccount is defined, then we know the user
       // came from email-first and was already prompted with the sync merge
       // warning. The browser will automatically respond with { ok: true } without
       // prompting the user if it matches the email the browser has data for.
       if (
-        // Currently for email-first, we send this if `context=oauth_webchannel_v1`.
-        // Let's check that here too (TBD if we want this for isDesktopRelay; if not,
-        // we'll remove).
         (integration.isSync() || integration.isDesktopRelay()) &&
-        queryParamModel.hasLinkedAccount === undefined
+        accountStatus.hasLinkedAccount === undefined
       ) {
         const { ok } = await firefox.fxaCanLinkAccount({ email });
         if (!ok) {
@@ -384,7 +381,7 @@ const SigninContainer = ({
       passwordChangeStart,
       wantsKeys,
       flowQueryParams,
-      queryParamModel.hasLinkedAccount,
+      accountStatus.hasLinkedAccount,
       authClient,
       sensitiveDataClient,
     ]

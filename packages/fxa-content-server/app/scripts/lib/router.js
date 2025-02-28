@@ -694,18 +694,22 @@ Router = Router.extend({
   },
 
   createReactViewHandler(routeName, additionalParams) {
-    const { deviceId, flowBeginTime, flowId } =
-      this.metrics.getFlowEventMetadata();
+    if (routeName === '/') {
+      this.navigateAway('/?showReactApp=true');
+    } else {
+      const { deviceId, flowBeginTime, flowId } =
+        this.metrics.getFlowEventMetadata();
 
-    const link = `/${routeName}${Url.objToSearchString({
-      showReactApp: true,
-      deviceId,
-      flowBeginTime,
-      flowId,
-      ...additionalParams,
-    })}`;
+      const link = `/${routeName}${Url.objToSearchString({
+        showReactApp: true,
+        deviceId,
+        flowBeginTime,
+        flowId,
+        ...additionalParams,
+      })}`;
 
-    this.navigateAway(link);
+      this.navigateAway(link);
+    }
   },
 
   createReactOrBackboneViewHandler(

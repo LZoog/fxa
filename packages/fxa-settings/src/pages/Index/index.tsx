@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { IndexFormData, IndexProps } from './interfaces';
 import AppLayout from '../../components/AppLayout';
@@ -16,7 +16,9 @@ import {
   isClientPocket,
   isClientRelay,
 } from '../../models/integrations/client-matching';
-import { isOAuthIntegration } from '../../models';
+import { isOAuthIntegration, useFtlMsgResolver } from '../../models';
+import GleanMetrics from '../../lib/glean';
+import { getLocalizedErrorMessage } from '../../lib/error-utils';
 
 export const Index = ({
   integration,
@@ -30,6 +32,15 @@ export const Index = ({
   const isPocketClient = isOAuth && isClientPocket(clientId);
   const isMonitorClient = isOAuth && isClientMonitor(clientId);
   const isRelayClient = isOAuth && isClientRelay(clientId);
+
+  const ftlMsgResolver = useFtlMsgResolver();
+  const [errorBannerMessage, setErrorBannerMessage] = useState('');
+
+  useEffect(() => {
+    // Note we might not need this due to automatic page load events,
+    // but it's here for now to match parity
+    GleanMetrics.emailFirst.view();
+  }, []);
 
   const { handleSubmit, register } = useForm<IndexFormData>({
     mode: 'onChange',
@@ -45,7 +56,10 @@ export const Index = ({
 
     // "Email masks can't be used to create an account."
     // This function handles navigation
-    await signUpOrSignInHandler(email);
+    const { error } = await signUpOrSignInHandler(email);
+    if (error) {
+      setErrorBannerMessage(getLocalizedErrorMessage(ftlMsgResolver, error));
+    }
   };
 
   return (

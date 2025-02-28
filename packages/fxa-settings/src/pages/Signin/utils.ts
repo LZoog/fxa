@@ -14,6 +14,7 @@ import firefox from '../../lib/channels/firefox';
 import { AuthError } from '../../lib/oauth';
 import GleanMetrics from '../../lib/glean';
 import { OAuthData } from '../../lib/oauth/hooks';
+import { Constants } from '../../lib/constants';
 
 interface NavigationTarget {
   to: string;

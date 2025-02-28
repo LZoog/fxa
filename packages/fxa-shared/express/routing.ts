@@ -50,6 +50,7 @@ export const routing = (app: express.Express, logger: Logger) => {
      *   Follows [celebrate](https://www.npmjs.com/package/celebrate) conventions.
      */
     addRoute(routeDefinition: RouteDefinition) {
+      console.log('HELLO IN HERE', routeDefinition);
       if (!isValidRouteDefinition(routeDefinition)) {
         logger.error('route definition invalid: ', routeDefinition);
         throw new Error('Invalid route definition');

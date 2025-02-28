@@ -30,6 +30,7 @@ _.extend(WebChannelReceiver.prototype, Backbone.Events, {
   },
 
   receiveMessage(event) {
+    console.log('receiving:', event);
     let detail = event.detail;
 
     if (_.isString(detail)) {

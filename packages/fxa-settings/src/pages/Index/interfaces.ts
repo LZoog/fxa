@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { HandledError } from '../../lib/error-utils';
 import { MozServices } from '../../lib/types';
 import { Integration } from '../../models';
 
@@ -15,10 +16,16 @@ export interface IndexContainerProps {
   serviceName: MozServices;
 }
 
+export interface LocationState {
+  prefillEmail?: string;
+}
+
 export interface IndexProps {
   integration: IndexIntegration;
   serviceName: MozServices;
-  signUpOrSignInHandler: (email: string) => Promise<void>;
+  signUpOrSignInHandler: (
+    email: string
+  ) => Promise<{ error: HandledError | null }>;
 }
 
 export interface IndexFormData {

@@ -200,6 +200,7 @@ function makeApp() {
      * must come after React-related route modifications so that `next('route')` skips to these
      * route implementations. */
     routes.forEach(routeHelpers.addRoute);
+    // routes.forEach((route) => console.log('route! woo', route));
 
     // must come after route handling but before wildcard routes
     app.use(
