@@ -18,11 +18,14 @@ export interface IndexContainerProps {
 
 export interface LocationState {
   prefillEmail?: string;
+  deleteAccountSuccess?: string;
 }
 
 export interface IndexProps {
   integration: IndexIntegration;
   serviceName: MozServices;
+  prefillEmail?: string;
+  deleteAccountSuccess?: boolean;
   signUpOrSignInHandler: (
     email: string
   ) => Promise<{ error: HandledError | null }>;

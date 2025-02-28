@@ -11,3 +11,5 @@ index-cta = Sign up or sign in
 index-account-info = A { -product-mozilla-account } also unlocks access to more privacy-protecting products from { -brand-mozilla }.
 index-email-input =
   .label = Enter your email
+# When users delete their Mozilla account inside account Settings, they are redirected to this page with a success message
+index-account-delete-success = Account deleted successfully

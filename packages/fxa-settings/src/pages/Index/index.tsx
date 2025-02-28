@@ -19,11 +19,14 @@ import {
 import { isOAuthIntegration, useFtlMsgResolver } from '../../models';
 import GleanMetrics from '../../lib/glean';
 import { getLocalizedErrorMessage } from '../../lib/error-utils';
+import Banner from '../../components/Banner';
 
 export const Index = ({
   integration,
   serviceName,
   signUpOrSignInHandler,
+  prefillEmail,
+  deleteAccountSuccess,
 }: IndexProps) => {
   const clientId = integration.getClientId();
   const isSync = integration.isSync();
@@ -35,6 +38,13 @@ export const Index = ({
 
   const ftlMsgResolver = useFtlMsgResolver();
   const [errorBannerMessage, setErrorBannerMessage] = useState('');
+  const [successBannerMessage, setSuccessBannerMessage] = useState(
+    deleteAccountSuccess &&
+      ftlMsgResolver.getMsg(
+        'index-account-delete-success',
+        'Account deleted successfully'
+      )
+  );
 
   useEffect(() => {
     // Note we might not need this due to automatic page load events,
@@ -88,15 +98,38 @@ export const Index = ({
           {...{ clientId, serviceName }}
         />
       )}
+
+      {errorBannerMessage && (
+        <Banner
+          type="error"
+          content={{ localizedHeading: errorBannerMessage }}
+        />
+      )}
+      {successBannerMessage && (
+        <Banner
+          type="success"
+          content={{ localizedHeading: successBannerMessage }}
+        />
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <FtlMsg id="index-email-input" attrs={{ label: true }}>
-          {/* If prefillEmail param, set as fill here */}
           <InputText
             className="mt-8"
             type="email"
             name="email"
             label="Enter your email"
             inputRef={register({ required: true })}
+            value={prefillEmail}
+            defaultValue={prefillEmail}
+            placeholder={prefillEmail}
+            onChange={() => {
+              if (errorBannerMessage || successBannerMessage) {
+                // TODO improve this, needs height animation
+                setErrorBannerMessage('');
+                setSuccessBannerMessage('');
+              }
+            }}
           />
         </FtlMsg>
         <div className="flex mt-5">

@@ -28,14 +28,10 @@ const LinkRememberPassword = ({
   params.delete('email');
   params.delete('hasLinkedAccount');
   params.delete('hasPassword');
-  if (!shouldUseReactEmailFirst) {
-    params.delete('showReactApp');
-  }
+  params.delete('showReactApp');
 
-  if (email && isEmailValid(email)) {
-    if (!shouldUseReactEmailFirst) {
-      params.set('prefillEmail', email);
-    }
+  if (email && isEmailValid(email) && !shouldUseReactEmailFirst) {
+    params.set('prefillEmail', email);
     linkHref = `/?${params.toString()}`;
   } else {
     linkHref = params.size > 0 ? `/?${params.toString()}` : '/';
@@ -52,12 +48,12 @@ const LinkRememberPassword = ({
     }
 
     if (shouldUseReactEmailFirst) {
-      console.log('linkHref', linkHref);
       navigate(linkHref, {
         state: {
           prefillEmail: email && isEmailValid(email) ? email : undefined,
         },
       });
+      return;
     }
     hardNavigate(linkHref);
   };

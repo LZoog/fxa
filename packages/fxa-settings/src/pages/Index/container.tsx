@@ -29,7 +29,7 @@ export const IndexContainer = ({
   };
   const { queryParamModel, validationError } =
     useValidatedQueryParams(IndexQueryParams);
-  const { prefillEmail } = location.state || {};
+  const { prefillEmail, deleteAccountSuccess } = location.state || {};
 
   const isWebChannelIntegration =
     integration.isSync() || integration.isDesktopRelay();
@@ -94,7 +94,13 @@ export const IndexContainer = ({
 
   return (
     <Index
-      {...{ integration, serviceName, signUpOrSignInHandler, prefillEmail }}
+      {...{
+        integration,
+        serviceName,
+        signUpOrSignInHandler,
+        prefillEmail,
+        deleteAccountSuccess,
+      }}
     />
   );
 };
