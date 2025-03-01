@@ -125,7 +125,7 @@ export const Index = ({
             placeholder={prefillEmail}
             onChange={() => {
               if (errorBannerMessage || successBannerMessage) {
-                // TODO improve this, needs height animation
+                // TODO improve this, needs height or some animation
                 setErrorBannerMessage('');
                 setSuccessBannerMessage('');
               }

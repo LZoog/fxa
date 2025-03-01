@@ -32,6 +32,7 @@ import { queryParamsToMetricsContext } from '../../lib/metrics';
 import { QueryParams } from '../..';
 import { isFirefoxService } from '../../models/integrations/utils';
 import useSyncEngines from '../../lib/hooks/useSyncEngines';
+import { useCheckReactEmailFirst } from '../../lib/hooks';
 
 /*
  * In content-server, the `email` param is optional. If it's provided, we
@@ -86,6 +87,7 @@ const SignupContainer = ({
   const emailStatusChecked =
     queryParamModel.emailStatusChecked || location.state?.emailStatusChecked;
   const email = queryParamModel.email || location.state?.email;
+  const shouldUseReactEmailFirst = useCheckReactEmailFirst();
 
   const wantsKeys = integration.wantsKeys();
 
@@ -217,7 +219,11 @@ const SignupContainer = ({
   }
 
   if (validationError || !email) {
-    hardNavigate('/', {}, true);
+    if (shouldUseReactEmailFirst) {
+      navigate('/');
+    } else {
+      hardNavigate('/', {}, true);
+    }
     return <LoadingSpinner fullScreen />;
   }
 

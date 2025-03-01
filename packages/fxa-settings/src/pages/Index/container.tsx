@@ -29,6 +29,9 @@ export const IndexContainer = ({
   };
   const { queryParamModel, validationError } =
     useValidatedQueryParams(IndexQueryParams);
+
+  // TODO!!! account for bouncedEmail from location state
+  // see comment on ConfirmSignupCode
   const { prefillEmail, deleteAccountSuccess } = location.state || {};
 
   const isWebChannelIntegration =
