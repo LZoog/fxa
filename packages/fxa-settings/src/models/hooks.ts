@@ -76,14 +76,14 @@ export function useSensitiveDataClient() {
 }
 
 export function useIntegration() {
-  const clientInfoState = useClientInfoState();
-  const productInfoState = useProductInfoState();
+  // const clientInfoState = useClientInfoState();
+  // const productInfoState = useProductInfoState();
 
   return useMemo(() => {
     // If we are still loading data, just return an null integration
-    if (clientInfoState.loading || productInfoState.loading) {
-      return null;
-    }
+    // if (clientInfoState.loading || productInfoState.loading) {
+    //   return null;
+    // }
 
     const windowWrapper = new ReachRouterWindow();
     const urlQueryData = new UrlQueryData(windowWrapper);
@@ -94,15 +94,15 @@ export function useIntegration() {
     const integrationFactory = new IntegrationFactory({
       flags,
       window: windowWrapper,
-      clientInfo: clientInfoState.data?.clientInfo,
-      productInfo: productInfoState.data?.productInfo,
+      clientInfo: {} as RelierClientInfo,
+      productInfo: {} as RelierSubscriptionInfo,
       data: urlQueryData,
       channelData: urlHashData,
       storageData,
     });
 
     return integrationFactory.getIntegration();
-  }, [clientInfoState, productInfoState]);
+  }, []);
 }
 
 /**

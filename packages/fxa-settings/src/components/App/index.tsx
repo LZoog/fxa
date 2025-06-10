@@ -43,7 +43,8 @@ import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { ScrollToTop } from '../Settings/ScrollToTop';
 
 // Pages
-const IndexContainer = lazy(() => import('../../pages/Index/container'));
+import IndexContainer from '../../pages/Index/container'
+// const IndexContainer = lazy(() => import('../../pages/Index/container'));
 const CannotCreateAccount = lazy(
   () => import('../../pages/CannotCreateAccount')
 );
@@ -162,179 +163,176 @@ const Settings = lazy(() => import('../Settings'));
 export const App = ({
   flowQueryParams,
 }: { flowQueryParams: QueryParams } & RouteComponentProps) => {
-  const { data: isSignedInData } = useLocalSignedInQueryState();
+  // const { data: isSignedInData } = useLocalSignedInQueryState();
 
   // Configure Sentry before any other hooks that might throw.
   // If no user is signed in:
   // - we can't send any identifying metrics to sentry
   // - we can't determine whether or not they have opted out
-  if (isSignedInData === undefined || isSignedInData.isSignedIn === false) {
-    sentryMetrics.enable();
-  }
+  // if (isSignedInData === undefined || isSignedInData.isSignedIn === false) {
+  //   sentryMetrics.enable();
+  // }
 
-  const config = useConfig();
-  const session = useSession();
+  // const config = useConfig();
+  // const session = useSession();
   const integration = useIntegration();
 
   // GQL call for minimal metrics data
-  const { loading: metricsLoading, data } = useInitialMetricsQueryState() ?? {};
+  // const { loading: metricsLoading, data } = useInitialMetricsQueryState() ?? {};
 
   // Determine if user is actually signed in
-  const [isSignedIn, setIsSignedIn] = useState<boolean | undefined>(undefined);
+  // const [isSignedIn, setIsSignedIn] = useState<boolean | undefined>(undefined);
 
-  useEffect(() => {
-    const initializeSession = async () => {
-      if (!integration) {
-        return;
-      }
+  // useEffect(() => {
+  //   const initializeSession = async () => {
+  //     if (!integration) {
+  //       return;
+  //     }
 
-      // If the local apollo cache says we are signed in, then we can skip the rest.
-      if (isSignedInData?.isSignedIn === true) {
-        setIsSignedIn(true);
-        return;
-      }
+  //     // If the local apollo cache says we are signed in, then we can skip the rest.
+  //     if (isSignedInData?.isSignedIn === true) {
+  //       setIsSignedIn(true);
+  //       return;
+  //     }
 
-      // if there is already a valid current account, use it
-      const localUser = currentAccount();
-      if (
-        localUser?.sessionToken &&
-        (await session.isValid(localUser.sessionToken))
-      ) {
-        setIsSignedIn(true);
-        return;
-      }
+  //     // if there is already a valid current account, use it
+  //     const localUser = currentAccount();
+  //     if (
+  //       localUser?.sessionToken &&
+  //       (await session.isValid(localUser.sessionToken))
+  //     ) {
+  //       setIsSignedIn(true);
+  //       return;
+  //     }
 
-      let isValidSession = false;
+  //     let isValidSession = false;
 
-      // Request and update account data/state to match the browser state.
-      // If there is a user actively signed into the browser,
-      // we should try to use that user's account when possible.
-      const ua = navigator.userAgent.toLowerCase();
-      // This may not catch all Firefox browsers notably iOS devices, see FXA-11520 for alternate approach
-      const isProbablyFirefox = ua.includes('firefox') || ua.includes('fxios');
+  //     // Request and update account data/state to match the browser state.
+  //     // If there is a user actively signed into the browser,
+  //     // we should try to use that user's account when possible.
+  //     const ua = navigator.userAgent.toLowerCase();
+  //     // This may not catch all Firefox browsers notably iOS devices, see FXA-11520 for alternate approach
+  //     const isProbablyFirefox = ua.includes('firefox') || ua.includes('fxios');
 
-      let userFromBrowser;
-      if (isProbablyFirefox) {
-        userFromBrowser = await firefox.requestSignedInUser(
-          integration.data.context || '',
-          // TODO with React pairing flow, update this if pairing flow
-          false,
-          integration.data.service || ''
-        );
-      }
+  //     let userFromBrowser;
+  //     if (isProbablyFirefox) {
+  //       userFromBrowser = await firefox.requestSignedInUser(
+  //         integration.data.context || '',
+  //         // TODO with React pairing flow, update this if pairing flow
+  //         false,
+  //         integration.data.service || ''
+  //       );
+  //     }
 
-      if (userFromBrowser?.sessionToken) {
-        // If the session is valid, try to set it as the current account
-        isValidSession = await session.isValid(userFromBrowser.sessionToken);
-        if (isValidSession) {
-          const cachedUser = getAccountByUid(userFromBrowser.uid);
-          storeAccountData(
-            cachedUser
-              ? {
-                  ...cachedUser,
-                  // Make sure we are apply the session token we validated
-                  sessionToken: userFromBrowser.sessionToken,
-                }
-              : userFromBrowser
-          );
-        }
-      }
+  //     if (userFromBrowser?.sessionToken) {
+  //       // If the session is valid, try to set it as the current account
+  //       isValidSession = await session.isValid(userFromBrowser.sessionToken);
+  //       if (isValidSession) {
+  //         const cachedUser = getAccountByUid(userFromBrowser.uid);
+  //         storeAccountData(
+  //           cachedUser
+  //             ? {
+  //                 ...cachedUser,
+  //                 // Make sure we are apply the session token we validated
+  //                 sessionToken: userFromBrowser.sessionToken,
+  //               }
+  //             : userFromBrowser
+  //         );
+  //       }
+  //     }
 
-      setIsSignedIn(isValidSession);
-    };
-    initializeSession();
-  }, [integration, isSignedInData?.isSignedIn, session]);
+  //     setIsSignedIn(isValidSession);
+  //   };
+  //   initializeSession();
+  // }, [integration, isSignedInData?.isSignedIn, session]);
 
-  const metricsEnabled = useMemo(() => {
-    if (metricsLoading || !integration || isSignedIn === undefined) {
-      return;
-    }
+  // const metricsEnabled = useMemo(() => {
+  //   if (metricsLoading || !integration || isSignedIn === undefined) {
+  //     return;
+  //   }
 
-    return data?.account?.metricsEnabled || !isSignedIn;
-  }, [metricsLoading, integration, isSignedIn, data?.account?.metricsEnabled]);
+  //   return data?.account?.metricsEnabled || !isSignedIn;
+  // }, [metricsLoading, integration, isSignedIn, data?.account?.metricsEnabled]);
 
-  const metricsFlow = useMemo(
-    () => MetricsFlow.init(flowQueryParams),
-    [flowQueryParams]
-  );
+  // const metricsFlow = useMemo(
+  //   () => MetricsFlow.init(flowQueryParams),
+  //   [flowQueryParams]
+  // );
 
-  const updatedFlowQueryParams = useMemo(
-    () => ({ ...flowQueryParams, ...metricsFlow }),
-    [flowQueryParams, metricsFlow]
-  );
+  // const updatedFlowQueryParams = useMemo(
+  //   () => ({ ...flowQueryParams, ...metricsFlow }),
+  //   [flowQueryParams, metricsFlow]
+  // );
 
   // Initialize Glean metrics as early as possible,
   // before the browser paints and before child components run their effects.
   // useLayoutEffect ensures this happens immediately after DOM mutations,
   // but before the screen is painted or child useEffect hooks are called.
-  useLayoutEffect(() => {
-    if (!metricsEnabled || !integration || GleanMetrics.getEnabled()) {
-      return;
-    }
+  // useLayoutEffect(() => {
+  //   if (!metricsEnabled || !integration || GleanMetrics.getEnabled()) {
+  //     return;
+  //   }
 
-    GleanMetrics.initialize(
-      {
-        ...config.glean,
-        enabled: metricsEnabled,
-        appDisplayVersion: config.version,
-        appChannel: config.glean.appChannel,
-      },
-      {
-        metricsFlow,
-        userAgent: navigator.userAgent,
-        integration,
-      }
-    );
-  }, [metricsEnabled, integration, config.glean, config.version, metricsFlow]);
+  //   GleanMetrics.initialize(
+  //     {
+  //       ...config.glean,
+  //       enabled: metricsEnabled,
+  //       appDisplayVersion: config.version,
+  //       appChannel: config.glean.appChannel,
+  //     },
+  //     {
+  //       metricsFlow,
+  //       userAgent: navigator.userAgent,
+  //       integration,
+  //     }
+  //   );
+  // }, [metricsEnabled, integration, config.glean, config.version, metricsFlow]);
 
-  useEffect(() => {
-    if (!metricsEnabled) {
-      return;
-    }
-    Metrics.init(metricsEnabled, updatedFlowQueryParams);
-    if (data?.account?.metricsEnabled) {
-      Metrics.initUserPreferences({
-        recoveryKey: data.account.recoveryKey.exists,
-        hasSecondaryVerifiedEmail:
-          data.account.emails.length > 1 && data.account.emails[1].verified,
-        totpActive: data.account.totp.exists && data.account.totp.verified,
-      });
-    }
-  }, [
-    config,
-    data,
-    data?.account?.metricsEnabled,
-    data?.account?.emails,
-    data?.account?.totp,
-    data?.account?.recoveryKey,
-    isSignedIn,
-    metricsFlow,
-    metricsLoading,
-    metricsEnabled,
-    updatedFlowQueryParams,
-  ]);
+  // useEffect(() => {
+  //   if (!metricsEnabled) {
+  //     return;
+  //   }
+  //   Metrics.init(metricsEnabled, updatedFlowQueryParams);
+  //   if (data?.account?.metricsEnabled) {
+  //     Metrics.initUserPreferences({
+  //       recoveryKey: data.account.recoveryKey.exists,
+  //       hasSecondaryVerifiedEmail:
+  //         data.account.emails.length > 1 && data.account.emails[1].verified,
+  //       totpActive: data.account.totp.exists && data.account.totp.verified,
+  //     });
+  //   }
+  // }, [
+  //   config,
+  //   data,
+  //   data?.account?.metricsEnabled,
+  //   data?.account?.emails,
+  //   data?.account?.totp,
+  //   data?.account?.recoveryKey,
+  //   isSignedIn,
+  //   metricsFlow,
+  //   metricsLoading,
+  //   metricsEnabled,
+  //   updatedFlowQueryParams,
+  // ]);
 
-  useEffect(() => {
-    if (metricsEnabled || isSignedIn === false) {
-      sentryMetrics.enable();
-    } else {
-      sentryMetrics.disable();
-    }
-  }, [
-    data?.account?.metricsEnabled,
-    config.sentry,
-    config.version,
-    metricsLoading,
-    isSignedIn,
-    metricsEnabled,
-  ]);
+  // useEffect(() => {
+  //   if (metricsEnabled || isSignedIn === false) {
+  //     sentryMetrics.enable();
+  //   } else {
+  //     sentryMetrics.disable();
+  //   }
+  // }, [
+  //   data?.account?.metricsEnabled,
+  //   config.sentry,
+  //   config.version,
+  //   metricsLoading,
+  //   isSignedIn,
+  //   metricsEnabled,
+  // ]);
 
   // Wait until app initialization is complete
   if (
-    metricsLoading ||
-    !integration ||
-    isSignedIn === undefined ||
-    metricsEnabled === undefined
+    !integration
   ) {
     return <LoadingSpinner fullScreen />;
   }
@@ -343,13 +341,13 @@ export const App = ({
     <Router basepath="/">
       <AuthAndAccountSetupRoutes
         {...{
-          isSignedIn,
+          isSignedIn: false,
           integration,
-          flowQueryParams: updatedFlowQueryParams,
+          flowQueryParams,
         }}
         path="/*"
       />
-      <SettingsRoutes {...{ isSignedIn, integration }} path="/settings/*" />
+      <SettingsRoutes {...{ isSignedIn: false, integration }} path="/settings/*" />
     </Router>
   );
 };
@@ -404,12 +402,12 @@ const AuthAndAccountSetupRoutes = ({
   const localAccount = currentAccount();
   // TODO: MozServices / string discrepancy, FXA-6802
   const serviceName = integration.getServiceName() as MozServices;
-  const location = useLocation();
-  const { enabled: gleanEnabled } = GleanMetrics.useGlean();
+  // const location = useLocation();
+  // const { enabled: gleanEnabled } = GleanMetrics.useGlean();
 
-  useEffect(() => {
-    gleanEnabled && GleanMetrics.pageLoad(location.pathname);
-  }, [location.pathname, gleanEnabled]);
+  // useEffect(() => {
+  //   gleanEnabled && GleanMetrics.pageLoad(location.pathname);
+  // }, [location.pathname, gleanEnabled]);
 
   return (
     <Suspense fallback={<LoadingSpinner fullScreen />}>
