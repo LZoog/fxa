@@ -22,12 +22,8 @@ export const LoadingSpinner = ({
   spinnerType = SpinnerType.Blue,
   fullScreen = false,
 }: LoadingSpinnerProps) => {
-  const { l10n } = useLocalization();
-  const loadingAriaLabel = l10n.getString(
-    'app-loading-spinner-aria-label-loading',
-    null,
-    'Loading…'
-  );
+  // const { l10n } = useLocalization();
+  const loadingAriaLabel = 'hello';
   let spinnerImage;
   switch (spinnerType) {
     case SpinnerType.White:

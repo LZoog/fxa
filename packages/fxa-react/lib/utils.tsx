@@ -92,7 +92,7 @@ export type FtlMsgProps = {
 } & LocalizedProps;
 
 export const FtlMsg = (props: FtlMsgProps) => (
-  <Localized {...props}>{props.children}</Localized>
+  <>{props.children}</>
 );
 
 export class FtlMsgResolver {

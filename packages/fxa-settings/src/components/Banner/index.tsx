@@ -141,7 +141,6 @@ export const ResendCodeSuccessBanner = ({
     localizedDescription: ftlMsgResolver.getMsg(
       'resend-success-banner-description',
       `Add ${FIREFOX_NOREPLY_EMAIL} to your contacts to ensure a smooth delivery.`,
-      { accountsEmail: FIREFOX_NOREPLY_EMAIL }
     ),
   };
 
@@ -160,7 +159,6 @@ export const ResendLinkSuccessBanner = ({
     localizedDescription: ftlMsgResolver.getMsg(
       'resend-success-banner-description',
       `Add ${FIREFOX_NOREPLY_EMAIL} to your contacts to ensure smooth delivery.`,
-      { accountsEmail: FIREFOX_NOREPLY_EMAIL }
     ),
   };
 

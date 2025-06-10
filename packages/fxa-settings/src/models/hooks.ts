@@ -227,9 +227,12 @@ export function useAlertBar() {
 }
 
 export function useFtlMsgResolver() {
-  const config = useConfig();
-  const { l10n } = useLocalization();
-  return new FtlMsgResolver(l10n, config.l10n.strict);
+  // const config = useConfig();
+  // const { l10n } = useLocalization();
+  return {
+    getMsg: (id: string, fallback: string) => fallback
+  }
+  // return new FtlMsgResolver(l10n, config.l10n.strict);
 }
 
 export function useNotifier() {

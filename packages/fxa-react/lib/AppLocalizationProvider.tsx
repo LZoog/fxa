@@ -151,6 +151,7 @@ export default class AppLocalizationProvider extends Component<Props, State> {
   }
 
   async componentDidMount() {
+    console.log('component mounted');
     if (this.props.messages) {
       this.setState({
         l10n: new ReactLocalization(
@@ -186,6 +187,7 @@ export default class AppLocalizationProvider extends Component<Props, State> {
     const { l10n } = this.state;
 
     if (!l10n) {
+      console.log('no l10n');
       return <div />;
     }
 

@@ -30,7 +30,7 @@ jest.mock('../../../models', () => ({
   ...jest.requireActual('../../../models'),
   useAlertBar: jest.fn(),
   useFtlMsgResolver: jest.fn(() => ({
-    getMsg: (id: string, fallback: string) => fallback,
+    getMsg: (id: string, fallback: string, vars: any) => fallback,
   })),
 }));
 

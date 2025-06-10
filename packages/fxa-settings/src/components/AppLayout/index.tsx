@@ -5,7 +5,7 @@
 import React from 'react';
 import mozLogo from '@fxa/shared/assets/images/moz-logo-bw-rgb.svg';
 import LinkExternal from 'fxa-react/components/LinkExternal';
-import { useLocalization } from '@fluent/react';
+// import { useLocalization } from '@fluent/react';
 import Head from 'fxa-react/components/Head';
 import classNames from 'classnames';
 
@@ -22,7 +22,7 @@ export const AppLayout = ({
   children,
   widthClass,
 }: AppLayoutProps) => {
-  const { l10n } = useLocalization();
+  // const { l10n } = useLocalization();
 
   return (
     <>
@@ -40,11 +40,7 @@ export const AppLayout = ({
           >
             <img
               src={mozLogo}
-              alt={l10n.getString(
-                'app-footer-mozilla-logo-label',
-                null,
-                'Mozilla logo'
-              )}
+              alt='Mozilla logo'
               className="h-auto w-[140px] mx-auto mobileLandscape:mx-0"
             />
           </LinkExternal>

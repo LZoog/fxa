@@ -73,10 +73,6 @@ try {
 
   render(
     <React.StrictMode>
-      <AppLocalizationProvider
-        baseDir={config.l10n.baseUrl}
-        userLocales={navigator.languages}
-      >
         <AppErrorBoundary>
           <AppContext.Provider value={appContext}>
             <ApolloProvider client={apolloClient}>
@@ -84,7 +80,6 @@ try {
             </ApolloProvider>
           </AppContext.Provider>
         </AppErrorBoundary>
-      </AppLocalizationProvider>
     </React.StrictMode>,
     document.getElementById('root')
   );

@@ -18,7 +18,7 @@ import { getLocalizedErrorMessage } from '../../lib/error-utils';
 import GleanMetrics from '../../lib/glean';
 import { useValidatedQueryParams } from '../../lib/hooks/useValidate';
 import { ModelValidationErrors } from '../../lib/model-data';
-import { AuthError } from '../../lib/oauth';
+// import { AuthError } from '../../lib/oauth';
 
 import { useAuthClient, useFtlMsgResolver } from '../../models';
 import { isOAuthWebIntegration } from '../../models/integrations/oauth-web-integration';
@@ -26,7 +26,7 @@ import { isUnsupportedContext } from '../../models/integrations/utils';
 import { IndexQueryParams } from '../../models/pages/index';
 
 import Index from '.';
-import { getLocalizedEmailValidationErrorMessage } from './errorMessageMapper';
+// import { getLocalizedEmailValidationErrorMessage } from './errorMessageMapper';
 import { IndexContainerProps, LocationState } from './interfaces';
 import { useNavigateWithQuery } from '../../lib/hooks/useNavigateWithQuery';
 import { hardNavigate } from 'fxa-react/lib/utils';
@@ -122,24 +122,24 @@ const IndexContainer = ({
 
   const handleEmailSubmissionError = useCallback(
     (email: string, error: AuthUiError) => {
-      const localizedError = getLocalizedEmailValidationErrorMessage(
-        error as AuthError,
-        ftlMsgResolver,
-        email
-      );
-      switch (error.errno) {
-        case AuthUiErrors.MX_LOOKUP_WARNING.errno:
-        case AuthUiErrors.EMAIL_REQUIRED.errno:
-        case AuthUiErrors.EMAIL_MASK_NEW_ACCOUNT.errno:
-        case AuthUiErrors.DIFFERENT_EMAIL_REQUIRED_FIREFOX_DOMAIN.errno:
-        case AuthUiErrors.INVALID_EMAIL_DOMAIN.errno:
-          setTooltipErrorMessage(localizedError);
-          break;
-        default:
-          setErrorBannerMessage(localizedError);
-      }
+      // const localizedError = getLocalizedEmailValidationErrorMessage(
+      //   error as AuthError,
+      //   ftlMsgResolver,
+      //   email
+      // );
+      // switch (error.errno) {
+      //   case AuthUiErrors.MX_LOOKUP_WARNING.errno:
+      //   case AuthUiErrors.EMAIL_REQUIRED.errno:
+      //   case AuthUiErrors.EMAIL_MASK_NEW_ACCOUNT.errno:
+      //   case AuthUiErrors.DIFFERENT_EMAIL_REQUIRED_FIREFOX_DOMAIN.errno:
+      //   case AuthUiErrors.INVALID_EMAIL_DOMAIN.errno:
+      //     setTooltipErrorMessage(localizedError);
+      //     break;
+      //   default:
+      //     setErrorBannerMessage(localizedError);
+      // }
     },
-    [ftlMsgResolver]
+    []
   );
 
   const processEmailSubmission = useCallback(
@@ -236,10 +236,7 @@ const IndexContainer = ({
   useEffect(() => {
     if (prefillEmail && hasBounced) {
       setTooltipErrorMessage(
-        getLocalizedErrorMessage(
-          ftlMsgResolver,
-          AuthUiErrors.SIGNUP_EMAIL_BOUNCE
-        )
+        'error'
       );
     }
   }, [ftlMsgResolver, hasBounced, prefillEmail]);

@@ -77,7 +77,6 @@ export const ButtonDownloadRecoveryKeyPDF = ({
     dateGenerated: ftlMsgResolver.getMsg(
       'recovery-key-pdf-download-date',
       `Generated: ${keyDateFallback}`,
-      { date: keyDateFluent }
     ),
     keyLegend: ftlMsgResolver.getMsg(
       'recovery-key-pdf-key-legend',

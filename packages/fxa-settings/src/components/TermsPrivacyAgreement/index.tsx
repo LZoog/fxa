@@ -20,6 +20,7 @@ const TermsPrivacyAgreement = ({
   isRelayClient = false,
   isDesktopRelay = false,
 }: TermsPrivacyAgreementProps) => {
+  console.log('rendering terms');
   return (
     <div
       className={`text-grey-500 text-xs ${isDesktopRelay ? 'mt-8' : 'mt-5'}`}

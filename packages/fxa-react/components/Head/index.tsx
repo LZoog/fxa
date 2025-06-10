@@ -13,15 +13,9 @@ const supportedUserLocale = determineLocale(
 const localeDirection = determineDirection(supportedUserLocale);
 
 const Head = ({ title }: { title?: string }) => {
-  const { l10n } = useLocalization();
+  // const { l10n } = useLocalization();
 
-  const customTitle = title
-    ? l10n.getString(
-        'app-page-title-2',
-        { title },
-        `${title} | Mozilla accounts`
-      )
-    : l10n.getString('app-default-title-2', null, 'Mozilla accounts');
+  const customTitle = 'Title!'
 
   // setting the document title here ensures it gets picked up by Glean automatic page load metrics
   useEffect(() => {

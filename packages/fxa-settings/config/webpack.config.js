@@ -673,7 +673,6 @@ module.exports = function (webpackEnv) {
       // Experimental hot reloading for React .
       // https://github.com/facebook/react/tree/main/packages/react-refresh
       isEnvDevelopment &&
-        shouldUseReactRefresh &&
         new ReactRefreshWebpackPlugin({
           overlay: false,
         }),
