@@ -336,7 +336,7 @@ export const App = ({
     isSignedIn === undefined ||
     metricsEnabled === undefined
   ) {
-    return <LoadingSpinner fullScreen />;
+    return '';
   }
 
   return (
@@ -412,7 +412,7 @@ const AuthAndAccountSetupRoutes = ({
   }, [location.pathname, gleanEnabled]);
 
   return (
-    <Suspense fallback={<LoadingSpinner fullScreen />}>
+    <Suspense fallback={''}>
       <Router>
         {/* Index */}
         <IndexContainer

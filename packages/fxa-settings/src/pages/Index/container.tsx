@@ -259,7 +259,7 @@ const IndexContainer = ({
   const deeplink = queryParamModel.deeplink;
 
   return isLoading ? (
-    <LoadingSpinner fullScreen />
+    ''
   ) : (
     <Index
       {...{
