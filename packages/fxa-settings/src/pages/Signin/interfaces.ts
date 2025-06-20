@@ -216,6 +216,10 @@ export interface NavigationOptions {
     offeredEngines: string[];
     declinedEngines: string[];
   };
+  /** If false, skip actually navigating and returns what's needed to
+   * perform the navigate in the component instead
+   */
+  performNavigation?: boolean;
 }
 
 export interface OAuthSigninResult {
