@@ -4,33 +4,30 @@
 
 import * as Sentry from '@sentry/browser';
 
+import { AuthUiError, AuthUiErrors } from '../../lib/auth-errors/auth-errors';
+import { IndexContainerProps, LocationState } from './interfaces';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { RouteComponentProps, useLocation } from '@reach/router';
-import { isEmail } from 'class-validator';
-
-import { isEmailMask } from 'fxa-shared/email/helpers';
-
-import firefox from '../../lib/channels/firefox';
-import { AuthUiError, AuthUiErrors } from '../../lib/auth-errors/auth-errors';
 import { currentAccount, lastStoredAccount } from '../../lib/cache';
-import { checkEmailDomain } from '../../lib/email-domain-validator';
-import { getLocalizedErrorMessage } from '../../lib/error-utils';
-import GleanMetrics from '../../lib/glean';
-import { useValidatedQueryParams } from '../../lib/hooks/useValidate';
-import { ModelValidationErrors } from '../../lib/model-data';
-import { AuthError } from '../../lib/oauth';
-
 import { useAuthClient, useFtlMsgResolver } from '../../models';
+
+import { AuthError } from '../../lib/oauth';
+import GleanMetrics from '../../lib/glean';
+import Index from '.';
+import { IndexQueryParams } from '../../models/pages/index';
+import LoadingSpinnerSprite from '../../components/LoadingSpinnerSprite';
+import { ModelValidationErrors } from '../../lib/model-data';
+import { checkEmailDomain } from '../../lib/email-domain-validator';
+import firefox from '../../lib/channels/firefox';
+import { getLocalizedEmailValidationErrorMessage } from './errorMessageMapper';
+import { getLocalizedErrorMessage } from '../../lib/error-utils';
+import { hardNavigate } from 'fxa-react/lib/utils';
+import { isEmail } from 'class-validator';
+import { isEmailMask } from 'fxa-shared/email/helpers';
 import { isOAuthWebIntegration } from '../../models/integrations/oauth-web-integration';
 import { isUnsupportedContext } from '../../models/integrations/utils';
-import { IndexQueryParams } from '../../models/pages/index';
-
-import Index from '.';
-import { getLocalizedEmailValidationErrorMessage } from './errorMessageMapper';
-import { IndexContainerProps, LocationState } from './interfaces';
 import { useNavigateWithQuery } from '../../lib/hooks/useNavigateWithQuery';
-import { hardNavigate } from 'fxa-react/lib/utils';
-import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
+import { useValidatedQueryParams } from '../../lib/hooks/useValidate';
 
 const IndexContainer = ({
   integration,
@@ -265,9 +262,8 @@ const IndexContainer = ({
   const initialPrefill = prefillEmail || suggestedEmail;
   const deeplink = queryParamModel.deeplink;
 
-  return isLoading ? (
-    <LoadingSpinner fullScreen />
-  ) : (
+  return isLoading ? ''
+   : (
     <Index
       {...{
         integration,

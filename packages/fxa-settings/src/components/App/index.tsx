@@ -2,25 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { RouteComponentProps, Router, useLocation } from '@reach/router';
-import {
-  lazy,
-  Suspense,
-  useEffect,
-  useState,
-  useLayoutEffect,
-  useMemo,
-  startTransition,
-} from 'react';
-
-import { QueryParams } from '../..';
-import { storeAccountData } from '../../lib/storage-utils';
-import { currentAccount, getAccountByUid } from '../../lib/cache';
-import { firefox } from '../../lib/channels/firefox';
-import * as MetricsFlow from '../../lib/metrics-flow';
-import GleanMetrics from '../../lib/glean';
 import * as Metrics from '../../lib/metrics';
-import { MozServices } from '../../lib/types';
+import * as MetricsFlow from '../../lib/metrics-flow';
 
 import {
   Integration,
@@ -30,19 +13,34 @@ import {
   useLocalSignedInQueryState,
   useSession,
 } from '../../models';
+import { RouteComponentProps, Router, useLocation } from '@reach/router';
 import {
-  initializeSettingsContext,
   SettingsContext,
+  initializeSettingsContext,
 } from '../../models/contexts/SettingsContext';
+import {
+  Suspense,
+  lazy,
+  startTransition,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { currentAccount, getAccountByUid } from '../../lib/cache';
 
-import { hardNavigate } from 'fxa-react/lib/utils';
-
-import sentryMetrics from 'fxa-shared/sentry/browser';
-
+import GleanMetrics from '../../lib/glean';
 // Components
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
+import LoadingSpinnerSprite from '../LoadingSpinnerSprite';
+import { MozServices } from '../../lib/types';
+import { QueryParams } from '../..';
 import { ScrollToTop } from '../Settings/ScrollToTop';
 import SignupConfirmedSync from '../../pages/Signup/SignupConfirmedSync';
+import { firefox } from '../../lib/channels/firefox';
+import { hardNavigate } from 'fxa-react/lib/utils';
+import sentryMetrics from 'fxa-shared/sentry/browser';
+import { storeAccountData } from '../../lib/storage-utils';
 import useSyncEngines from '../../lib/hooks/useSyncEngines';
 
 // Pages
@@ -344,7 +342,7 @@ export const App = ({
     isSignedIn === undefined ||
     metricsEnabled === undefined
   ) {
-    return <LoadingSpinner fullScreen />;
+    return '';
   }
 
   return (
@@ -422,7 +420,7 @@ const AuthAndAccountSetupRoutes = ({
   const useSyncEnginesResult = useSyncEngines(integration);
 
   return (
-    <Suspense fallback={<LoadingSpinner fullScreen />}>
+    <Suspense fallback={''}>
       <Router>
         {/* Index */}
         <IndexContainer
