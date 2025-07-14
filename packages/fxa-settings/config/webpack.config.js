@@ -623,6 +623,9 @@ module.exports = function (webpackEnv) {
       new webpack.ProvidePlugin({
         process: 'process/browser',
       }),
+      new webpack.ProvidePlugin({
+        buffer: ['buffer', 'Buffer'], // otplib/preset-browser expects a global 'buffer'
+      }),
       // Generates an `index.html` file with the <script> injected.
       new HtmlWebpackPlugin(
         Object.assign(
