@@ -154,6 +154,7 @@ const Signin = ({
             verificationReason: data.verificationReason,
             uid: data.uid,
             sessionToken,
+            sessionVerified: data.sessionVerified,
           },
           integration,
           redirectTo:
