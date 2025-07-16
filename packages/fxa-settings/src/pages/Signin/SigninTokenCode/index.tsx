@@ -151,9 +151,9 @@ const SigninTokenCode = ({
             sessionToken,
             verificationReason,
             verified: true,
-            sessionVerified: true,
             keyFetchToken,
           },
+          sessionVerified: true,
           unwrapBKey,
           integration,
           finishOAuthFlowHandler,
@@ -209,7 +209,6 @@ const SigninTokenCode = ({
 
   return (
     <AppLayout>
-
       <CardHeader
         headingText="Enter confirmation code"
         headingAndSubheadingFtlId="signin-token-code-heading-2"

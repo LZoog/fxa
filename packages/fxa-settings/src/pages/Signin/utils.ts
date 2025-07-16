@@ -191,7 +191,7 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
 
   if (
     !navigationOptions.signinData.verified ||
-    navigationOptions.signinData.sessionVerified === false
+    navigationOptions.sessionVerified === false
   ) {
     const { to, locationState } =
       getUnverifiedNavigationTarget(navigationOptions);

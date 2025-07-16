@@ -107,6 +107,7 @@ const AuthorizationContainer = ({
             uid: data.uid,
             sessionToken: account?.sessionToken!,
           },
+          sessionVerified: data.sessionVerified,
           integration,
           redirectTo: integration.data.redirectTo,
           finishOAuthFlowHandler,

@@ -154,8 +154,8 @@ const Signin = ({
             verificationReason: data.verificationReason,
             uid: data.uid,
             sessionToken,
-            sessionVerified: data.sessionVerified,
           },
+          sessionVerified: data.sessionVerified,
           integration,
           redirectTo:
             isWebIntegration(integration) && webRedirectCheck?.isValid
@@ -219,7 +219,7 @@ const Signin = ({
           email,
           signinData: data.signIn,
           unwrapBKey: data.unwrapBKey,
-          verified: data.signIn.verified,
+          sessionVerified: data.sessionVerified,
           integration,
           finishOAuthFlowHandler,
           redirectTo:
@@ -404,7 +404,7 @@ const Signin = ({
             clientId,
             serviceName,
             cmsLogoUrl: cmsInfo?.shared?.logoUrl,
-            cmsLogoAltText: cmsInfo?.shared?.logoAltText
+            cmsLogoAltText: cmsInfo?.shared?.logoAltText,
           }}
         />
       )}
@@ -528,7 +528,7 @@ const Signin = ({
               searchParams.delete('email');
               navigateWithQuery(`/?${searchParams.toString()}`, {
                 state: {
-                  prefillEmail: email
+                  prefillEmail: email,
                 },
               });
             }}

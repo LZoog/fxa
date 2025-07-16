@@ -96,7 +96,6 @@ import OAuthDataError from '../../components/OAuthDataError';
  * user emails to `/signup` to match content-server functionality.
  */
 
-<<<<<<< HEAD
 function getAccountInfo(email?: string): {
   email?: string;
   sessionToken?: string;
@@ -108,40 +107,6 @@ function getAccountInfo(email?: string): {
     // paranoid about how that resolves and makes sure going forward a
     // currenAccount actually is set.
     setCurrentAccount(targetAccount.uid);
-=======
-function getAccountInfo(email?: string) {
-  const storedLocalAccount = (() => {
-    let account = currentAccount();
-    if (account) {
-      return account;
-    }
-
-    // Important, a lot of the code following this assumes that if a session
-    // token is provided, it belongs to the current account. If this assumption
-    // is violated, weird things happen! Maybe this is the 'fix'?
-    account = lastStoredAccount();
-    if (account) {
-      setCurrentAccount(account.uid);
-    }
-
-    return account;
-  })();
-
-  if (email) {
-    // Try to use local storage values if email matches the email in local storage
-    if (storedLocalAccount?.email === email) {
-      return {
-        email: storedLocalAccount.email,
-        sessionToken: storedLocalAccount.sessionToken,
-        uid: storedLocalAccount.uid,
-      };
-    }
-
-    return { email };
-  }
-
-  if (storedLocalAccount) {
->>>>>>> c11811d98e (fix(sign-in): Properly redirect users without verified sessions)
     return {
       email: targetAccount.email,
       sessionToken: targetAccount.sessionToken,
@@ -422,6 +387,7 @@ const SigninContainer = ({
           );
         sessionVerified = status.sessionVerified;
       }
+
       // Check recovery key status if signin was successful, user is on sync Desktop
       // and they didn't click "Do it later"; this affects navigation.
       if (
@@ -488,11 +454,7 @@ const SigninContainer = ({
 
       // Send totp token email if session is not verified at this point since users will
       // be redirected to /signin_token_code
-      if (
-        !sessionVerified &&
-        session.sendVerificationCode &&
-        'data' in result
-      ) {
+      if (!sessionVerified && 'data' in result) {
         await session.sendVerificationCode(result.data?.signIn.sessionToken);
       }
 
@@ -502,10 +464,7 @@ const SigninContainer = ({
           ...result,
           data: {
             ...result.data,
-            signIn: {
-              ...result.data.signIn,
-              sessionVerified,
-            },
+            sessionVerified,
           },
         };
       }
