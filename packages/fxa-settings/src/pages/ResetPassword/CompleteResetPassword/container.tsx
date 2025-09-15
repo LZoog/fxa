@@ -241,6 +241,8 @@ const CompleteResetPasswordContainer = ({
         }),
         services: integration.isFirefoxClientServiceRelay()
           ? { relay: {} }
+          : integration.isFirefoxClientServiceAiMode()
+          ? { aimode: {} }
           : { sync: {} },
       });
 

@@ -47,6 +47,7 @@ export enum OAuthNativeClients {
 export enum OAuthNativeServices {
   Sync = 'sync',
   Relay = 'relay',
+  AiMode = 'aimode',
 }
 
 /**
@@ -88,10 +89,19 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     );
   }
 
+  isFirefoxClient() {
+    return this.isFirefoxDesktopClient() || this.isFirefoxMobileClient();
+  }
+
   isFirefoxClientServiceRelay() {
     return (
-      (this.isFirefoxDesktopClient() || this.isFirefoxMobileClient()) &&
-      this.data.service === OAuthNativeServices.Relay
+      this.isFirefoxClient() && this.data.service === OAuthNativeServices.Relay
+    );
+  }
+
+  isFirefoxClientServiceAiMode() {
+    return (
+      this.isFirefoxClient() && this.data.service === OAuthNativeServices.AiMode
     );
   }
 

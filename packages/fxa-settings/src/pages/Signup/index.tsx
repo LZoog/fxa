@@ -70,6 +70,7 @@ export const Signup = ({
   const isSyncOAuth = isOAuthNativeIntegrationSync(integration);
   const isSync = integration.isSync();
   const isFirefoxClientServiceRelay = integration.isFirefoxClientServiceRelay();
+  const isFirefoxClientServiceAiMode = integration.isFirefoxClientServiceAiMode();
   const paymentMethodsWillSync =
     isSync && checkPaymentMethodsWillSync(offeredSyncEngines);
 
@@ -206,6 +207,16 @@ export const Signup = ({
             verified: false,
             services: {
               relay: {},
+            },
+          });
+        } else if (isFirefoxClientServiceAiMode) {
+          firefox.fxaLogin({
+            email,
+            sessionToken: data.signUp.sessionToken,
+            uid: data.signUp.uid,
+            verified: false,
+            services: {
+              aimode: {},
             },
           });
         } else {

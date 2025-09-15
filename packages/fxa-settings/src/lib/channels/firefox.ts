@@ -100,9 +100,12 @@ export type FxALoginRequest = {
           declinedEngines?: string[];
         };
       }
-    // For sync optional flows (currently only Relay)
+    // For sync optional flows (currently Relay and AiMode)
     | {
         relay: {};
+      }
+    | {
+        aimode: {};
       };
 };
 

@@ -70,7 +70,7 @@ export class GenericIntegration<
   }
 
   hasWebChannelSupport() {
-    return this.isSync() || this.isFirefoxClientServiceRelay();
+    return this.isSync() || this.isFirefoxClientServiceRelay() || this.isFirefoxClientServiceAiMode();
   }
 
   isSync() {
@@ -82,6 +82,10 @@ export class GenericIntegration<
   }
 
   isFirefoxClientServiceRelay() {
+    return false;
+  }
+
+  isFirefoxClientServiceAiMode() {
     return false;
   }
 
