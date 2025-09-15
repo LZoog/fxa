@@ -144,12 +144,16 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     return undefined;
   }
 
-  // TODO in FXA-10313, check for "Relay" or whatever makes sense at implementation
   get serviceName() {
-    if (this.data.service === 'sync') {
+    if (this.isDefaultSyncService()) {
       return Constants.RELIER_SYNC_SERVICE_NAME;
-    } else {
-      return 'Firefox';
     }
+    if (this.isFirefoxClientServiceRelay()) {
+      return Constants.RELIER_FF_CLIENT_RELAY_SERVICE_NAME;
+    }
+    if (this.isFirefoxClientServiceAiMode()) {
+      return Constants.RELIER_FF_CLIENT_AI_MODE_SERVICE_NAME;
+    }
+    return 'Firefox';
   }
 }
