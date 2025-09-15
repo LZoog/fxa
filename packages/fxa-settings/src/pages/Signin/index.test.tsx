@@ -737,6 +737,7 @@ describe('Signin component', () => {
               );
               const integration = createMockSigninOAuthNativeIntegration({
                 isSync: false,
+                service: 'relay',
               });
               render({
                 beginSigninHandler,
