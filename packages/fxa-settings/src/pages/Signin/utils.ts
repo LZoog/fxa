@@ -330,7 +330,9 @@ function sendFxaLogin(navigationOptions: NavigationOptions) {
       keyFetchToken: navigationOptions.signinData.keyFetchToken,
       unwrapBKey: navigationOptions.unwrapBKey,
     }),
-    services: navigationOptions.integration.getWebChannelServices(navigationOptions.syncEngines),
+    services: navigationOptions.integration.getWebChannelServices?.(
+      navigationOptions.syncEngines
+    ) || { sync: navigationOptions.syncEngines || {} },
   });
 }
 

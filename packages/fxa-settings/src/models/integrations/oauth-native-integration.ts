@@ -81,17 +81,20 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
   }
 
   isDesktopSync() {
-    return (
-      this.isFirefoxDesktopClient() &&
-      // Sync oauth desktop should always provide a `service=sync` parameter but
-      // we'll also default to Sync if it's missing.
-      (this.data.service === undefined ||
-        this.data.service === OAuthNativeServices.Sync)
-    );
+    return this.isFirefoxDesktopClient() && this.isDefaultSyncService();
   }
 
-  isFirefoxClient() {
+  private isFirefoxClient() {
     return this.isFirefoxDesktopClient() || this.isFirefoxMobileClient();
+  }
+
+  // Sync should always provide a `service=sync` parameter for all Fx Desktop versions
+  // and newer mobile versions. We'll default to Sync if it's missing.
+  private isDefaultSyncService() {
+    return (
+      this.data.service === undefined ||
+      this.data.service === OAuthNativeServices.Sync
+    );
   }
 
   isFirefoxClientServiceRelay() {
@@ -135,8 +138,10 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     if (this.isFirefoxClientServiceAiMode()) {
       return { aimode: {} };
     }
-    // service=sync is the default when using the oauth-native-integration
-    return { sync: syncEngines || {} };
+    if (this.isDefaultSyncService()) {
+      return { sync: syncEngines || {} };
+    }
+    return undefined;
   }
 
   // TODO in FXA-10313, check for "Relay" or whatever makes sense at implementation

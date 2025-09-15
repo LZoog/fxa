@@ -70,14 +70,6 @@ export class GenericIntegration<
     this.features = { ...this.features, ...features } as TFeatures;
   }
 
-  hasWebChannelSupport() {
-    return (
-      this.isSync() ||
-      this.isFirefoxClientServiceRelay() ||
-      this.isFirefoxClientServiceAiMode()
-    );
-  }
-
   isSync() {
     return false;
   }
