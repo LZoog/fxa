@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { SyncEngines } from '../../lib/channels/firefox';
 import { Constants } from '../../lib/constants';
 import { ModelDataStore } from '../../lib/model-data';
 import { Integration, IntegrationType } from './integration';
@@ -123,16 +124,18 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
   }
 
   wantsKeys() {
+    // TODO: this will not always be true when working on FXA-12374
     return true;
   }
 
-  getWebChannelServices(syncEngines?: { offeredEngines?: string[]; declinedEngines?: string[] }) {
+  getWebChannelServices(syncEngines?: SyncEngines) {
     if (this.isFirefoxClientServiceRelay()) {
       return { relay: {} };
     }
     if (this.isFirefoxClientServiceAiMode()) {
       return { aimode: {} };
     }
+    // service=sync is the default when using the oauth-native-integration
     return { sync: syncEngines || {} };
   }
 

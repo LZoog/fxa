@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { MozServices } from '../../lib/types';
+import { WebChannelServices, SyncEngines } from '../../lib/channels/firefox';
 import { IntegrationData } from './data/data';
 import { IntegrationFeatures } from './features';
 import {
@@ -70,7 +71,11 @@ export class GenericIntegration<
   }
 
   hasWebChannelSupport() {
-    return this.isSync() || this.isFirefoxClientServiceRelay() || this.isFirefoxClientServiceAiMode();
+    return (
+      this.isSync() ||
+      this.isFirefoxClientServiceRelay() ||
+      this.isFirefoxClientServiceAiMode()
+    );
   }
 
   isSync() {
@@ -89,7 +94,11 @@ export class GenericIntegration<
     return false;
   }
 
-  getWebChannelServices(_syncEngines?: { offeredEngines?: string[]; declinedEngines?: string[] }) {
+  // Practically, this will never be called unless the integration is
+  // an oauth-native-integration, but provide a reasonable default.
+  getWebChannelServices(
+    _syncEngines?: SyncEngines
+  ): WebChannelServices | undefined {
     return undefined;
   }
 
@@ -174,6 +183,8 @@ export class GenericIntegration<
 
   getCmsInfo() {
     // Still check for an empty object and only return if not empty.
-    return Object.keys(this.cmsInfo || {}).length > 0 ? this.cmsInfo : undefined;
+    return Object.keys(this.cmsInfo || {}).length > 0
+      ? this.cmsInfo
+      : undefined;
   }
 }
