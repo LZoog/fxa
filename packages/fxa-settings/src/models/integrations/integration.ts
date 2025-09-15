@@ -89,6 +89,10 @@ export class GenericIntegration<
     return false;
   }
 
+  getWebChannelServices(_syncEngines?: { offeredEngines?: string[]; declinedEngines?: string[] }) {
+    return undefined;
+  }
+
   isFirefoxMobileClient() {
     return false;
   }

@@ -239,11 +239,7 @@ const CompleteResetPasswordContainer = ({
           keyFetchToken: accountResetData.keyFetchToken,
           unwrapBKey: accountResetData.unwrapBKey,
         }),
-        services: integration.isFirefoxClientServiceRelay()
-          ? { relay: {} }
-          : integration.isFirefoxClientServiceAiMode()
-          ? { aimode: {} }
-          : { sync: {} },
+        services: integration.getWebChannelServices(),
       });
 
       if (isOAuth) {

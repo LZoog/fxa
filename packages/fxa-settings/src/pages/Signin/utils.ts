@@ -330,11 +330,7 @@ function sendFxaLogin(navigationOptions: NavigationOptions) {
       keyFetchToken: navigationOptions.signinData.keyFetchToken,
       unwrapBKey: navigationOptions.unwrapBKey,
     }),
-    services: navigationOptions.integration.isFirefoxClientServiceRelay()
-      ? { relay: {} }
-      : navigationOptions.integration.isFirefoxClientServiceAiMode()
-        ? { aimode: {} }
-        : { sync: navigationOptions.syncEngines || {} },
+    services: navigationOptions.integration.getWebChannelServices(navigationOptions.syncEngines),
   });
 }
 

@@ -126,6 +126,16 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     return true;
   }
 
+  getWebChannelServices(syncEngines?: { offeredEngines?: string[]; declinedEngines?: string[] }) {
+    if (this.isFirefoxClientServiceRelay()) {
+      return { relay: {} };
+    }
+    if (this.isFirefoxClientServiceAiMode()) {
+      return { aimode: {} };
+    }
+    return { sync: syncEngines || {} };
+  }
+
   // TODO in FXA-10313, check for "Relay" or whatever makes sense at implementation
   get serviceName() {
     if (this.data.service === 'sync') {

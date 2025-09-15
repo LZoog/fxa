@@ -195,29 +195,15 @@ export const Signup = ({
             sessionToken: data.signUp.sessionToken,
             uid: data.signUp.uid,
             verified: false,
-            services: {
-              sync: syncEngines,
-            },
+            services: integration.getWebChannelServices(syncEngines),
           });
-        } else if (isFirefoxClientServiceRelay) {
+        } else if (isFirefoxClientServiceRelay || isFirefoxClientServiceAiMode) {
           firefox.fxaLogin({
             email,
             sessionToken: data.signUp.sessionToken,
             uid: data.signUp.uid,
             verified: false,
-            services: {
-              relay: {},
-            },
-          });
-        } else if (isFirefoxClientServiceAiMode) {
-          firefox.fxaLogin({
-            email,
-            sessionToken: data.signUp.sessionToken,
-            uid: data.signUp.uid,
-            verified: false,
-            services: {
-              aimode: {},
-            },
+            services: integration.getWebChannelServices(),
           });
         } else {
           GleanMetrics.registration.marketing({
