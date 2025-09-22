@@ -913,6 +913,7 @@ export class AccountHandler {
   }
 
   async login(request: AuthRequest) {
+    console.log('account loginnnnnnn');
     this.log.begin('Account.login', request);
 
     const form = request.payload as any;
@@ -1341,6 +1342,7 @@ export class AccountHandler {
         response.verificationReason = 'change_password';
         response.verificationMethod = verificationMethod;
       } else {
+        console.log('in the else...');
         Object.assign(
           response,
           this.signinUtils.getSessionVerificationStatus(
@@ -1813,6 +1815,8 @@ export class AccountHandler {
       if (!hasSessionToken) {
         return {};
       }
+
+      console.log('HELLO sessionToken', sessionToken);
 
       const response: Record<string, any> = {
         uid: sessionToken.uid,

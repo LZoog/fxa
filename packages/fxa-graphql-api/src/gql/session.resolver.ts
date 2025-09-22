@@ -54,7 +54,10 @@ export class SessionResolver {
 
   @Query((returns) => SessionType)
   @UseGuards(GqlAuthGuard)
-  session(@GqlUserId() uid: string, @GqlUserState() state: string) {
+  session(
+    @GqlUserId() uid: string,
+    @GqlUserState() state: SessionVerifiedState
+  ) {
     this.log.info('session', { uid });
     return {
       verified: state === 'verified',

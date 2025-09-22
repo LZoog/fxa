@@ -192,6 +192,8 @@ export const cachedSignIn = async (
 // data back to Backbone. This means temporarily we need to send the sync data up
 // _before_ we hard navigate to CAD/pair in these flows.
 export async function handleNavigation(navigationOptions: NavigationOptions) {
+  console.log('navigationOptions.signinData', navigationOptions.signinData);
+
   const { integration } = navigationOptions;
   const isOAuth = isOAuthIntegration(integration);
   const isWebChannelIntegration =

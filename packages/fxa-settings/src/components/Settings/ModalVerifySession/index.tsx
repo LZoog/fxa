@@ -28,6 +28,7 @@ export const ModalVerifySession = ({
   onCompleted,
 }: ModalProps) => {
   const session = useSession();
+  console.log('session', session);
   const [errorText, setErrorText] = useState<string>();
   const hasSentVerificationCode = useRef(false);
   const account = useAccount();

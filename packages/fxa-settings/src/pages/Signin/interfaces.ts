@@ -114,6 +114,7 @@ export interface BeginSigninResponse {
     sessionToken: hexstring;
     authAt: number;
     metricsEnabled: boolean;
+    // needs 'sessionVerified' ?
     verified: boolean;
     verificationMethod: VerificationMethods;
     verificationReason: VerificationReasons;

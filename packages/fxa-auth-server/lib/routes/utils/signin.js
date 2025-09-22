@@ -593,6 +593,22 @@ module.exports = (
     },
 
     getSessionVerificationStatus(sessionToken, verificationMethod) {
+      console.log(
+        'in getSessionVerificationStatus, sessionToken',
+        sessionToken
+      );
+      console.log(
+        'in getSessionVerificationStatus, sessionToken.emailVerified',
+        sessionToken.emailVerified
+      );
+      console.log(
+        'in getSessionVerificationStatus, sessionToken.mustVerify',
+        sessionToken.mustVerify
+      );
+      console.log(
+        'in getSessionVerificationStatus, sessionToken.tokenVerified',
+        sessionToken.tokenVerified
+      );
       if (!sessionToken.emailVerified) {
         // for unverified accounts, only 'email', and 'email-otp' are valid.
         // email-otp is the end goal, but a transition train is needed.
