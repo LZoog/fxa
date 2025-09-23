@@ -1578,7 +1578,7 @@ const convictConf = convict({
       },
     },
     forceGlobally: {
-      doc: 'Force sign-in confirmation for all accounts',
+      doc: 'Force sign-in confirmation for all accounts by setting the "mustVerify" flag on issued session tokens',
       format: Boolean,
       default: false,
       env: 'SIGNIN_CONFIRMATION_FORCE_GLOBALLY',

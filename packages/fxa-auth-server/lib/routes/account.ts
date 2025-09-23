@@ -1057,6 +1057,7 @@ export class AccountHandler {
       // If there was anything suspicious about the request,
       // we should force token verification.
       if (request.app.isSuspiciousRequest) {
+        console.log('is suspect???');
         return 'suspect';
       }
       if (this.config.signinConfirmation?.forceGlobally) {
@@ -1080,17 +1081,39 @@ export class AccountHandler {
       // another, successfully-verified login, then we can consider this one
       // verified as well without going through the loop again.
 
+      console.log('in skipTokenVerification');
+
+      console.log('this.config.securityHistory', this.config.securityHistory);
+      console.log(
+        'this.config.securityHistory.ipProfiling',
+        this.config.securityHistory.ipProfiling
+      );
+
       // Convict type introspection fails to properly identify the number here
       // so we have to cast it to a number.
       const allowedRecency =
         (this.config.securityHistory.ipProfiling
           .allowedRecency as unknown as number) || 0;
+
+      console.log(
+        'moar data',
+        allowedRecency,
+        securityEventVerified,
+        securityEventRecency,
+        allowedRecency
+      );
       if (securityEventVerified && securityEventRecency < allowedRecency) {
         this.glean.loginConfirmSkipFor.knownIp(request);
         this.statsd.increment('account.signin.confirm.bypass.ip');
         this.log.info('Account.ipprofiling.seenAddress', {
           uid: account.uid,
         });
+        console.log(
+          'returning true!',
+          securityEventVerified,
+          securityEventRecency,
+          allowedRecency
+        );
         return true;
       }
 
@@ -1107,6 +1130,7 @@ export class AccountHandler {
           this.log.info('account.signin.confirm.bypass.age', {
             uid: account.uid,
           });
+          console.log('returning false! skip for new accounts');
           return true;
         }
       }
@@ -1121,8 +1145,11 @@ export class AccountHandler {
         this.log.info('account.signin.confirm.bypass.always', {
           uid: account.uid,
         });
+        console.log('returning true due to alwaysSkip');
         return true;
       }
+
+      console.log('didnt hit any case so returning false');
 
       return false;
     };
@@ -1151,7 +1178,9 @@ export class AccountHandler {
       // get excluded from this process, e.g. testing accounts where we want
       // to know for sure what flow they're going to see.
       const verificationForced = forceTokenVerification(request, accountRecord);
+      console.log('verificationForced??', verificationForced);
       if (!verificationForced) {
+        // is false
         if (skipTokenVerification(request, accountRecord)) {
           needsVerificationId = false;
         }
@@ -1342,7 +1371,6 @@ export class AccountHandler {
         response.verificationReason = 'change_password';
         response.verificationMethod = verificationMethod;
       } else {
-        console.log('in the else...');
         Object.assign(
           response,
           this.signinUtils.getSessionVerificationStatus(
@@ -1815,8 +1843,6 @@ export class AccountHandler {
       if (!hasSessionToken) {
         return {};
       }
-
-      console.log('HELLO sessionToken', sessionToken);
 
       const response: Record<string, any> = {
         uid: sessionToken.uid,

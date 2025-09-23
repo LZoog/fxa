@@ -593,22 +593,7 @@ module.exports = (
     },
 
     getSessionVerificationStatus(sessionToken, verificationMethod) {
-      console.log(
-        'in getSessionVerificationStatus, sessionToken',
-        sessionToken
-      );
-      console.log(
-        'in getSessionVerificationStatus, sessionToken.emailVerified',
-        sessionToken.emailVerified
-      );
-      console.log(
-        'in getSessionVerificationStatus, sessionToken.mustVerify',
-        sessionToken.mustVerify
-      );
-      console.log(
-        'in getSessionVerificationStatus, sessionToken.tokenVerified',
-        sessionToken.tokenVerified
-      );
+      console.log('session tokennnn', sessionToken);
       if (!sessionToken.emailVerified) {
         // for unverified accounts, only 'email', and 'email-otp' are valid.
         // email-otp is the end goal, but a transition train is needed.
@@ -627,6 +612,11 @@ module.exports = (
         };
       }
 
+      // mustVerify is set when scoped keys are requested when the session token is created.
+      // tokenVerified is true when a corresponding row (tokenVerificationId) in the unverifiedTokens
+      // table matches this token, which may be the case when the primary email has not been
+      // verified (which is handled above), or we force token verification for another reason:
+      // https://github.com/mozilla/fxa/blob/cabad896114fb2b7a8a36cf015312baa5c1ec337/packages/fxa-auth-server/lib/routes/account.ts#L1055
       if (sessionToken.mustVerify && !sessionToken.tokenVerified) {
         return {
           verified: false,
