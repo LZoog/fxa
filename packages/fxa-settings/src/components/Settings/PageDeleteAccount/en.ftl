@@ -20,8 +20,8 @@ delete-account-product-firefox-addons = { -brand-firefox } Add-ons
 
 delete-account-acknowledge = Please acknowledge that by deleting your account:
 
-delete-account-chk-box-1-v3 =
- .label = Any paid subscriptions you have will be canceled (Except { -product-pocket })
+delete-account-chk-box-1-v4 =
+ .label = Any paid subscriptions you have will be canceled
 delete-account-chk-box-2 =
  .label = You may lose saved information and features within { -brand-mozilla } products
 delete-account-chk-box-3 =
@@ -34,8 +34,6 @@ delete-account-continue-button = Continue
 
 delete-account-password-input =
  .label = Enter password
-pocket-delete-notice = If you subscribe to Pocket Premium, please make sure that you <a>cancel your subscription</a> before deleting your account.
-pocket-delete-notice-marketing = To stop receiving marketing emails from Mozilla Corporation and Mozilla Foundation, you must <a>request deletion of your marketing data.</a>
 
 delete-account-cancel-button = Cancel
 delete-account-delete-button-2 = Delete
