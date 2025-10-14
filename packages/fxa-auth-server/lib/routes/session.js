@@ -300,7 +300,7 @@ module.exports = function (
             details: isA.object({
               accountEmailVerified: isA.boolean(),
               sessionVerificationMethod: isA.string().allow(null),
-              sessionVerificationSuccessful: isA.boolean(),
+              sessionVerified: isA.boolean(),
               sessionVerificationMeetsMinimumAAL: isA.boolean(),
             }),
           }),
@@ -328,12 +328,10 @@ module.exports = function (
         const accountEmailVerified =
           account.emails?.primaryEmail?.isVerified || false;
 
-        const sessionVerificationMethod = sessionToken.verificationMethod;
+        const sessionVerificationMethod = sessionToken.verificationMethodValue;
 
         // See verified-session-token auth strategy
-        const sessionVerificationSuccessful =
-          sessionToken.tokenVerificationId == null &&
-          sessionToken.tokenVerified !== false;
+        const sessionVerified = !sessionToken.tokenVerificationId;
 
         // Account Assurance Level
         const sessionVerificationMeetsMinimumAAL = sessionAal >= accountAal;
@@ -344,7 +342,7 @@ module.exports = function (
           details: {
             accountEmailVerified,
             sessionVerificationMethod,
-            sessionVerificationSuccessful,
+            sessionVerified,
             sessionVerificationMeetsMinimumAAL,
           },
         };

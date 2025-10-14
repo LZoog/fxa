@@ -7,7 +7,12 @@ import * as Sentry from '@sentry/browser';
 import SettingsLayout from './SettingsLayout';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import AppErrorDialog from 'fxa-react/components/AppErrorDialog';
-import { useAccount, useInitialSettingsState, useSession } from '../../models';
+import {
+  useAccount,
+  useAuthClient,
+  useInitialSettingsState,
+  useSession,
+} from '../../models';
 import {
   Redirect,
   Router,
@@ -30,7 +35,7 @@ import { SETTINGS_PATH } from '../../constants';
 import PageAvatar from './PageAvatar';
 import PageRecentActivity from './PageRecentActivity';
 import { MfaGuardPageRecoveryKeyCreate } from './PageRecoveryKeyCreate';
-import { currentAccount } from '../../lib/cache';
+import { currentAccount, sessionToken } from '../../lib/cache';
 import { hasAccount, setCurrentAccount } from '../../lib/storage-utils';
 import GleanMetrics from '../../lib/glean';
 import Head from 'fxa-react/components/Head';
@@ -45,10 +50,13 @@ export const Settings = ({
   integration,
 }: { integration: SettingsIntegration } & RouteComponentProps) => {
   const session = useSession();
+  const authClient = useAuthClient();
   const account = useAccount();
   const location = useLocation();
   const navigateWithQuery = useNavigateWithQuery();
   const [sessionVerified, setSessionVerified] = useState<boolean | undefined>();
+  const [sessionVerificationMeetsAAL, setSessionVerificationMeetsAAL] =
+    useState<boolean | undefined>();
 
   useEffect(() => {
     /**
@@ -124,9 +132,23 @@ export const Settings = ({
 
   useEffect(() => {
     (async () => {
-      setSessionVerified(await session.isSessionVerified());
+      let sessionIsVerified = sessionVerified;
+      // only run once
+      if (sessionIsVerified === undefined) {
+        sessionIsVerified = await session.isSessionVerified();
+        setSessionVerified(sessionIsVerified);
+      }
+
+      // Must check for 'account' or else account.totpActive may error out
+      // since it'll try to read from cache.
+      if (sessionIsVerified && account && account.totpActive) {
+        setSessionVerificationMeetsAAL(
+          (await authClient.sessionStatus(sessionToken()!)).details
+            .sessionVerificationMeetsMinimumAAL
+        );
+      }
     })();
-  }, [session]);
+  }, [session, authClient, account, sessionVerified]);
 
   if (loading || sessionVerified === undefined) {
     return <LoadingSpinner fullScreen />;
@@ -148,6 +170,12 @@ export const Settings = ({
       'Account or email verification is require to access /settings!'
     );
     navigateWithQuery('/');
+    return <LoadingSpinner fullScreen />;
+  }
+
+  if (sessionVerificationMeetsAAL === false) {
+    console.warn('2FA must be entered to access /settings!');
+    navigateWithQuery('/signin_totp_code');
     return <LoadingSpinner fullScreen />;
   }
 
