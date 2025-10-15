@@ -50,6 +50,10 @@ export type SigninTotpCodeContainerProps = {
   serviceName: MozServices;
 };
 
+type SessionAALUpgradeLocationState = {
+  sessionAALUpgrade: true;
+};
+
 export const SigninTotpCodeContainer = ({
   integration,
   serviceName,
@@ -63,9 +67,13 @@ export const SigninTotpCodeContainer = ({
   );
   // TODO: FXA-9177, likely use Apollo cache here instead of location state
   const location = useLocation() as ReturnType<typeof useLocation> & {
-    state: SigninLocationState;
+    state: SigninLocationState | SessionAALUpgradeLocationState;
   };
-  const signinState = getSigninState(location.state);
+  const isSessionAALUpgrade =
+    'sessionAALUpgrade' in location.state &&
+    location.state.sessionAALUpgrade === true;
+  const signinState = getSigninState(location.state as SigninLocationState);
+
   const sensitiveDataClient = useSensitiveDataClient();
   const { keyFetchToken, unwrapBKey } =
     sensitiveDataClient.getDataType(SensitiveData.Key.Auth) || {};
@@ -135,6 +143,8 @@ export const SigninTotpCodeContainer = ({
       // a key stretching upgrade until the session is verified, which the process
       // can only be finished after the account has been verified on accounts that
       // require totp.
+      // Users accessing this page because they need a session token AAL upgrade will
+      // not upgrade key stretching since they didn't enter a password.
       const sessionToken = signinState?.sessionToken;
       if (sessionToken && (await session.isSessionVerified())) {
         await tryFinalizeUpgrade(
@@ -162,7 +172,9 @@ export const SigninTotpCodeContainer = ({
 
   if (
     !signinState ||
-    (signinState.verificationMethod &&
+    // Invalid states for this page
+    ((!signinState.sessionToken || !isSessionAALUpgrade) &&
+      signinState.verificationMethod &&
       signinState.verificationMethod !== VerificationMethods.TOTP_2FA)
   ) {
     navigateWithQuery('/');
@@ -176,6 +188,7 @@ export const SigninTotpCodeContainer = ({
         integration,
         redirectTo,
         signinState,
+        isSessionAALUpgrade,
         submitTotpCode,
         serviceName,
         keyFetchToken,

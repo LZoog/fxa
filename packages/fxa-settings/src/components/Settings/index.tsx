@@ -132,23 +132,21 @@ export const Settings = ({
 
   useEffect(() => {
     (async () => {
-      let sessionIsVerified = sessionVerified;
-      // only run once
-      if (sessionIsVerified === undefined) {
-        sessionIsVerified = await session.isSessionVerified();
-        setSessionVerified(sessionIsVerified);
+      // Only run once
+      if (
+        sessionVerified !== undefined ||
+        sessionVerificationMeetsAAL !== undefined
+      ) {
+        return;
       }
-
-      // Must check for 'account' or else account.totpActive may error out
-      // since it'll try to read from cache.
-      if (sessionIsVerified && account && account.totpActive) {
-        setSessionVerificationMeetsAAL(
-          (await authClient.sessionStatus(sessionToken()!)).details
-            .sessionVerificationMeetsMinimumAAL
-        );
-      }
+      const { details } = await authClient.sessionStatus(sessionToken()!);
+      console.log('details', details);
+      setSessionVerified(details.sessionVerified);
+      setSessionVerificationMeetsAAL(
+        details.sessionVerificationMeetsMinimumAAL
+      );
     })();
-  }, [session, authClient, account, sessionVerified]);
+  }, [authClient, sessionVerified, sessionVerificationMeetsAAL]);
 
   if (loading || sessionVerified === undefined) {
     return <LoadingSpinner fullScreen />;
@@ -173,9 +171,16 @@ export const Settings = ({
     return <LoadingSpinner fullScreen />;
   }
 
+  // This happens when a multi-device user sets up 2FA on device A and tries
+  // to access Settings on device B. If they haven't upgraded the assurance level
+  // on device B's session token with TOTP, we require them to.
   if (sessionVerificationMeetsAAL === false) {
     console.warn('2FA must be entered to access /settings!');
-    navigateWithQuery('/signin_totp_code');
+    navigateWithQuery('/signin_totp_code', {
+      state: {
+        sessionAALUpgrade: true,
+      },
+    });
     return <LoadingSpinner fullScreen />;
   }
 

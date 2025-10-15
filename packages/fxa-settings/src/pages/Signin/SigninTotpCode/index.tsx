@@ -34,6 +34,7 @@ export type SigninTotpCodeProps = {
   integration: SigninIntegration;
   redirectTo?: string;
   signinState: SigninLocationState;
+  isSessionAALUpgrade: boolean;
   // TODO: Switch to gql error shaped object
   submitTotpCode: (totpCode: string) => Promise<{ error?: HandledError }>;
   serviceName?: MozServices;
@@ -46,6 +47,7 @@ export const SigninTotpCode = ({
   integration,
   redirectTo,
   signinState,
+  isSessionAALUpgrade,
   submitTotpCode,
   keyFetchToken,
   unwrapBKey,
@@ -55,15 +57,6 @@ export const SigninTotpCode = ({
   const navigateWithQuery = useNavigateWithQuery();
 
   const [bannerError, setBannerError] = useState<string>('');
-
-  const {
-    email,
-    uid,
-    sessionToken,
-    verificationMethod,
-    verificationReason,
-    showInlineRecoveryKeySetup,
-  } = signinState;
 
   useEffect(() => {
     GleanMetrics.totpForm.view();
@@ -81,6 +74,27 @@ export const SigninTotpCode = ({
       return;
     } else {
       GleanMetrics.totpForm.success();
+
+      // IF signinState.sessionToken + other signin state values, do the below.
+      // OTHERWISE, this is an AAL upgrade. Take the user back to Settings
+      // in this case. Skip for RP redirects. Does not impact Sync either -
+      // mobile Sync users won't have oauth query params anyway, just take
+      // them back to /settings.
+      if (isSessionAALUpgrade) {
+        navigateWithQuery('/settings');
+        return;
+      }
+
+      console.log('should NOT be hitting this hello');
+
+      const {
+        email,
+        uid,
+        sessionToken,
+        verificationMethod,
+        verificationReason,
+        showInlineRecoveryKeySetup,
+      } = signinState;
 
       storeAccountData({
         sessionToken,
@@ -186,25 +200,33 @@ export const SigninTotpCode = ({
         }}
       />
       <div className="mt-8 link-blue text-sm flex justify-between">
-        <FtlMsg id="signin-totp-code-other-account-link">
-          {/* TODO in FXA-8636 replace with Link component once index reactified */}
-          <a
-            href="/"
-            className="text-sm link-blue"
-            data-glean-id="login_totp_code_different_account_link"
-            onClick={(e) => {
-              e.preventDefault();
-
-              navigateWithQuery('/', {
-                state: {
-                  prefillEmail: email,
-                },
-              });
-            }}
-          >
-            Use a different account
-          </a>
-        </FtlMsg>
+        {!isSessionAALUpgrade ? (
+          <FtlMsg id="signin-totp-code-other-account-link">
+            {/* TODO in FXA-8636 replace with Link component once index reactified */}
+            <a
+              href="/"
+              className="text-sm link-blue"
+              data-glean-id="login_totp_code_different_account_link"
+              onClick={(e) => {
+                e.preventDefault();
+                navigateWithQuery('/', {
+                  state: {
+                    prefillEmail: signinState.email,
+                  },
+                });
+              }}
+            >
+              Use a different account
+            </a>
+          </FtlMsg>
+        ) : (
+          <>
+            {/* If this is a session AAL upgrade, do not offer to use a different account, just offer to
+              sign out. We do not reliably have Sync oauth query parameters to initiate a mobile Sync sign-in
+              flow, as this was a redirect from /settings. */}
+            <button>Sign out</button>
+          </>
+        )}
         <FtlMsg id="signin-totp-code-recovery-code-link">
           <Link
             to={`/signin_recovery_choice${location.search}`}

@@ -325,8 +325,7 @@ module.exports = function (
         const sessionAal = sessionToken.authenticatorAssuranceLevel;
 
         // Build response
-        const accountEmailVerified =
-          account.emails?.primaryEmail?.isVerified || false;
+        const accountEmailVerified = account.primaryEmail.isVerified || false;
 
         const sessionVerificationMethod = sessionToken.verificationMethodValue;
 
