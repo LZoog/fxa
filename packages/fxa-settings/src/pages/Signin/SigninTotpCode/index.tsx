@@ -56,6 +56,16 @@ export const SigninTotpCode = ({
   const location = useLocation();
   const navigateWithQuery = useNavigateWithQuery();
 
+  const localizedBannerAALUpgrade = isSessionAALUpgrade
+    ? {
+        header: ftlMsgResolver.getMsg('TBD', 'Re-authentication required'),
+        content: ftlMsgResolver.getMsg(
+          'TBD',
+          "You have two-factor authentication set up on your account, but you haven't entered your two-factor authentication code on this device yet."
+        ),
+      }
+    : undefined;
+
   const [bannerError, setBannerError] = useState<string>('');
 
   useEffect(() => {
@@ -75,17 +85,15 @@ export const SigninTotpCode = ({
     } else {
       GleanMetrics.totpForm.success();
 
-      // IF signinState.sessionToken + other signin state values, do the below.
-      // OTHERWISE, this is an AAL upgrade. Take the user back to Settings
-      // in this case. Skip for RP redirects. Does not impact Sync either -
-      // mobile Sync users won't have oauth query params anyway, just take
-      // them back to /settings.
+      // If this is an AAL upgrade, take the user back where they began (Settings).
+      // RP redirects won't get into this state since they'll be taken to the RP
+      // and not Settings, and this doesn't impact Sync logins because if a Sync user
+      // is inside Settings, we might not have the oauth query parameters required to
+      // begin a sign-in flow anyway. Just take all users back to `/settings`.
       if (isSessionAALUpgrade) {
         navigateWithQuery('/settings');
         return;
       }
-
-      console.log('should NOT be hitting this hello');
 
       const {
         email,
@@ -157,6 +165,16 @@ export const SigninTotpCode = ({
         <h2 className="card-header">Enter two-step authentication code</h2>
       </FtlMsg>
 
+      {isSessionAALUpgrade && localizedBannerAALUpgrade && (
+        <Banner
+          type="info"
+          content={{
+            localizedHeading: localizedBannerAALUpgrade.header,
+            localizedDescription: localizedBannerAALUpgrade.content,
+          }}
+        />
+      )}
+
       <div className="flex space-x-4">
         <img src={protectionShieldIcon} alt="" />
         <FtlMsg id="signin-totp-code-instruction-v4">
@@ -221,10 +239,10 @@ export const SigninTotpCode = ({
           </FtlMsg>
         ) : (
           <>
-            {/* If this is a session AAL upgrade, do not offer to use a different account, just offer to
-              sign out. We do not reliably have Sync oauth query parameters to initiate a mobile Sync sign-in
-              flow, as this was a redirect from /settings. */}
-            <button>Sign out</button>
+            {/* If this is a session AAL upgrade, do not offer to use a different account, just
+              offer to sign out. We do not reliably have Sync oauth query parameters to initiate
+              a mobile Sync sign-in flow, as this was a redirect from /settings. */}
+            <button>Sign out of this account</button>
           </>
         )}
         <FtlMsg id="signin-totp-code-recovery-code-link">

@@ -41,7 +41,7 @@ export const mockOAuthNativeSigninIntegration = (
 ) => {
   const service = isSync ? OAuthNativeServices.Sync : OAuthNativeServices.Relay;
   const isRelay = service === OAuthNativeServices.Relay;
-  return ({
+  return {
     type: IntegrationType.OAuthNative,
     getService: () => (isSync ? MozServices.FirefoxSync : MozServices.Relay),
     isSync: () => isSync,
@@ -56,7 +56,7 @@ export const mockOAuthNativeSigninIntegration = (
     ),
     getCmsInfo: () => cmsInfo,
     isFirefoxMobileClient: () => false,
-  }) as SigninIntegration;
+  } as SigninIntegration;
 };
 
 export const MOCK_TOTP_LOCATION_STATE = {
@@ -85,6 +85,7 @@ export const Subject = ({
   serviceName = MozServices.Default,
   signinState = MOCK_TOTP_LOCATION_STATE,
   submitTotpCode = mockSubmitTotpCode,
+  isSessionAALUpgrade = false,
 }: Partial<SigninTotpCodeProps>) => {
   return (
     <LocationProvider>
@@ -95,6 +96,7 @@ export const Subject = ({
           serviceName,
           signinState,
           submitTotpCode,
+          isSessionAALUpgrade,
         }}
       />
     </LocationProvider>
