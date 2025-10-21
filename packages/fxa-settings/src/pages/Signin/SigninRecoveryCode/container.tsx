@@ -29,6 +29,7 @@ import { useNavigateWithQuery } from '../../../lib/hooks/useNavigateWithQuery';
 type SigninRecoveryCodeLocationState = {
   signinState: SigninLocationState;
   lastFourPhoneDigits: string;
+  isSessionAALUpgrade?: boolean;
 };
 
 export type SigninRecoveryCodeContainerProps = {
@@ -50,6 +51,7 @@ export const SigninRecoveryCodeContainer = ({
   const navigateWithQuery = useNavigateWithQuery();
   const signinState = getSigninState(location.state?.signinState);
   const lastFourPhoneDigits = location.state?.lastFourPhoneDigits;
+  const isSessionAALUpgrade = location.state?.isSessionAALUpgrade || false;
   const sensitiveDataClient = useSensitiveDataClient();
   const { keyFetchToken, unwrapBKey } =
     sensitiveDataClient.getDataType(SensitiveData.Key.Auth) || {};
@@ -89,7 +91,7 @@ export const SigninRecoveryCodeContainer = ({
     try {
       await authClient.recoveryPhoneSigninSendCode(signinState.sessionToken);
       navigateWithQuery('/signin_recovery_phone', {
-        state: { signinState, lastFourPhoneDigits },
+        state: { signinState, lastFourPhoneDigits, isSessionAALUpgrade },
       });
       return;
     } catch (error) {
@@ -125,6 +127,7 @@ export const SigninRecoveryCodeContainer = ({
         signinState,
         submitRecoveryCode,
         unwrapBKey,
+        isSessionAALUpgrade,
       }}
     />
   );

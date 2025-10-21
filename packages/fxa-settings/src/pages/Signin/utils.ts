@@ -493,7 +493,11 @@ const getOAuthNavigationTarget = async (
 export function getSigninState(
   locationState?: SigninLocationState
 ): SigninLocationState | null {
-  return locationState && Object.keys(locationState).length > 0
+  // When location state isn't passed, reach-router still gives us an object
+  // that contains a 'key', e.g. { key: 123456 }
+  // So check for a required key in signin state and if it exists then use it.
+  // Otherwise, pull from local storage.
+  return locationState && locationState.sessionToken
     ? locationState
     : getStoredAccountInfo();
 }

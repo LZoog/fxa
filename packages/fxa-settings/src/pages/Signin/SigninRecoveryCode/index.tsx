@@ -24,6 +24,7 @@ import { storeAccountData } from '../../../lib/storage-utils';
 import { handleNavigation } from '../utils';
 import { getLocalizedErrorMessage } from '../../../lib/error-utils';
 import { useWebRedirect } from '../../../lib/hooks/useWebRedirect';
+import { useNavigateWithQuery } from '../../../lib/hooks/useNavigateWithQuery';
 import { isBase32Crockford } from '../../../lib/utilities';
 import Banner from '../../../components/Banner';
 import { HeadingPrimary } from '../../../components/HeadingPrimary';
@@ -42,6 +43,7 @@ const SigninRecoveryCode = ({
   signinState,
   submitRecoveryCode,
   unwrapBKey,
+  isSessionAALUpgrade = false,
 }: SigninRecoveryCodeProps & RouteComponentProps) => {
   useEffect(() => {
     GleanMetrics.loginBackupCode.view();
@@ -58,6 +60,7 @@ const SigninRecoveryCode = ({
   );
   const location = useLocation();
   const { apolloClient } = useContext(AppContext);
+  const navigateWithQuery = useNavigateWithQuery();
 
   const webRedirectCheck = useWebRedirect(integration.data.redirectTo);
 
@@ -86,6 +89,12 @@ const SigninRecoveryCode = ({
   };
 
   const onSuccessNavigate = useCallback(async () => {
+    // If this is an AAL upgrade, take the user back to Settings
+    if (isSessionAALUpgrade) {
+      navigateWithQuery('/settings');
+      return;
+    }
+
     const navigationOptions = {
       email,
       signinData: {
@@ -111,6 +120,8 @@ const SigninRecoveryCode = ({
       setBannerErrorMessage(getLocalizedErrorMessage(ftlMsgResolver, error));
     }
   }, [
+    isSessionAALUpgrade,
+    navigateWithQuery,
     email,
     integration,
     finishOAuthFlowHandler,

@@ -32,8 +32,9 @@ export type SigninRecoveryChoiceProps = {
   maskedPhoneNumber: string;
   lastFourPhoneDigits: string;
   numBackupCodes: number;
-  signinState: SigninLocationState;
+  signinState?: SigninLocationState;
   integration?: SigninIntegration;
+  isSessionAALUpgrade?: boolean;
 };
 
 const SigninRecoveryChoice = ({
@@ -43,6 +44,7 @@ const SigninRecoveryChoice = ({
   numBackupCodes,
   signinState,
   integration,
+  isSessionAALUpgrade = false,
 }: SigninRecoveryChoiceProps) => {
   const [errorBannerMessage, setErrorBannerMessage] = React.useState('');
   const [errorBannerDescription, setErrorBannerDescription] =
@@ -95,12 +97,17 @@ const SigninRecoveryChoice = ({
           return;
         }
         navigateWithQuery('/signin_recovery_phone', {
-          state: { signinState, lastFourPhoneDigits, numBackupCodes },
+          state: {
+            signinState,
+            lastFourPhoneDigits,
+            numBackupCodes,
+            isSessionAALUpgrade,
+          },
         });
         break;
       case CHOICES.code:
         navigateWithQuery('/signin_recovery_code', {
-          state: { signinState, lastFourPhoneDigits },
+          state: { signinState, lastFourPhoneDigits, isSessionAALUpgrade },
         });
         break;
     }

@@ -5,9 +5,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, RouteComponentProps, useLocation } from '@reach/router';
 import { FtlMsg } from 'fxa-react/lib/utils';
-import { useFtlMsgResolver } from '../../../models';
+import { useFtlMsgResolver, useSession } from '../../../models';
 import { logViewEvent } from '../../../lib/metrics';
 import { MozServices } from '../../../lib/types';
+import firefox from '../../../lib/channels/firefox';
 import AppLayout from '../../../components/AppLayout';
 import GleanMetrics from '../../../lib/glean';
 import { SigninIntegration, SigninLocationState } from '../interfaces';
@@ -24,6 +25,7 @@ import Banner from '../../../components/Banner';
 import { SensitiveData } from '../../../lib/sensitive-data-client';
 import { HeadingPrimary } from '../../../components/HeadingPrimary';
 import FormVerifyTotp from '../../../components/FormVerifyTotp';
+import { currentAccount } from '../../../lib/cache';
 
 // TODO: show a banner success message if a user is coming from reset password
 // in FXA-6491. This differs from content-server where currently, users only
@@ -55,18 +57,41 @@ export const SigninTotpCode = ({
   const ftlMsgResolver = useFtlMsgResolver();
   const location = useLocation();
   const navigateWithQuery = useNavigateWithQuery();
+  const session = useSession();
+
+  const [bannerError, setBannerError] = useState<string>('');
+
+  const handleSignOut = async () => {
+    try {
+      setBannerError('');
+      const cachedAccount = currentAccount();
+      await session.destroy();
+      // `cachedAccount.uid && cachedAccount.sessionToken && isSessionAALUpgrade' is checked for
+      // in the container component, so we know it exists here
+      firefox.fxaLogout({ uid: cachedAccount!.uid });
+      window.location.assign(window.location.origin);
+    } catch (error) {
+      setBannerError(
+        ftlMsgResolver.getMsg(
+          'signin-totp-code-aal-sign-out-error',
+          'Sorry, there was a problem signing you out'
+        )
+      );
+    }
+  };
 
   const localizedBannerAALUpgrade = isSessionAALUpgrade
     ? {
-        header: ftlMsgResolver.getMsg('TBD', 'Re-authentication required'),
+        header: ftlMsgResolver.getMsg(
+          'signin-totp-code-aal-banner-header',
+          'Why are you being asked to authenticate?'
+        ),
         content: ftlMsgResolver.getMsg(
-          'TBD',
-          "You have two-factor authentication set up on your account, but you haven't entered your two-factor authentication code on this device yet."
+          'signin-totp-code-aal-banner-content',
+          'You set up two-step authentication on your account, but haven’t signed in with a code on this device yet.'
         ),
       }
     : undefined;
-
-  const [bannerError, setBannerError] = useState<string>('');
 
   useEffect(() => {
     GleanMetrics.totpForm.view();
@@ -238,17 +263,23 @@ export const SigninTotpCode = ({
             </a>
           </FtlMsg>
         ) : (
-          <>
+          <FtlMsg id="signin-totp-code-aal-sign-out">
             {/* If this is a session AAL upgrade, do not offer to use a different account, just
               offer to sign out. We do not reliably have Sync oauth query parameters to initiate
               a mobile Sync sign-in flow, as this was a redirect from /settings. */}
-            <button>Sign out of this account</button>
-          </>
+            <button
+              className="link-blue"
+              data-glean-id="login_totp_code_aal_sign_out"
+              onClick={handleSignOut}
+            >
+              Sign out of this account
+            </button>
+          </FtlMsg>
         )}
         <FtlMsg id="signin-totp-code-recovery-code-link">
           <Link
             to={`/signin_recovery_choice${location.search}`}
-            state={signinState}
+            state={{ signinState, isSessionAALUpgrade }}
             className="text-end"
             data-glean-id="login_totp_code_trouble_link"
           >

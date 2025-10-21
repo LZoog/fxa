@@ -48,6 +48,7 @@ const SigninRecoveryPhoneContainer = ({
   );
   const lastFourPhoneDigits = location.state?.lastFourPhoneDigits;
   const numBackupCodes = location.state?.numBackupCodes;
+  const isSessionAALUpgrade = location.state?.isSessionAALUpgrade || false;
   const navigateWithQuery = useNavigateWithQuery();
   const sendError = location.state?.sendError;
 
@@ -104,6 +105,23 @@ const SigninRecoveryPhoneContainer = ({
       });
       await new Promise((resolve) => setTimeout(resolve, 100));
 
+      const recoveryPhoneSigninSuccessGleanMetric =
+        GleanMetrics.login.recoveryPhoneSuccessView;
+
+      alertBar.success(
+        ftlMsgResolver.getMsg(
+          'signin-recovery-phone-success-message',
+          'Signed in successfully. Limits may apply if you use your recovery phone again.'
+        ),
+        recoveryPhoneSigninSuccessGleanMetric
+      );
+
+      // If this is an AAL upgrade, take the user back to Settings
+      if (isSessionAALUpgrade) {
+        navigateWithQuery('/settings');
+        return;
+      }
+
       const navigationOptions = {
         email: signinState.email,
         signinData: {
@@ -123,17 +141,6 @@ const SigninRecoveryPhoneContainer = ({
         handleFxaOAuthLogin: true,
         performNavigation: !integration.isFirefoxMobileClient(),
       };
-
-      const recoveryPhoneSigninSuccessGleanMetric =
-        GleanMetrics.login.recoveryPhoneSuccessView;
-
-      alertBar.success(
-        ftlMsgResolver.getMsg(
-          'signin-recovery-phone-success-message',
-          'Signed in successfully. Limits may apply if you use your recovery phone again.'
-        ),
-        recoveryPhoneSigninSuccessGleanMetric
-      );
 
       await handleNavigation(navigationOptions);
     } catch (error) {
@@ -196,6 +203,7 @@ const SigninRecoveryPhoneContainer = ({
         sendError,
         numBackupCodes,
         integration,
+        isSessionAALUpgrade,
       }}
     />
   );

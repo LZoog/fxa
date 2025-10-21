@@ -309,6 +309,7 @@ module.exports = (log, db, config, customs, mailer, glean, statsd) => {
           id: tokenId,
           tokenVerificationId,
           uid,
+          sessionToken,
         } = request.auth.credentials;
 
         await customs.checkAuthenticated(
@@ -326,6 +327,9 @@ module.exports = (log, db, config, customs, mailer, glean, statsd) => {
 
         if (tokenVerificationId) {
           await db.verifyTokensWithMethod(tokenId, 'recovery-code');
+          // This was an AAL upgrade
+        } else if (sessionToken.authenticatorAssuranceLevel <= 1) {
+          await db.verifyTokensWithMethod(sessionToken.id, 'totp-2fa');
         }
 
         const account = await db.account(uid);

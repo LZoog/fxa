@@ -44,6 +44,7 @@ import {
 import { tryFinalizeUpgrade } from '../../../lib/gql-key-stretch-upgrade';
 import { AuthUiErrors } from '../../../lib/auth-errors/auth-errors';
 import { useNavigateWithQuery } from '../../../lib/hooks/useNavigateWithQuery';
+import { currentAccount } from '../../../lib/cache';
 
 export type SigninTotpCodeContainerProps = {
   integration: Integration;
@@ -60,6 +61,7 @@ export const SigninTotpCodeContainer = ({
 }: SigninTotpCodeContainerProps & RouteComponentProps) => {
   const authClient = useAuthClient();
   const session = useSession();
+  const cachedAccount = currentAccount();
 
   const { finishOAuthFlowHandler, oAuthDataError } = useFinishOAuthFlowHandler(
     authClient,
@@ -173,7 +175,9 @@ export const SigninTotpCodeContainer = ({
   if (
     !signinState ||
     // Invalid states for this page
-    ((!signinState.sessionToken || !isSessionAALUpgrade) &&
+    ((!signinState.sessionToken ||
+      (!isSessionAALUpgrade && !cachedAccount?.sessionToken) ||
+      !cachedAccount?.uid) &&
       signinState.verificationMethod &&
       signinState.verificationMethod !== VerificationMethods.TOTP_2FA)
   ) {

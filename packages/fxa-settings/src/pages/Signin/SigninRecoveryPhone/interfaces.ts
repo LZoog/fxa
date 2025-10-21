@@ -16,6 +16,7 @@ export interface SigninRecoveryPhoneLocationState extends SigninLocationState {
   lastFourPhoneDigits: string;
   sendError?: AuthUiError;
   numBackupCodes?: number;
+  isSessionAALUpgrade?: boolean;
 }
 
 export type SigninRecoveryPhoneProps = {
@@ -25,4 +26,5 @@ export type SigninRecoveryPhoneProps = {
   integration?: SigninIntegration;
   sendError?: AuthUiError;
   numBackupCodes?: number;
+  isSessionAALUpgrade?: boolean;
 };

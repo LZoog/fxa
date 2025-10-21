@@ -140,7 +140,6 @@ export const Settings = ({
         return;
       }
       const { details } = await authClient.sessionStatus(sessionToken()!);
-      console.log('details', details);
       setSessionVerified(details.sessionVerified);
       setSessionVerificationMeetsAAL(
         details.sessionVerificationMeetsMinimumAAL

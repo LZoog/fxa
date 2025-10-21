@@ -13,6 +13,7 @@ import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { AuthUiErrors } from '../../../lib/auth-errors/auth-errors';
 import { formatPhoneNumber } from '../../../lib/recovery-phone-utils';
 import { getHandledError, HandledError } from '../../../lib/error-utils';
+import { currentAccount } from '../../../lib/cache';
 
 export const SigninRecoveryChoiceContainer = ({
   integration,
@@ -21,11 +22,15 @@ export const SigninRecoveryChoiceContainer = ({
 } & RouteComponentProps) => {
   const authClient = useAuthClient();
   const location = useLocation() as ReturnType<typeof useLocation> & {
-    state: SigninLocationState;
+    state: {
+      signinState: SigninLocationState;
+      isSessionAALUpgrade?: boolean;
+    };
   };
   const navigateWithQuery = useNavigateWithQuery();
   const ftlMsgResolver = useFtlMsgResolver();
-  const signinState = getSigninState(location.state);
+  const signinState = getSigninState(location.state?.signinState);
+  const isSessionAALUpgrade = location.state?.isSessionAALUpgrade || false;
 
   const [numBackupCodes, setNumBackupCodes] = useState<number>(0);
   const [phoneData, setPhoneData] = useState({
@@ -161,6 +166,7 @@ export const SigninRecoveryChoiceContainer = ({
         lastFourPhoneDigits: phoneData.lastFourPhoneDigits,
         sendError: error,
         numBackupCodes,
+        isSessionAALUpgrade,
       },
       replace: true,
     });
@@ -171,12 +177,18 @@ export const SigninRecoveryChoiceContainer = ({
     signinState,
     phoneData.lastFourPhoneDigits,
     numBackupCodes,
+    isSessionAALUpgrade,
   ]);
 
   // Handle all navigation logic in a single effect with clear priority order
   useEffect(() => {
-    // Priority 1: Missing signinState or sessionToken
-    if (!signinState || !signinState.sessionToken) {
+    // Priority 1: Missing signinState or sessionToken, or missing session token
+    // when isSessionAALUpgrade is true
+    if (
+      (isSessionAALUpgrade === false &&
+        (!signinState || !signinState.sessionToken)) ||
+      (isSessionAALUpgrade === true && !currentAccount()?.sessionToken)
+    ) {
       redirectToSignin();
       return;
     }
@@ -240,6 +252,7 @@ export const SigninRecoveryChoiceContainer = ({
         numBackupCodes,
         signinState,
         integration,
+        isSessionAALUpgrade,
       }}
     />
   );
