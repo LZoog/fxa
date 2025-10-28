@@ -1075,11 +1075,6 @@ export class AccountHandler {
     };
 
     const skipTokenVerification = async (request: AuthRequest, account: any) => {
-      // Skip all checks to simulate an unverified session token state
-      if (this.config.signinConfirmation.tokenVerification === false) {
-        return false;
-      }
-
       // Check to see if there has been a recent, successfully-verified login from
       // the same device (as indicated by User-Agent string)
       if (this.config.signinConfirmation.deviceFingerprinting?.enabled) {
