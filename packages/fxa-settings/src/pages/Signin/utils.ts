@@ -6,7 +6,6 @@ import VerificationMethods from '../../constants/verification-methods';
 import VerificationReasons from '../../constants/verification-reasons';
 import {
   NavigationOptions,
-  RecoveryEmailStatusResponse,
   SigninLocationState,
 } from './interfaces';
 import { AuthUiError, AuthUiErrors } from '../../lib/auth-errors/auth-errors';
@@ -130,12 +129,9 @@ export const cachedSignIn = async (
 
     // after accountProfile data is retrieved we must check verified status
     // TODO: FXA-9177 can we use the useSession hook here? Or update Apollo Cache
-    const {
-      verified,
-      sessionVerified,
-      emailVerified,
-    }: RecoveryEmailStatusResponse =
-      await authClient.recoveryEmailStatus(sessionToken);
+    const { details } = await authClient.sessionStatus(sessionToken);
+    const sessionVerified = details.sessionVerified;
+    const emailVerified = details.accountEmailVerified;
 
     let verificationMethod;
     let verificationReason;
@@ -162,13 +158,10 @@ export const cachedSignIn = async (
       data: {
         verificationMethod,
         verificationReason,
-        verified,
         // Because the cached signin was a success, we know 'uid' exists
         uid: storedLocalAccount!.uid,
-        // TODO, address signIn.verified vs session.verified discrepancy
-        // we're using sessionVerified now
         sessionVerified,
-        emailVerified, // might not need
+        emailVerified,
       },
     };
   } catch (error) {
@@ -241,11 +234,11 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
   // 6. WebIntegrations (ie Settings) are always redirected to confirm email
   // 7. Integrations that want keys always get redirected to confirm email
   // 8. Users that are forced to change their password always get redirected to confirm email
+  const isFullyVerified =
+    navigationOptions.signinData.emailVerified &&
+    navigationOptions.signinData.sessionVerified;
   if (
-    !navigationOptions.signinData.verified ||
-    // TODO, address signIn.verified vs session.verified discrepancy
-    // currently 'verified' only checks session status, but 'verificationReason'
-    // can tell us if it's a sign up. This will be cleaned up in FXA-12454
+    !isFullyVerified ||
     navigationOptions.signinData.verificationReason ===
       VerificationReasons.SIGN_UP
   ) {
@@ -368,7 +361,8 @@ const createSigninLocationState = (
     signinData: {
       uid,
       sessionToken,
-      verified,
+      emailVerified,
+      sessionVerified,
       verificationMethod,
       verificationReason,
     },
@@ -379,7 +373,8 @@ const createSigninLocationState = (
     email,
     uid,
     sessionToken,
-    verified,
+    emailVerified,
+    sessionVerified,
     verificationMethod,
     verificationReason,
     showInlineRecoveryKeySetup,
@@ -389,11 +384,14 @@ const createSigninLocationState = (
 
 function sendFxaLogin(navigationOptions: NavigationOptions) {
   const isOAuth = isOAuthIntegration(navigationOptions.integration);
+  const isFullyVerified =
+    navigationOptions.signinData.emailVerified &&
+    navigationOptions.signinData.sessionVerified;
   firefox.fxaLogin({
     email: navigationOptions.email,
     sessionToken: navigationOptions.signinData.sessionToken,
     uid: navigationOptions.signinData.uid,
-    verified: navigationOptions.signinData.verified,
+    verified: isFullyVerified,
     // Do not send these values if OAuth. Mobile doesn't care about this message, and
     // sending these values can cause intermittent sync disconnect issues in oauth desktop.
     ...(!isOAuth && {
@@ -566,14 +564,17 @@ export function getSigninState(
 
 // When SigninLocationState is not available from the router state,
 // this method can be used to check local storage
-function getStoredAccountInfo() {
+function getStoredAccountInfo(): SigninLocationState | null {
   const { email, sessionToken, uid, verified } = currentAccount() || {};
   if (email && sessionToken && uid && verified !== undefined) {
+    // Storage has a combined 'verified' field for backwards compatibility.
+    // Map it to both emailVerified and sessionVerified.
     return {
       email,
       sessionToken,
       uid,
-      verified,
+      emailVerified: verified,
+      sessionVerified: verified,
     };
   }
   return null;

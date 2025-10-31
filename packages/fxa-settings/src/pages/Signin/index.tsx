@@ -203,11 +203,13 @@ const Signin = ({
       if (data) {
         GleanMetrics.login.success();
 
+        const isFullyVerified =
+          data.signIn.emailVerified && data.signIn.sessionVerified;
         const navigationOptions = {
           email,
           signinData: data.signIn,
           unwrapBKey: data.unwrapBKey,
-          verified: data.signIn.verified,
+          verified: isFullyVerified,
           integration,
           finishOAuthFlowHandler,
           redirectTo:
@@ -219,7 +221,7 @@ const Signin = ({
           handleFxaLogin: true,
           handleFxaOAuthLogin: true,
           performNavigation: !(
-            integration.isFirefoxMobileClient() && data.signIn.verified
+            integration.isFirefoxMobileClient() && isFullyVerified
           ),
         };
 
@@ -229,11 +231,8 @@ const Signin = ({
             getLocalizedErrorMessage(ftlMsgResolver, navError)
           );
         } else {
-          // TODO, address signIn.verified vs session.verified discrepancy
-          // currently 'verified' only checks session status, but 'verificationReason'
-          // can tell us if it's a sign up. This will be cleaned up in FXA-12454
           if (
-            !data.signIn.verified &&
+            !isFullyVerified &&
             data.signIn.verificationReason !== VerificationReasons.SIGN_UP &&
             isWebIntegration(integration)
           ) {

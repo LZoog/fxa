@@ -605,7 +605,7 @@ module.exports = (
           verificationMethod = 'email';
         }
         return {
-          verified: false,
+          sessionVerified: sessionToken.tokenVerified,
           verificationMethod: verificationMethod,
           verificationReason: 'signup',
         };
@@ -613,13 +613,13 @@ module.exports = (
 
       if (sessionToken.mustVerify && !sessionToken.tokenVerified) {
         return {
-          verified: false,
+          sessionVerified: false,
           // Override the verification method if it was explicitly specified in the request.
           verificationMethod: verificationMethod || 'email',
           verificationReason: 'login',
         };
       }
-      return { verified: true };
+      return { sessionVerified: true };
     },
 
     /**

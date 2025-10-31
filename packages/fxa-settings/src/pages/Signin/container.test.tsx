@@ -957,7 +957,7 @@ describe('signin container', () => {
             currentVersion: 'v1',
             clientSalt: '',
           }),
-          mockGqlBeginSigninMutation({ keys: false }, {}, { verified: true }),
+          mockGqlBeginSigninMutation({ keys: false }, {}, { emailVerified: true, sessionVerified: true }),
           {
             ...mockGqlPasswordChangeStartMutation(),
             error: mockGqlError(),
@@ -986,7 +986,7 @@ describe('signin container', () => {
             currentVersion: 'v1',
             clientSalt: '',
           }),
-          mockGqlBeginSigninMutation({ keys: false }, {}, { verified: true }),
+          mockGqlBeginSigninMutation({ keys: false }, {}, { emailVerified: true, sessionVerified: true }),
           mockGqlPasswordChangeStartMutation(),
           {
             ...mockGqlGetAccountKeysMutation(),
@@ -1017,7 +1017,7 @@ describe('signin container', () => {
             currentVersion: 'v1',
             clientSalt: '',
           }),
-          mockGqlBeginSigninMutation({ keys: false }, {}, { verified: true }),
+          mockGqlBeginSigninMutation({ keys: false }, {}, { emailVerified: true, sessionVerified: true }),
           mockGqlPasswordChangeStartMutation(),
           mockGqlGetAccountKeysMutation(),
           {
@@ -1056,7 +1056,7 @@ describe('signin container', () => {
             currentVersion: 'v1',
           }),
           // Fallback to the V1 signin!
-          mockGqlBeginSigninMutation({ keys: false }, {}, { verified: false }),
+          mockGqlBeginSigninMutation({ keys: false }, {}, { emailVerified: false, sessionVerified: false }),
         ]);
 
         await waitFor(async () => {
@@ -1118,7 +1118,6 @@ describe('signin container', () => {
         expect(handlerResult?.data?.verificationReason).toEqual(
           VerificationReasons.SIGN_IN
         );
-        expect(handlerResult?.data?.verified).toEqual(false);
         expect(handlerResult?.data?.sessionVerified).toEqual(false);
         expect(handlerResult?.data?.emailVerified).toEqual(true);
       });
@@ -1152,7 +1151,6 @@ describe('signin container', () => {
         expect(handlerResult?.data?.verificationReason).toEqual(
           VerificationReasons.SIGN_UP
         );
-        expect(handlerResult?.data?.verified).toEqual(false);
         expect(handlerResult?.data?.sessionVerified).toEqual(false);
         expect(handlerResult?.data?.emailVerified).toEqual(false);
       });
@@ -1186,7 +1184,6 @@ describe('signin container', () => {
         expect(handlerResult?.data?.verificationReason).toEqual(
           VerificationReasons.SIGN_IN
         );
-        expect(handlerResult?.data?.verified).toEqual(false);
         expect(handlerResult?.data?.sessionVerified).toEqual(false);
         expect(handlerResult?.data?.emailVerified).toEqual(true);
       });
