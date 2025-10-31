@@ -182,10 +182,7 @@ module.exports = function (
         if (!account?.primaryEmail?.isVerified) {
           statsd.increment('session_reauth.primary_email_not_verified');
         }
-        if (
-          sessionToken.tokenVerificationId ||
-          sessionToken.tokenVerified === false
-        ) {
+        if (!sessionToken.tokenVerified) {
           statsd.increment('session_reauth.token_not_verified');
         }
         const accountAmr = await authMethods.availableAuthenticationMethods(
@@ -331,7 +328,7 @@ module.exports = function (
           sessionToken.verificationMethodValue || null;
 
         // See verified-session-token auth strategy
-        const sessionVerified = !sessionToken.tokenVerificationId;
+        const sessionVerified = sessionToken.tokenVerified;
 
         // Account Assurance Level
         const sessionVerificationMeetsMinimumAAL = sessionAal >= accountAal;
