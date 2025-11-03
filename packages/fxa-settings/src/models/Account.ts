@@ -618,7 +618,7 @@ export class Account implements AccountData {
       this.primaryEmail.email,
       response.uid,
       response.sessionToken,
-      response.verified,
+      response.sessionVerified,
       response.keyFetchToken,
       response.unwrapBKey
     );
@@ -639,7 +639,7 @@ export class Account implements AccountData {
           passwordCreated: response.authAt * 1000,
           __typename: 'Account',
         },
-        session: { verified: response.verified, __typename: 'Session' },
+        session: { verified: response.sessionVerified, __typename: 'Session' },
       },
     });
   }

@@ -370,7 +370,10 @@ describe('SigninUnblock', () => {
       renderWithSuccess(
         finishOAuthFlowHandler,
         integration,
-        createBeginSigninResponse({ emailVerified: true, sessionVerified: true })
+        createBeginSigninResponse({
+          emailVerified: true,
+          sessionVerified: true,
+        })
       );
       const input = screen.getByRole('textbox');
       const submitButton = screen.getByRole('button', { name: 'Continue' });

@@ -191,10 +191,6 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
     integration.isSync() ||
     integration.isFirefoxClientServiceRelay() ||
     integration.isFirefoxClientServiceAiMode();
-  const wantsTwoStepAuthentication =
-    isOAuthWebIntegration(integration) &&
-    integration.wantsTwoStepAuthentication();
-  const wantsKeys = integration.wantsKeys();
 
   // If this is an AAL upgrade, the user was redirected from Settings to enter TOTP.
   // RP redirects won't get into this state since they'll be taken to the RP and

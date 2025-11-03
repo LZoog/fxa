@@ -39,7 +39,6 @@ import Banner from '../../components/Banner';
 import { SensitiveData } from '../../lib/sensitive-data-client';
 import { BannerLinkProps } from '../../components/Banner/interfaces';
 import CmsButtonWithFallback from '../../components/CmsButtonWithFallback';
-import VerificationReasons from '../../constants/verification-reasons';
 
 export const viewName = 'signin';
 

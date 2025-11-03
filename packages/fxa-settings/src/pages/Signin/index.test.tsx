@@ -391,7 +391,7 @@ describe('Signin component', () => {
                   email: MOCK_EMAIL,
                   uid: MOCK_UID,
                   sessionToken: MOCK_SESSION_TOKEN,
-                  emailVerified: false,
+                  emailVerified: true,
                   sessionVerified: false,
                   verificationMethod: VerificationMethods.TOTP_2FA,
                   verificationReason: VerificationReasons.SIGN_IN,
@@ -444,7 +444,7 @@ describe('Signin component', () => {
                   email: MOCK_EMAIL,
                   uid: MOCK_UID,
                   sessionToken: MOCK_SESSION_TOKEN,
-                  emailVerified: false,
+                  emailVerified: true,
                   sessionVerified: false,
                   verificationMethod: 'email-otp',
                   verificationReason: VerificationReasons.SIGN_IN,
@@ -491,7 +491,7 @@ describe('Signin component', () => {
           it('OAuth forced 2FA without TOTP navigates to /signin_token_code (email OTP first)', async () => {
             const beginSigninHandler = jest.fn().mockReturnValueOnce(
               createBeginSigninResponse({
-                emailVerified: false,
+                emailVerified: true,
                 sessionVerified: false,
                 verificationMethod: VerificationMethods.EMAIL_OTP,
               })
