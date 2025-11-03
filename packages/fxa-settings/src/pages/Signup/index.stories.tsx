@@ -16,7 +16,7 @@ import {
 import { SignupIntegration } from './interfaces';
 import { mockAppContext } from '../../models/mocks';
 import { MONITOR_CLIENTIDS } from '../../models/integrations/client-matching';
-import { AppContext } from '../../models';
+import { AppContext, OAuthNativeServices } from '../../models';
 import { mockUseFxAStatus } from '../../lib/hooks/useFxAStatus/mocks';
 import { MOCK_EMAIL, MOCK_CMS_INFO } from '../mocks';
 import { getSyncEngineIds } from '../../lib/sync-engines';
@@ -31,12 +31,17 @@ const StoryWithProps = ({
   integration = createMockSignupOAuthWebIntegration(),
   isMobile = false,
   offeredSyncEnginesOverride,
+  supportsPasswordlessLogin = false,
 }: {
   integration?: SignupIntegration;
   offeredSyncEnginesOverride?: ReturnType<typeof getSyncEngineIds>;
   isMobile?: boolean;
+  supportsPasswordlessLogin?: boolean;
 }) => {
-  const useFxAStatusResult = mockUseFxAStatus({ offeredSyncEnginesOverride });
+  const useFxAStatusResult = mockUseFxAStatus({
+    offeredSyncEnginesOverride,
+    supportsPasswordlessLogin,
+  });
 
   return (
     <AppContext.Provider value={mockAppContext()}>
@@ -78,7 +83,30 @@ export const SyncOAuthWithoutPaymentMethods = () => (
 );
 export const OAuthDesktopServiceRelay = () => (
   <StoryWithProps
-    integration={createMockSignupOAuthNativeIntegration('relay', false)}
+    integration={createMockSignupOAuthNativeIntegration(
+      OAuthNativeServices.Relay,
+      false
+    )}
+  />
+);
+
+export const WithThirdPartyAuthServiceRelayIntegration = () => (
+  <StoryWithProps
+    integration={createMockSignupOAuthNativeIntegration(
+      OAuthNativeServices.Relay,
+      false
+    )}
+    supportsPasswordlessLogin={true}
+  />
+);
+
+export const WithThirdPartyAuthServiceAIModeIntegration = () => (
+  <StoryWithProps
+    integration={createMockSignupOAuthNativeIntegration(
+      OAuthNativeServices.AiMode,
+      false
+    )}
+    supportsPasswordlessLogin={true}
   />
 );
 

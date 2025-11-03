@@ -152,13 +152,17 @@ export const Subject = ({
   beginSignupHandler = mockBeginSignupHandler,
   email = MOCK_EMAIL,
   isMobile = false,
+  supportsPasswordlessLogin = false,
 }: {
   email?: string;
   integration?: SignupIntegration;
   beginSignupHandler?: BeginSignupHandler;
   isMobile?: boolean;
+  supportsPasswordlessLogin?: boolean;
 }) => {
-  const mockUseFxAStatusResult = mockUseFxAStatus();
+  const mockUseFxAStatusResult = mockUseFxAStatus({
+    supportsPasswordlessLogin,
+  });
   return (
     <LocationProvider>
       <Signup

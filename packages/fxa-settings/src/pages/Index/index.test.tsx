@@ -116,6 +116,35 @@ describe('Index page', () => {
     );
   });
 
+  it('renders third party auth with service=relay when supportsPasswordlessLogin is true', () => {
+    renderWithLocalizationProvider(
+      <Subject
+        integration={createMockIndexOAuthNativeIntegration({
+          isSync: false,
+          isFirefoxClientServiceRelay: true,
+        })}
+        supportsPasswordlessLogin={true}
+      />
+    );
+
+    screen.getByRole('heading', { name: 'Create an email mask' });
+    thirdPartyAuthWithSeparatorRendered();
+  });
+
+  it('renders third party auth with service=aimode when supportsPasswordlessLogin is true', () => {
+    renderWithLocalizationProvider(
+      <Subject
+        integration={createMockIndexOAuthNativeIntegration({
+          isSync: false,
+          isFirefoxClientServiceAiMode: true,
+        })}
+        supportsPasswordlessLogin={true}
+      />
+    );
+
+    thirdPartyAuthWithSeparatorRendered();
+  });
+
   it('renders as expected with cms info', () => {
     renderWithLocalizationProvider(
       <Subject
