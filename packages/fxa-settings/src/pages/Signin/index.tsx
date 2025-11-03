@@ -25,6 +25,7 @@ import {
   isWebIntegration,
   isOAuthIntegration,
   useSession,
+  isOAuthWebIntegration,
 } from '../../models';
 import {
   isClientMonitor,
@@ -230,9 +231,9 @@ const Signin = ({
           );
         } else {
           if (
-            !isFullyVerified &&
-            data.signIn.verificationReason !== VerificationReasons.SIGN_UP &&
-            isWebIntegration(integration)
+            data.signIn.emailVerified &&
+            !data.signIn.sessionVerified &&
+            !isOAuthWebIntegration(integration)
           ) {
             session.sendVerificationCode();
           }

@@ -958,7 +958,11 @@ describe('signin container', () => {
             currentVersion: 'v1',
             clientSalt: '',
           }),
-          mockGqlBeginSigninMutation({ keys: false }, {}, { emailVerified: true, sessionVerified: true }),
+          mockGqlBeginSigninMutation(
+            { keys: false },
+            {},
+            { emailVerified: true, sessionVerified: true }
+          ),
           {
             ...mockGqlPasswordChangeStartMutation(),
             error: mockGqlError(),
@@ -987,7 +991,11 @@ describe('signin container', () => {
             currentVersion: 'v1',
             clientSalt: '',
           }),
-          mockGqlBeginSigninMutation({ keys: false }, {}, { emailVerified: true, sessionVerified: true }),
+          mockGqlBeginSigninMutation(
+            { keys: false },
+            {},
+            { emailVerified: true, sessionVerified: true }
+          ),
           mockGqlPasswordChangeStartMutation(),
           {
             ...mockGqlGetAccountKeysMutation(),
@@ -1018,7 +1026,11 @@ describe('signin container', () => {
             currentVersion: 'v1',
             clientSalt: '',
           }),
-          mockGqlBeginSigninMutation({ keys: false }, {}, { emailVerified: true, sessionVerified: true }),
+          mockGqlBeginSigninMutation(
+            { keys: false },
+            {},
+            { emailVerified: true, sessionVerified: true }
+          ),
           mockGqlPasswordChangeStartMutation(),
           mockGqlGetAccountKeysMutation(),
           {
@@ -1057,7 +1069,11 @@ describe('signin container', () => {
             currentVersion: 'v1',
           }),
           // Fallback to the V1 signin!
-          mockGqlBeginSigninMutation({ keys: false }, {}, { emailVerified: false, sessionVerified: false }),
+          mockGqlBeginSigninMutation(
+            { keys: false },
+            {},
+            { emailVerified: false, sessionVerified: false }
+          ),
         ]);
 
         await waitFor(async () => {

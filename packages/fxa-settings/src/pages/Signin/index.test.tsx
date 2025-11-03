@@ -376,7 +376,7 @@ describe('Signin component', () => {
           it('navigates to /signin_totp_code when TOTP verification requested', async () => {
             const beginSigninHandler = jest.fn().mockReturnValueOnce(
               createBeginSigninResponse({
-                emailVerified: false,
+                emailVerified: true,
                 sessionVerified: false,
                 verificationMethod: VerificationMethods.TOTP_2FA,
               })
@@ -1191,7 +1191,10 @@ describe('Signin component', () => {
         });
 
         it('navigates to /inline_totp_setup when RP requires two-step auth and session is verified', async () => {
-          const signinResponse = createBeginSigninResponse({ emailVerified: true, sessionVerified: true });
+          const signinResponse = createBeginSigninResponse({
+            emailVerified: true,
+            sessionVerified: true,
+          });
           const beginSigninHandler = jest
             .fn()
             .mockReturnValueOnce(signinResponse);

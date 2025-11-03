@@ -4,16 +4,14 @@
 
 import VerificationMethods from '../../constants/verification-methods';
 import VerificationReasons from '../../constants/verification-reasons';
-import {
-  NavigationOptions,
-  SigninLocationState,
-} from './interfaces';
+import { NavigationOptions, SigninLocationState } from './interfaces';
 import { AuthUiError, AuthUiErrors } from '../../lib/auth-errors/auth-errors';
 import {
   useSession,
   isOAuthIntegration,
   isOAuthNativeIntegration,
   useAuthClient,
+  isOAuthWebIntegration,
 } from '../../models';
 import { navigate } from '@reach/router';
 import { hardNavigate } from 'fxa-react/lib/utils';
@@ -194,10 +192,9 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
     integration.isFirefoxClientServiceRelay() ||
     integration.isFirefoxClientServiceAiMode();
   const wantsTwoStepAuthentication =
-    isOAuth && 'wantsTwoStepAuthentication' in integration
-      ? integration.wantsTwoStepAuthentication()
-      : false;
-  const wantsKeys = integration?.wantsKeys?.() ?? false;
+    isOAuthWebIntegration(integration) &&
+    integration.wantsTwoStepAuthentication();
+  const wantsKeys = integration.wantsKeys();
 
   // If this is an AAL upgrade, the user was redirected from Settings to enter TOTP.
   // RP redirects won't get into this state since they'll be taken to the RP and
@@ -226,7 +223,7 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
   // the account and the integration being used.
   // The following cases are handled:
   // 1. Users that don't have a verified email always get redirected to confirm signup
-  // 2. Users that have a TOTP always get redirected to confirm TOTP
+  // 2. Users with a verified email that have a TOTP always get redirected to confirm TOTP
   // 3. OAuthNative integrations always get redirected to confirm email
   // 4. Integrations that want two-step authentication always get redirected to confirm email, before
   //    setting up TOTP
@@ -237,11 +234,7 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
   const isFullyVerified =
     navigationOptions.signinData.emailVerified &&
     navigationOptions.signinData.sessionVerified;
-  if (
-    !isFullyVerified ||
-    navigationOptions.signinData.verificationReason ===
-      VerificationReasons.SIGN_UP
-  ) {
+  if (!isFullyVerified) {
     const { to, locationState } =
       getUnverifiedNavigationTarget(navigationOptions);
 
@@ -256,23 +249,9 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
       sendFxaLogin(navigationOptions);
     }
 
-    if (
-      navigationOptions.signinData.verificationReason ===
-        VerificationReasons.SIGN_UP ||
-      navigationOptions.signinData.verificationMethod ===
-        VerificationMethods.TOTP_2FA ||
-      navigationOptions.signinData.verificationReason ===
-        VerificationReasons.CHANGE_PASSWORD ||
-      wantsTwoStepAuthentication ||
-      wantsKeys
-    ) {
-      performNavigation({ to, locationState });
-      return { error: undefined };
-    }
-
     // Check if this is a standard OAuth web flow, not a NativeOAuth flow or settings flow
     // if so return to RP, they don't need to have a verified session
-    if (isOAuth && !isOAuthNativeIntegration(integration)) {
+    if (isOAuthWebIntegration(integration)) {
       const { to, locationState, shouldHardNavigate, error } =
         await getOAuthNavigationTarget(navigationOptions);
       if (error) {
@@ -295,6 +274,7 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
     return { error: undefined };
   }
 
+  // Account and session are verified
   if (
     navigationOptions.signinData.verificationReason ===
     VerificationReasons.CHANGE_PASSWORD
@@ -417,7 +397,12 @@ const getUnverifiedNavigationTarget = (
       return `/signin_totp_code${queryParams || ''}`;
     }
 
-    if (verificationReason === VerificationReasons.SIGN_UP) {
+    if (
+      // Note that now that we explicitely return 'emailVerified', we may
+      // not even need this verificationReason check.
+      verificationReason === VerificationReasons.SIGN_UP ||
+      !navigationOptions.signinData.emailVerified
+    ) {
       return `/confirm_signup_code${queryParams || ''}`;
     }
     return `/signin_token_code${queryParams || ''}`;
