@@ -370,7 +370,7 @@ describe('SigninUnblock', () => {
       renderWithSuccess(
         finishOAuthFlowHandler,
         integration,
-        createBeginSigninResponse({ verified: true })
+        createBeginSigninResponse({ emailVerified: true, sessionVerified: true })
       );
       const input = screen.getByRole('textbox');
       const submitButton = screen.getByRole('button', { name: 'Continue' });
@@ -403,7 +403,8 @@ describe('SigninUnblock', () => {
         finishOAuthFlowHandler,
         integration,
         createBeginSigninResponse({
-          verified: false,
+          emailVerified: false,
+          sessionVerified: false,
         })
       );
       const input = screen.getByRole('textbox');

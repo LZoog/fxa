@@ -571,7 +571,8 @@ describe('signin container', () => {
         );
         expect(handlerResult?.data?.signIn?.authAt).toEqual(MOCK_AUTH_AT);
         expect(handlerResult?.data?.signIn?.metricsEnabled).toEqual(true);
-        expect(handlerResult?.data?.signIn?.verified).toEqual(true);
+        expect(handlerResult?.data?.signIn?.emailVerified).toEqual(true);
+        expect(handlerResult?.data?.signIn?.sessionVerified).toEqual(true);
         expect(handlerResult?.data?.signIn?.verificationMethod).toEqual(
           MOCK_VERIFICATION.verificationMethod
         );

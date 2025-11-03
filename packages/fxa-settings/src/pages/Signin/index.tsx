@@ -146,9 +146,8 @@ const Signin = ({
         const navigationOptions = {
           email,
           signinData: {
-            // TODO, address signIn.verified vs session.verified discrepancy
-            // we're currently using 'sessionVerified' from recovery_email/status
-            verified: data.sessionVerified,
+            emailVerified: data.emailVerified,
+            sessionVerified: data.sessionVerified,
             verificationMethod: data.verificationMethod,
             verificationReason: data.verificationReason,
             uid: data.uid,
@@ -209,7 +208,6 @@ const Signin = ({
           email,
           signinData: data.signIn,
           unwrapBKey: data.unwrapBKey,
-          verified: isFullyVerified,
           integration,
           finishOAuthFlowHandler,
           redirectTo:

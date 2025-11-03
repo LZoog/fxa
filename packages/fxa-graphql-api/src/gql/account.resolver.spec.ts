@@ -842,7 +842,8 @@ describe('#integration - AccountResolver', () => {
           clientMutationId: 'testid',
           uid: '1337',
           sessionToken: '2048',
-          verified: true,
+          emailVerified: true,
+          sessionVerified: true,
           authAt: now,
           metricsEnabled: true,
         };
