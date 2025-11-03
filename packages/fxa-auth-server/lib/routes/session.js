@@ -147,7 +147,8 @@ module.exports = function (
             keyFetchToken: isA.string().regex(HEX_STRING).optional(),
             verificationMethod: isA.string().optional(),
             verificationReason: isA.string().optional(),
-            verified: isA.boolean().required(),
+            emailVerified: isA.boolean().required(),
+            sessionVerified: isA.boolean().required(),
             authAt: isA.number().integer(),
             metricsEnabled: isA.boolean().required(),
           }),
@@ -259,6 +260,7 @@ module.exports = function (
           uid: sessionToken.uid,
           authAt: sessionToken.lastAuthAt(),
           metricsEnabled: !accountRecord.metricsOptOut,
+          emailVerified: sessionToken.emailVerified,
         };
 
         if (requestHelper.wantsKeys(request)) {
@@ -393,18 +395,19 @@ module.exports = function (
           uid: newSessionToken.uid,
           sessionToken: newSessionToken.data,
           authAt: newSessionToken.lastAuthAt(),
+          emailVerified: newSessionToken.emailVerified,
         };
 
         if (!newSessionToken.emailVerified) {
-          response.verified = false;
+          response.sessionVerified = newSessionToken.tokenVerified;
           response.verificationMethod = 'email';
           response.verificationReason = 'signup';
         } else if (!newSessionToken.tokenVerified) {
-          response.verified = false;
+          response.sessionVerified = false;
           response.verificationMethod = 'email';
           response.verificationReason = 'login';
         } else {
-          response.verified = true;
+          response.sessionVerified = true;
         }
 
         return response;
