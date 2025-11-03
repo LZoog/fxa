@@ -30,7 +30,7 @@ import VerificationMethods from '../../constants/verification-methods';
 import { queryParamsToMetricsContext } from '../../lib/metrics';
 import { QueryParams } from '../..';
 import { isFirefoxService } from '../../models/integrations/utils';
-import useFxAStatus from '../../lib/hooks/useSyncEngines';
+import useFxAStatus from '../../lib/hooks/useFxAStatus';
 import { isMobileDevice } from '../../lib/utilities';
 
 /*

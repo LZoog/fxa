@@ -23,6 +23,7 @@ import { checkEmailDomain } from '../../lib/email-domain-validator';
 import GleanMetrics from '../../lib/glean';
 import { IndexQueryParams } from '../../models/pages/index';
 import { GenericData, ModelValidationErrors } from '../../lib/model-data';
+import { mockUseFxAStatus } from '../../lib/hooks/useFxAStatus/mocks';
 
 let mockLocationState = {};
 let mockNavigate = jest.fn();
@@ -98,6 +99,7 @@ describe('IndexContainer', () => {
   let mockUseAuthClient: jest.Mock;
 
   let integration: Integration;
+  const mockUseFxAStatusResult = mockUseFxAStatus();
 
   function mockWebIntegration() {
     // Leaving for historical record. Remove once baked.
@@ -186,7 +188,7 @@ describe('IndexContainer', () => {
     const { container } = renderWithLocalizationProvider(
       <LocationProvider>
         <IndexContainer
-          {...{ integration, serviceName: MozServices.Default }}
+          {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
         />
       </LocationProvider>
     );
@@ -201,7 +203,7 @@ describe('IndexContainer', () => {
     const { container } = renderWithLocalizationProvider(
       <LocationProvider>
         <IndexContainer
-          {...{ integration, serviceName: MozServices.Default }}
+          {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
         />
       </LocationProvider>
     );
@@ -217,7 +219,7 @@ describe('IndexContainer', () => {
     const { container } = renderWithLocalizationProvider(
       <LocationProvider>
         <IndexContainer
-          {...{ integration, serviceName: MozServices.Default }}
+          {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
         />
       </LocationProvider>
     );
@@ -251,7 +253,7 @@ describe('IndexContainer', () => {
     const { getByText, queryByText } = renderWithLocalizationProvider(
       <LocationProvider>
         <IndexContainer
-          {...{ integration, serviceName: MozServices.Default }}
+          {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
         />
       </LocationProvider>
     );
@@ -280,7 +282,7 @@ describe('IndexContainer', () => {
       const { container } = renderWithLocalizationProvider(
         <LocationProvider>
           <IndexContainer
-            {...{ integration, serviceName: MozServices.Default }}
+            {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
           />
         </LocationProvider>
       );
@@ -303,7 +305,7 @@ describe('IndexContainer', () => {
       });
       render(
         <IndexContainer
-          {...{ integration, serviceName: MozServices.Default }}
+          {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
         />
       );
 
@@ -342,7 +344,7 @@ describe('IndexContainer', () => {
       });
       render(
         <IndexContainer
-          {...{ integration, serviceName: MozServices.Default }}
+          {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
         />
       );
 
@@ -377,7 +379,7 @@ describe('IndexContainer', () => {
       renderWithLocalizationProvider(
         <LocationProvider>
           <IndexContainer
-            {...{ integration, serviceName: MozServices.Default }}
+            {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
           />
         </LocationProvider>
       );
@@ -424,7 +426,7 @@ describe('IndexContainer', () => {
 
       render(
         <IndexContainer
-          {...{ integration, serviceName: MozServices.Default }}
+          {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
         />
       );
 
@@ -471,7 +473,7 @@ describe('IndexContainer', () => {
 
       render(
         <IndexContainer
-          {...{ integration, serviceName: MozServices.Default }}
+          {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
         />
       );
 
@@ -494,7 +496,7 @@ describe('IndexContainer', () => {
       mockUnsupportedContextIntegration();
       render(
         <IndexContainer
-          {...{ integration, serviceName: MozServices.Default }}
+          {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
         />
       );
 
@@ -526,7 +528,7 @@ describe('IndexContainer', () => {
 
         render(
           <IndexContainer
-            {...{ integration, serviceName: MozServices.Default }}
+            {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
           />
         );
 
@@ -565,7 +567,7 @@ describe('IndexContainer', () => {
 
         render(
           <IndexContainer
-            {...{ integration, serviceName: MozServices.Default }}
+            {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
           />
         );
 
@@ -610,7 +612,7 @@ describe('IndexContainer', () => {
         });
         render(
           <IndexContainer
-            {...{ integration, serviceName: MozServices.Default }}
+            {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
           />
         );
 
@@ -642,7 +644,7 @@ describe('IndexContainer', () => {
         });
         render(
           <IndexContainer
-            {...{ integration, serviceName: MozServices.Default }}
+            {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
           />
         );
 
@@ -679,7 +681,7 @@ describe('IndexContainer', () => {
         });
         render(
           <IndexContainer
-            {...{ integration, serviceName: MozServices.Default }}
+            {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
           />
         );
 
@@ -719,7 +721,7 @@ describe('IndexContainer', () => {
 
         render(
           <IndexContainer
-            {...{ integration, serviceName: MozServices.Default }}
+            {...{ integration, serviceName: MozServices.Default, useFxAStatusResult: mockUseFxAStatusResult }}
           />
         );
 

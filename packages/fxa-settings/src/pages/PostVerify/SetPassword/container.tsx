@@ -23,7 +23,7 @@ import { handleNavigation } from '../../Signin/utils';
 import GleanMetrics from '../../../lib/glean';
 import { QueryParams } from '../../..';
 import { queryParamsToMetricsContext } from '../../../lib/metrics';
-import useFxAStatus from '../../../lib/hooks/useSyncEngines';
+import useFxAStatus from '../../../lib/hooks/useFxAStatus';
 
 const SetPasswordContainer = ({
   integration,

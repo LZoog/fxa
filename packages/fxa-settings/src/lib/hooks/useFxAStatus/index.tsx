@@ -22,7 +22,7 @@ type FxAStatusIntegration = Pick<Integration, 'type' | 'isSync'>;
 
 /**
  * If integration.isSync or integration is OAuthNative, sends firefox.fxaStatus to retrieve
- * available sync engines from the browser and check passwordless capabilities.
+ * available sync engines from the browser and checks Fx capabilities.
  */
 export function useFxAStatus(integration: FxAStatusIntegration) {
   const isSyncOAuth = isOAuthIntegration(integration) && integration.isSync();
@@ -66,7 +66,7 @@ export function useFxAStatus(integration: FxAStatusIntegration) {
           }
         }
 
-        // Check if passwordless login is supported
+        // Check if third party auth (passwordless) login is supported
         if (
           status.capabilities.passwordless &&
           isOAuthNativeIntegration(integration) &&

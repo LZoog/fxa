@@ -4,10 +4,13 @@
 
 import { getSyncEngineIds, syncEngineConfigs } from '../../sync-engines';
 
-export function mockUseFxAStatus(
-  offeredSyncEnginesOverride?: ReturnType<typeof getSyncEngineIds>,
-  supportsPasswordlessLogin: boolean = false
-) {
+export function mockUseFxAStatus({
+  offeredSyncEnginesOverride,
+  supportsPasswordlessLogin = false,
+}: {
+  offeredSyncEnginesOverride?: ReturnType<typeof getSyncEngineIds>;
+  supportsPasswordlessLogin?: boolean;
+} = {}) {
   const offeredSyncEngineConfigs = syncEngineConfigs;
   const offeredSyncEngines =
     offeredSyncEnginesOverride || getSyncEngineIds(offeredSyncEngineConfigs);

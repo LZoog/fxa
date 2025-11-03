@@ -47,7 +47,7 @@ import sentryMetrics from 'fxa-shared/sentry/browser';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { ScrollToTop } from '../Settings/ScrollToTop';
 import SignupConfirmedSync from '../../pages/Signup/SignupConfirmedSync';
-import useFxAStatus from '../../lib/hooks/useSyncEngines';
+import useFxAStatus from '../../lib/hooks/useFxAStatus';
 
 // Pages
 const IndexContainer = lazy(() => import('../../pages/Index/container'));
@@ -453,11 +453,11 @@ const AuthAndAccountSetupRoutes = ({
         {/* Index */}
         <IndexContainer
           path="/"
-          {...{ integration, serviceName, flowQueryParams }}
+          {...{ integration, serviceName, flowQueryParams, useFxAStatusResult }}
         />
         <IndexContainer
           path="/oauth"
-          {...{ integration, serviceName, flowQueryParams }}
+          {...{ integration, serviceName, flowQueryParams, useFxAStatusResult }}
         />
 
         {/* Legal */}

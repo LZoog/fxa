@@ -32,7 +32,7 @@ import {
 } from '../../../lib/oauth/hooks';
 import firefox from '../../../lib/channels/firefox';
 import GleanMetrics from '../../../lib/glean';
-import { mockUseFxAStatus } from '../../../lib/hooks/useSyncEngines/mocks';
+import { mockUseFxAStatus } from '../../../lib/hooks/useFxAStatus/mocks';
 import * as SigninUtils from '../../Signin/utils';
 
 jest.mock('../../../models', () => ({

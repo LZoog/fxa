@@ -27,7 +27,7 @@ import {
   SignupIntegration,
   SignupOAuthIntegration,
 } from './interfaces';
-import { mockUseFxAStatus } from '../../lib/hooks/useSyncEngines/mocks';
+import { mockUseFxAStatus } from '../../lib/hooks/useFxAStatus/mocks';
 
 export function createMockSignupWebIntegration(): SignupBaseIntegration {
   return {

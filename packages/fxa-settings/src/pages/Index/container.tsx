@@ -37,6 +37,7 @@ const IndexContainer = ({
   integration,
   serviceName,
   flowQueryParams,
+  useFxAStatusResult,
 }: IndexContainerProps & RouteComponentProps) => {
   const authClient = useAuthClient();
   const ftlMsgResolver = useFtlMsgResolver();
@@ -284,6 +285,7 @@ const IndexContainer = ({
         deeplink,
         flowQueryParams,
         isMobile,
+        useFxAStatusResult,
       }}
       prefillEmail={initialPrefill}
     />
