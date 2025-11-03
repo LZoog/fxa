@@ -47,7 +47,7 @@ export const Signup = ({
   integration,
   email,
   beginSignupHandler,
-  useSyncEnginesResult: {
+  useFxAStatusResult: {
     offeredSyncEngines,
     offeredSyncEngineConfigs,
     declinedSyncEngines,

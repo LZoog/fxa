@@ -47,7 +47,7 @@ import sentryMetrics from 'fxa-shared/sentry/browser';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { ScrollToTop } from '../Settings/ScrollToTop';
 import SignupConfirmedSync from '../../pages/Signup/SignupConfirmedSync';
-import useSyncEngines from '../../lib/hooks/useSyncEngines';
+import useFxAStatus from '../../lib/hooks/useSyncEngines';
 
 // Pages
 const IndexContainer = lazy(() => import('../../pages/Index/container'));
@@ -428,7 +428,7 @@ const AuthAndAccountSetupRoutes = ({
     gleanEnabled && GleanMetrics.pageLoad(location.pathname);
   }, [location.pathname, gleanEnabled]);
 
-  const useSyncEnginesResult = useSyncEngines(integration);
+  const useFxAStatusResult = useFxAStatus(integration);
   try {
     // Handle getServiceName() errors that occur when OAuth scope validation fails.
     // This can happen when scopes are missing, invalid, or filtered out during
@@ -479,7 +479,7 @@ const AuthAndAccountSetupRoutes = ({
         />
         <SetPasswordContainer
           path="/post_verify/third_party_auth/set_password/*"
-          {...{ flowQueryParams, integration, useSyncEnginesResult }}
+          {...{ flowQueryParams, integration, useFxAStatusResult }}
         />
 
         {/* Reset password */}
@@ -596,7 +596,7 @@ const AuthAndAccountSetupRoutes = ({
             integration,
             serviceName,
             flowQueryParams,
-            useSyncEnginesResult,
+            useFxAStatusResult,
           }}
         />
         <PrimaryEmailVerified
@@ -608,7 +608,7 @@ const AuthAndAccountSetupRoutes = ({
           {...{
             integration,
             flowQueryParams,
-            useSyncEnginesResult,
+            useFxAStatusResult,
           }}
         />
         <SignupConfirmed
@@ -617,7 +617,7 @@ const AuthAndAccountSetupRoutes = ({
         />
         <SignupConfirmedSync
           path="/signup_confirmed_sync/*"
-          offeredSyncEngines={useSyncEnginesResult.offeredSyncEngines}
+          offeredSyncEngines={useFxAStatusResult.offeredSyncEngines}
           {...{ integration }}
         />
         <SignupConfirmed

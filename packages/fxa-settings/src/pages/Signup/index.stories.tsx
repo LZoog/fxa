@@ -19,7 +19,7 @@ import {
   MONITOR_CLIENTIDS,
 } from '../../models/integrations/client-matching';
 import { AppContext } from '../../models';
-import { mockUseSyncEngines } from '../../lib/hooks/useSyncEngines/mocks';
+import { mockUseFxAStatus } from '../../lib/hooks/useSyncEngines/mocks';
 import { MOCK_EMAIL, MOCK_CMS_INFO } from '../mocks';
 import { getSyncEngineIds } from '../../lib/sync-engines';
 
@@ -38,7 +38,7 @@ const StoryWithProps = ({
   offeredSyncEnginesOverride?: ReturnType<typeof getSyncEngineIds>;
   isMobile?: boolean;
 }) => {
-  const useSyncEnginesResult = mockUseSyncEngines(offeredSyncEnginesOverride);
+  const useFxAStatusResult = mockUseFxAStatus(offeredSyncEnginesOverride);
 
   return (
     <AppContext.Provider value={mockAppContext()}>
@@ -47,7 +47,7 @@ const StoryWithProps = ({
           {...{
             integration,
             beginSignupHandler: mockBeginSignupHandler,
-            useSyncEnginesResult,
+            useFxAStatusResult,
             isMobile,
           }}
           email={MOCK_EMAIL}

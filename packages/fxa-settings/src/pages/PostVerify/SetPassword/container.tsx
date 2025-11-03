@@ -23,12 +23,12 @@ import { handleNavigation } from '../../Signin/utils';
 import GleanMetrics from '../../../lib/glean';
 import { QueryParams } from '../../..';
 import { queryParamsToMetricsContext } from '../../../lib/metrics';
-import useSyncEngines from '../../../lib/hooks/useSyncEngines';
+import useFxAStatus from '../../../lib/hooks/useSyncEngines';
 
 const SetPasswordContainer = ({
   integration,
   flowQueryParams,
-  useSyncEnginesResult: {
+  useFxAStatusResult: {
     offeredSyncEngines,
     offeredSyncEngineConfigs,
     declinedSyncEngines,
@@ -37,7 +37,7 @@ const SetPasswordContainer = ({
 }: {
   integration: Integration;
   flowQueryParams: QueryParams;
-  useSyncEnginesResult: ReturnType<typeof useSyncEngines>;
+  useFxAStatusResult: ReturnType<typeof useFxAStatus>;
 } & RouteComponentProps) => {
   const navigateWithQuery = useNavigateWithQuery();
   const authClient = useAuthClient();

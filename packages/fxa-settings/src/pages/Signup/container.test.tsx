@@ -207,11 +207,12 @@ async function render(text?: string) {
           integration,
           serviceName,
         }}
-        useSyncEnginesResult={{
+        useFxAStatusResult={{
           offeredSyncEngines: [],
           offeredSyncEngineConfigs: [],
           selectedEnginesForGlean: {},
           declinedSyncEngines: [],
+          supportsPasswordlessLogin: false,
         }}
         flowQueryParams={{ flowId: MOCK_FLOW_ID }}
       />

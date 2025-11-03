@@ -4,8 +4,9 @@
 
 import { getSyncEngineIds, syncEngineConfigs } from '../../sync-engines';
 
-export function mockUseSyncEngines(
-  offeredSyncEnginesOverride?: ReturnType<typeof getSyncEngineIds>
+export function mockUseFxAStatus(
+  offeredSyncEnginesOverride?: ReturnType<typeof getSyncEngineIds>,
+  supportsPasswordlessLogin: boolean = false
 ) {
   const offeredSyncEngineConfigs = syncEngineConfigs;
   const offeredSyncEngines =
@@ -28,7 +29,8 @@ export function mockUseSyncEngines(
     offeredSyncEngineConfigs,
     declinedSyncEngines,
     selectedEnginesForGlean,
+    supportsPasswordlessLogin,
   };
 }
 
-export default mockUseSyncEngines;
+export default mockUseFxAStatus;

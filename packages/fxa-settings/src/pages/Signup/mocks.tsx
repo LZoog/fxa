@@ -27,7 +27,7 @@ import {
   SignupIntegration,
   SignupOAuthIntegration,
 } from './interfaces';
-import { mockUseSyncEngines } from '../../lib/hooks/useSyncEngines/mocks';
+import { mockUseFxAStatus } from '../../lib/hooks/useSyncEngines/mocks';
 
 export function createMockSignupWebIntegration(): SignupBaseIntegration {
   return {
@@ -158,14 +158,14 @@ export const Subject = ({
   beginSignupHandler?: BeginSignupHandler;
   isMobile?: boolean;
 }) => {
-  const mockUseSyncEnginesResult = mockUseSyncEngines();
+  const mockUseFxAStatusResult = mockUseFxAStatus();
   return (
     <LocationProvider>
       <Signup
         {...{
           integration,
           beginSignupHandler,
-          useSyncEnginesResult: mockUseSyncEnginesResult,
+          useFxAStatusResult: mockUseFxAStatusResult,
           email,
           isMobile,
         }}

@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { renderHook } from '@testing-library/react-hooks';
-import { useSyncEngines } from '.';
+import { useFxAStatus } from '.';
 import { Constants } from '../../constants';
 import firefox from '../../channels/firefox';
 import { IntegrationType } from '../../../models';
@@ -15,7 +15,7 @@ jest.mock('../../channels/firefox', () => ({
   },
 }));
 
-describe('useSyncEngines', () => {
+describe('useFxAStatus', () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
@@ -35,7 +35,7 @@ describe('useSyncEngines', () => {
       };
 
       const { waitForNextUpdate } = renderHook(() =>
-        useSyncEngines(integration)
+        useFxAStatus(integration)
       );
 
       await waitForNextUpdate();
@@ -63,7 +63,7 @@ describe('useSyncEngines', () => {
       });
 
       const { waitForNextUpdate } = renderHook(() =>
-        useSyncEngines(integration)
+        useFxAStatus(integration)
       );
 
       await waitForNextUpdate();
@@ -84,7 +84,7 @@ describe('useSyncEngines', () => {
       });
 
       const { result, waitForNextUpdate } = renderHook(() =>
-        useSyncEngines(integration)
+        useFxAStatus(integration)
       );
 
       await waitForNextUpdate();
@@ -107,7 +107,7 @@ describe('useSyncEngines', () => {
         isSync: () => false,
       };
 
-      renderHook(() => useSyncEngines(integration));
+      renderHook(() => useFxAStatus(integration));
 
       expect(firefox.fxaStatus).not.toHaveBeenCalled();
     });
