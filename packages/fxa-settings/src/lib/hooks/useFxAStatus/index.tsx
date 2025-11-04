@@ -142,4 +142,6 @@ export function useFxAStatus(integration: FxAStatusIntegration) {
   };
 }
 
+export type UseFxAStatusResult = ReturnType<typeof useFxAStatus>;
+
 export default useFxAStatus;

@@ -25,6 +25,7 @@ import {
   isWebIntegration,
   isOAuthIntegration,
   useSession,
+  isOAuthNativeIntegration,
 } from '../../models';
 import {
   isClientMonitor,
@@ -62,6 +63,7 @@ const Signin = ({
   localizedSuccessBannerDescription,
   deeplink,
   flowQueryParams,
+  useFxAStatusResult: { supportsPasswordlessLogin },
 }: SigninProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
   const location = useLocation();
@@ -118,8 +120,13 @@ const Signin = ({
     },
   });
 
+  // Hide third-party auth if:
+  // - OAuth Native integration without passwordless support
+  // - Sync integration, but user has a password
+  // Show for all other cases.
   const hideThirdPartyAuth =
-    (integration.isSync() || isFirefoxClientServiceRelay) && hasPassword;
+    (isOAuthNativeIntegration(integration) && !supportsPasswordlessLogin) ||
+    (integration.isSync() && hasPassword);
 
   useEffect(() => {
     if (!isPasswordNeededRef.current) {

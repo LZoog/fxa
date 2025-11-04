@@ -5,7 +5,7 @@
 import { MozServices } from '../../lib/types';
 import { Integration } from '../../models';
 import { QueryParams } from '../../index';
-import useFxAStatus from '../../lib/hooks/useFxAStatus';
+import { UseFxAStatusResult } from '../../lib/hooks/useFxAStatus';
 
 export type IndexIntegration = Pick<
   Integration,
@@ -22,7 +22,7 @@ export interface IndexContainerProps {
   integration: IndexIntegration;
   serviceName: MozServices;
   flowQueryParams?: QueryParams;
-  useFxAStatusResult: ReturnType<typeof useFxAStatus>;
+  useFxAStatusResult: UseFxAStatusResult;
 }
 
 export interface LocationState {
@@ -44,7 +44,7 @@ export interface IndexProps extends LocationState {
   deeplink?: string;
   flowQueryParams?: QueryParams;
   isMobile: boolean;
-  useFxAStatusResult: ReturnType<typeof useFxAStatus>;
+  useFxAStatusResult: UseFxAStatusResult;
 }
 
 export interface IndexFormData {

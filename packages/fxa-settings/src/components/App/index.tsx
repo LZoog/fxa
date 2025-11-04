@@ -523,19 +523,19 @@ const AuthAndAccountSetupRoutes = ({
         <ReportSigninContainer path="/report_signin/*" />
         <SigninContainer
           path="/oauth/force_auth/*"
-          {...{ integration, serviceName, flowQueryParams }}
+          {...{ integration, serviceName, flowQueryParams, useFxAStatusResult }}
         />
         <SigninContainer
           path="/force_auth/*"
-          {...{ integration, serviceName, flowQueryParams }}
+          {...{ integration, serviceName, flowQueryParams, useFxAStatusResult }}
         />
         <SigninContainer
           path="/oauth/signin/*"
-          {...{ integration, serviceName, flowQueryParams }}
+          {...{ integration, serviceName, flowQueryParams, useFxAStatusResult }}
         />
         <SigninContainer
           path="/signin/*"
-          {...{ integration, serviceName, flowQueryParams }}
+          {...{ integration, serviceName, flowQueryParams, useFxAStatusResult }}
         />
         <SigninBounced email={localAccount?.email} path="/signin_bounced/*" />
         <CompleteSigninContainer path="/complete_signin/*" />

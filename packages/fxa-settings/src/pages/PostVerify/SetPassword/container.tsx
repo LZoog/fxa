@@ -23,7 +23,7 @@ import { handleNavigation } from '../../Signin/utils';
 import GleanMetrics from '../../../lib/glean';
 import { QueryParams } from '../../..';
 import { queryParamsToMetricsContext } from '../../../lib/metrics';
-import useFxAStatus from '../../../lib/hooks/useFxAStatus';
+import type { UseFxAStatusResult } from '../../../lib/hooks/useFxAStatus';
 
 const SetPasswordContainer = ({
   integration,
@@ -37,7 +37,7 @@ const SetPasswordContainer = ({
 }: {
   integration: Integration;
   flowQueryParams: QueryParams;
-  useFxAStatusResult: ReturnType<typeof useFxAStatus>;
+  useFxAStatusResult: UseFxAStatusResult;
 } & RouteComponentProps) => {
   const navigateWithQuery = useNavigateWithQuery();
   const authClient = useAuthClient();

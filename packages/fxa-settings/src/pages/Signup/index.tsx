@@ -74,7 +74,7 @@ export const Signup = ({
   const isFirefoxClientServiceRelay = integration.isFirefoxClientServiceRelay();
   const paymentMethodsWillSync =
     isSync && checkPaymentMethodsWillSync(offeredSyncEngines);
-  const shouldShowThirdPartyAuth = isOAuthNative
+  const showThirdPartyAuth = isOAuthNative
     ? supportsPasswordlessLogin
     : !isSync;
 
@@ -389,7 +389,7 @@ export const Signup = ({
         onSubmit={handleSubmit(onSubmit)}
       />
 
-      {shouldShowThirdPartyAuth && (
+      {showThirdPartyAuth && (
         <ThirdPartyAuth viewName="signup" flowQueryParams={flowQueryParams} />
       )}
 

@@ -35,6 +35,7 @@ import {
   MOCK_FLOW_ID,
   mockGetWebChannelServices,
 } from '../mocks';
+import { mockUseFxAStatus } from '../../lib/hooks/useFxAStatus/mocks';
 import {
   BeginSigninHandler,
   BeginSigninResponse,
@@ -525,8 +526,10 @@ export const Subject = ({
   cachedSigninHandler = mockCachedSigninHandler,
   sendUnblockEmailHandler = mockSendUnblockEmailHandler,
   finishOAuthFlowHandler = mockFinishOAuthFlowHandler,
+  supportsPasswordlessLogin = false,
   ...props // overrides
-}: Partial<SigninProps> = {}) => {
+}: Partial<SigninProps> & { supportsPasswordlessLogin?: boolean } = {}) => {
+  const useFxAStatusResult = mockUseFxAStatus({ supportsPasswordlessLogin });
   return (
     <LocationProvider>
       <AppContext.Provider value={mockAppContext()}>
@@ -544,6 +547,7 @@ export const Subject = ({
             hasPassword,
             avatarData,
             avatarLoading,
+            useFxAStatusResult,
             ...props,
           }}
         />

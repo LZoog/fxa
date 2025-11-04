@@ -11,6 +11,7 @@ import { FinishOAuthFlowHandler } from '../../lib/oauth/hooks';
 import { MozServices } from '../../lib/types';
 import { Integration } from '../../models';
 import { QueryParams } from '../..';
+import { UseFxAStatusResult } from '../../lib/hooks/useFxAStatus';
 
 export interface AvatarResponse {
   account: {
@@ -102,6 +103,7 @@ export interface SigninProps {
   localizedSuccessBannerDescription?: string;
   deeplink?: string;
   flowQueryParams?: QueryParams;
+  useFxAStatusResult: UseFxAStatusResult;
 }
 
 export type BeginSigninHandler = (

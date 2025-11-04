@@ -30,7 +30,7 @@ import VerificationMethods from '../../constants/verification-methods';
 import { queryParamsToMetricsContext } from '../../lib/metrics';
 import { QueryParams } from '../..';
 import { isFirefoxService } from '../../models/integrations/utils';
-import useFxAStatus from '../../lib/hooks/useFxAStatus';
+import { UseFxAStatusResult } from '../../lib/hooks/useFxAStatus';
 import { isMobileDevice } from '../../lib/utilities';
 
 /*
@@ -67,7 +67,7 @@ const SignupContainer = ({
 }: {
   integration: SignupIntegration;
   flowQueryParams: QueryParams;
-  useFxAStatusResult: ReturnType<typeof useFxAStatus>;
+  useFxAStatusResult: UseFxAStatusResult;
 } & RouteComponentProps) => {
   const authClient = useAuthClient();
   const keyStretchExp = useValidatedQueryParams(KeyStretchExperiment);

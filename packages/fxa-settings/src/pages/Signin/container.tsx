@@ -15,6 +15,7 @@ import {
   isOAuthIntegration,
   isOAuthNativeIntegrationSync,
 } from '../../models';
+import { UseFxAStatusResult } from '../../lib/hooks/useFxAStatus';
 import { MozServices } from '../../lib/types';
 import { useValidatedQueryParams } from '../../lib/hooks/useValidate';
 import {
@@ -153,10 +154,12 @@ const SigninContainer = ({
   integration,
   serviceName,
   flowQueryParams,
+  useFxAStatusResult,
 }: {
   integration: Integration;
   serviceName: MozServices;
   flowQueryParams?: QueryParams;
+  useFxAStatusResult: UseFxAStatusResult;
 } & RouteComponentProps) => {
   const config = useConfig();
   const authClient = useAuthClient();
@@ -577,6 +580,7 @@ const SigninContainer = ({
         localizedSuccessBannerDescription,
         deeplink,
         flowQueryParams,
+        useFxAStatusResult,
       }}
     />
   );
