@@ -544,7 +544,9 @@ const getOAuthNavigationTarget = async (
     };
   } else if (navigationOptions.integration.isFirefoxNonSync()) {
     return {
-      to: '/settings',
+      to: navigationOptions.integration.isFirefoxClientServiceVpn()
+        ? '/post_verify/service_welcome'
+        : '/settings',
       oauthData: {
         code,
         redirect,

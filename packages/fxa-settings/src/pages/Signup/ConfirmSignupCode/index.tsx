@@ -269,7 +269,11 @@ const ConfirmSignupCode = ({
               redirect,
               state,
             });
-            goToSettingsWithAlertSuccess();
+            if (integration.isFirefoxClientServiceVpn()) {
+              navigate('/post_verify/service_welcome');
+            } else {
+              goToSettingsWithAlertSuccess();
+            }
           } else {
             // Navigate to relying party
             if (origin === 'signup') {

@@ -45,6 +45,7 @@ import { maybeRecordWebAuthnCapabilities } from '../../lib/webauthnCapabilitiesP
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { ScrollToTop } from '../Settings/ScrollToTop';
 import SignupConfirmedSync from '../../pages/Signup/SignupConfirmedSync';
+import ServiceWelcome from '../../pages/PostVerify/ServiceWelcome';
 import useFxAStatus from '../../lib/hooks/useFxAStatus';
 import AppLayout from '../AppLayout';
 import { hardNavigate } from 'fxa-react/lib/utils';
@@ -523,6 +524,10 @@ const AuthAndAccountSetupRoutes = ({
       <SetPasswordContainer
         path="/post_verify/third_party_auth/set_password/*"
         {...{ flowQueryParams, integration, useFxAStatusResult }}
+      />
+      <ServiceWelcome
+        path="/post_verify/service_welcome/*"
+        {...{ integration }}
       />
 
       {/* Reset password */}
