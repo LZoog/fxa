@@ -1695,7 +1695,7 @@ const convictConf = convict({
     },
     skipForNewAccounts: {
       enabled: {
-        doc: 'Skip sign-in confirmation for newly-created accounts. Use this in tandem with forcedEmailAddresses',
+        doc: 'Skip all sign-in email confirmations for newly-created accounts',
         default: true,
         env: 'SIGNIN_CONFIRMATION_SKIP_FOR_NEW_ACCOUNTS',
       },
