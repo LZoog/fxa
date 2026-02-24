@@ -10,6 +10,7 @@ import {
   OAuthWebIntegration,
   RelierAccount,
   useAuthClient,
+  useConfig,
   useSession,
 } from '../../models';
 
@@ -54,6 +55,7 @@ const AuthorizationContainer = ({
     null
   );
   const authClient = useAuthClient();
+  const config = useConfig();
   const location = useLocation();
   const navigateWithQuery = useNavigateWithQuery();
   const session = useSession();
@@ -91,6 +93,17 @@ const AuthorizationContainer = ({
       }
 
       if (!data?.emailVerified) {
+        throw new OAuthError('PROMPT_NONE_UNVERIFIED');
+      }
+
+      // For services that require email verification, also check that the
+      // session is verified.
+      const clientId = integration.getClientId();
+      if (
+        clientId &&
+        config.servicesWithEmailVerification.includes(clientId) &&
+        !data?.sessionVerified
+      ) {
         throw new OAuthError('PROMPT_NONE_UNVERIFIED');
       }
 
@@ -138,6 +151,7 @@ const AuthorizationContainer = ({
     }
   }, [
     authClient,
+    config,
     finishOAuthFlowHandler,
     integration,
     location.search,

@@ -809,7 +809,7 @@ describe('sendSigninNotifications', () => {
     };
     config = {
       otp: otpOptions,
-      servicesWithEmailVerification: ['e6eb0d1e856335fc'],
+      servicesWithEmailVerification: ['e6eb0d1e856335fc', '6874a604b3fcf36d'],
     };
 
     sendSigninNotifications = makeSigninUtils({
@@ -1348,6 +1348,20 @@ describe('sendSigninNotifications', () => {
 
     it('sends verification email when service is VPN', () => {
       request.payload.service = 'e6eb0d1e856335fc';
+      return sendSigninNotifications(
+        request,
+        accountRecord,
+        sessionToken,
+        'email-otp'
+      ).then(() => {
+        assert.calledOnce(fxaMailer.sendVerifyLoginCodeEmail);
+        assert.notCalled(fxaMailer.sendVerifyEmail);
+        assert.notCalled(fxaMailer.sendVerifyLoginEmail);
+      });
+    });
+
+    it('sends verification email when service is in servicesWithEmailVerification', () => {
+      request.payload.service = '6874a604b3fcf36d';
       return sendSigninNotifications(
         request,
         accountRecord,
