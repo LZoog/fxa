@@ -23,7 +23,7 @@ import {
 import protectionShieldIcon from '@fxa/shared/assets/images/protection-shield.svg';
 import Banner from '../../../components/Banner';
 import { SensitiveData } from '../../../lib/sensitive-data-client';
-import { HeadingPrimary } from '../../../components/HeadingPrimary';
+import CardHeader from '../../../components/CardHeader';
 import FormVerifyTotp from '../../../components/FormVerifyTotp';
 
 // TODO: show a banner success message if a user is coming from reset password
@@ -165,31 +165,25 @@ export const SigninTotpCode = ({
   };
 
   const cmsInfo = integration.getCmsInfo();
-  const title = cmsInfo?.SigninTotpCodePage?.pageTitle;
-  const splitLayout = cmsInfo?.SigninTotpCodePage?.splitLayout;
+  const cmsPage = cmsInfo?.SigninTotpCodePage;
+  const title = cmsPage?.pageTitle;
+  const splitLayout = cmsPage?.splitLayout;
   const additionalAccessibilityInfo =
     cmsInfo?.shared.additionalAccessibilityInfo;
   return (
     <AppLayout {...{ cmsInfo, title, splitLayout, setCurrentSplitLayout }}>
-      {cmsInfo ? (
-        <>
-          {cmsInfo.shared.logoUrl && cmsInfo.shared.logoAltText && (
-            <img
-              src={cmsInfo.shared.logoUrl}
-              alt={cmsInfo.shared.logoAltText}
-              className="justify-start mb-4 max-h-[40px]"
-            />
-          )}
-        </>
-      ) : (
-        <FtlMsg id="signin-totp-code-header">
-          <HeadingPrimary>Sign in</HeadingPrimary>
-        </FtlMsg>
-      )}
-
-      <FtlMsg id="signin-totp-code-subheader-v2">
-        <h2 className="card-header">Enter two-step authentication code</h2>
-      </FtlMsg>
+      <CardHeader
+        headingText="Enter two-step authentication code"
+        headingAndSubheadingFtlId="signin-totp-code-heading-2"
+        {...{
+          cmsLogoUrl: cmsInfo?.shared.logoUrl,
+          cmsLogoAltText: cmsInfo?.shared.logoAltText,
+          cmsHeadline: cmsPage?.headline,
+          cmsDescription: cmsPage?.description,
+          cmsHeadlineFontSize: cmsInfo?.shared.headlineFontSize,
+          cmsHeadlineTextColor: cmsInfo?.shared.headlineTextColor,
+        }}
+      />
 
       {isSessionAALUpgrade && localizedBannerAALUpgrade && (
         <Banner
@@ -227,10 +221,10 @@ export const SigninTotpCode = ({
           'signin-totp-code-input-label-v4',
           'Enter 6-digit code'
         )}
-        localizedSubmitButtonText={ftlMsgResolver.getMsg(
-          'signin-totp-code-confirm-button',
-          'Confirm'
-        )}
+        localizedSubmitButtonText={
+          cmsPage?.primaryButtonText ||
+          ftlMsgResolver.getMsg('signin-totp-code-confirm-button', 'Confirm')
+        }
         setErrorMessage={setBannerError}
         verifyCode={onSubmit}
         className="my-6"

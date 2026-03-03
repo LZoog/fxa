@@ -172,10 +172,28 @@ export const MOCK_CMS_INFO = {
     pageTitle: 'Authorize this sign-in',
   },
   SigninTotpCodePage: {
-    headline: 'Enter verification code',
-    description: 'for your Mozilla account',
-    primaryButtonText: 'Continue',
-    pageTitle: 'Enter verification code',
+    headline: 'Verify your identity',
+    description: 'Use your authenticator app to continue',
+    primaryButtonText: 'Verify code',
+    pageTitle: 'Two-step verification',
+  },
+  SigninRecoveryChoicePage: {
+    headline: 'Choose your recovery',
+    description: 'Select how you want to verify your identity',
+    primaryButtonText: 'Continue recovery',
+    pageTitle: 'Recovery method selection',
+  },
+  SigninRecoveryCodePage: {
+    headline: 'Use a backup code',
+    description: 'Enter one of your saved backup codes',
+    primaryButtonText: 'Submit code',
+    pageTitle: 'Backup code verification',
+  },
+  SigninRecoveryPhonePage: {
+    headline: 'Check your phone',
+    description: 'We sent a verification code to your phone',
+    primaryButtonText: 'Verify phone code',
+    pageTitle: 'Phone recovery verification',
   },
 };
 
