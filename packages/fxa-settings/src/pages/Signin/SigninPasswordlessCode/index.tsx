@@ -358,6 +358,7 @@ const SigninPasswordlessCode = ({
                 code,
                 redirect,
                 state,
+                scopes: integration.data.scope,
               });
               const { error: navError } =
                 await handleNavigation(navigationOptions);

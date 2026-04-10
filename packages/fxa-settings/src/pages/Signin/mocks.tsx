@@ -96,6 +96,8 @@ export function createMockSigninWebIntegration({
     isSync: () => false,
     getService: () => MozServices.Default,
     getClientId: () => undefined,
+    requiresKeys: () => false,
+    wantsKeysIfPasswordEntered: () => false,
     wantsKeys: () => false,
     data: new IntegrationData(new GenericData({})),
     isDesktopSync: () => false,
@@ -108,6 +110,7 @@ export function createMockSigninWebIntegration({
     wantsTwoStepAuthentication: () => false,
     getCmsInfo: () => cmsInfo,
     isFirefoxMobileClient: () => false,
+    isFirefoxDesktopClient: () => false,
     getLegalTerms: () => undefined,
   };
 }
@@ -124,6 +127,8 @@ export function createMockSigninOAuthNativeSyncIntegration({
   return {
     type,
     isSync: () => isSync,
+    requiresKeys: () => isSync,
+    wantsKeysIfPasswordEntered: () => !isSync,
     wantsKeys: () => true,
     getService: () => MozServices.FirefoxSync,
     getClientId: () => MOCK_CLIENT_ID,
@@ -138,6 +143,7 @@ export function createMockSigninOAuthNativeSyncIntegration({
     wantsTwoStepAuthentication: () => false,
     getCmsInfo: () => undefined,
     isFirefoxMobileClient: () => isSync && isMobile,
+    isFirefoxDesktopClient: () => isSync && !isMobile,
     getLegalTerms: () => undefined,
   };
 }
@@ -158,6 +164,8 @@ export function createMockSigninOAuthIntegration({
     getService: () => service || MozServices.Default,
     getClientId: () => clientId || MOCK_CLIENT_ID,
     isSync: () => isSync,
+    requiresKeys: () => false,
+    wantsKeysIfPasswordEntered: () => false,
     wantsKeys: () => false,
     wantsLogin: () => false,
     wantsTwoStepAuthentication: () => false,
@@ -170,6 +178,7 @@ export function createMockSigninOAuthIntegration({
     getWebChannelServices: mockGetWebChannelServices({ isSync }),
     getCmsInfo: () => cmsInfo,
     isFirefoxMobileClient: () => false,
+    isFirefoxDesktopClient: () => false,
     getLegalTerms: () => undefined,
   };
 }
@@ -192,6 +201,8 @@ export function createMockSigninOAuthNativeIntegration({
     type: IntegrationType.OAuthNative,
     getService: () => service,
     isSync: () => isSync,
+    requiresKeys: () => isSync,
+    wantsKeysIfPasswordEntered: () => isRelay || isSmartWindow || isVpn,
     wantsKeys: () => true,
     wantsLogin: () => false,
     wantsTwoStepAuthentication: () => false,
@@ -210,6 +221,7 @@ export function createMockSigninOAuthNativeIntegration({
     getClientId: () => MOCK_CLIENT_ID,
     getCmsInfo: () => cmsInfo,
     isFirefoxMobileClient: () => isSync && isMobile,
+    isFirefoxDesktopClient: () => !isMobile,
     getLegalTerms: () => undefined,
   };
 }
@@ -330,7 +342,7 @@ export const Subject = ({
   cachedSigninHandler = mockCachedSigninHandler,
   sendUnblockEmailHandler = mockSendUnblockEmailHandler,
   finishOAuthFlowHandler = mockFinishOAuthFlowHandler,
-  isSignedIntoFirefoxDesktop = false,
+  isSignedIntoFirefox = false,
   supportsKeysOptionalLogin = false,
   ...props // overrides
 }: Partial<SigninProps> & {
@@ -355,7 +367,7 @@ export const Subject = ({
             avatarData,
             avatarLoading,
             useFxAStatusResult,
-            isSignedIntoFirefoxDesktop,
+            isSignedIntoFirefox,
             ...props,
           }}
         />

@@ -188,38 +188,6 @@ export class OAuthWebIntegration extends GenericIntegration<
     return tokens.includes(Constants.TWO_STEP_AUTHENTICATION_ACR);
   }
 
-  wantsKeys(): boolean {
-    if (!this.opts.scopedKeysEnabled) {
-      return false;
-    }
-    if (this.data.keysJwk == null) {
-      return false;
-    }
-    if (!this.data.scope) {
-      return false;
-    }
-
-    const validation = this.opts.scopedKeysValidation;
-    const individualScopes = scopeStrToArray(this.data.scope || '');
-
-    let wantsScopeThatHasKeys = false;
-    individualScopes.forEach((scope) => {
-      // eslint-disable-next-line no-prototype-builtins
-      if (validation.hasOwnProperty(scope)) {
-        if (
-          validation[scope].redirectUris.includes(this.clientInfo?.redirectUri)
-        ) {
-          wantsScopeThatHasKeys = true;
-        } else {
-          // Requesting keys, but trying to deliver them to an unexpected uri? Nope.
-          throw new Error('Invalid redirect parameter');
-        }
-      }
-    });
-
-    return wantsScopeThatHasKeys;
-  }
-
   getPermissions() {
     // Ported from content server, search for _normalizeScopesAndPermissions
     let permissions = Array.from(scopeStrToArray(this.data.scope || ''));
@@ -288,7 +256,7 @@ export class OAuthWebIntegration extends GenericIntegration<
       throw new OAuthError('PROMPT_NONE_NOT_ENABLED_FOR_CLIENT');
     }
 
-    if (this.wantsKeys()) {
+    if (this.requiresKeys()) {
       throw new OAuthError('PROMPT_NONE_WITH_KEYS');
     }
 
@@ -324,6 +292,7 @@ export class OAuthWebIntegration extends GenericIntegration<
   }
 }
 
+// move to shared helper file
 function scopeStrToArray(scopes: string) {
   const arrScopes = scopes
     .trim()

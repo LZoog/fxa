@@ -268,6 +268,7 @@ const CompleteResetPasswordContainer = ({
           code,
           redirect,
           state,
+          scopes: integration.data.scope,
         });
       }
     }

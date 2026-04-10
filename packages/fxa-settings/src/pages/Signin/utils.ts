@@ -193,7 +193,7 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
   const wantsTwoStepAuthentication =
     isOAuthWebIntegration(integration) &&
     integration.wantsTwoStepAuthentication();
-  const wantsKeys = integration.wantsKeys();
+  const requiresKeys = integration.requiresKeys();
 
   // If this is an AAL upgrade, the user was redirected from Settings to enter TOTP.
   // RP redirects won't get into this state since they'll be taken to the RP and
@@ -274,7 +274,7 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
         VerificationReasons.CHANGE_PASSWORD ||
       navigationOptions.isServiceWithEmailVerification ||
       wantsTwoStepAuthentication ||
-      wantsKeys
+      requiresKeys
     ) {
       performNavigation({ to, locationState });
       return { error: undefined };
@@ -354,6 +354,7 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
         code: oauthData.code,
         redirect: oauthData.redirect,
         state: oauthData.state,
+        scopes: integration.data.scope,
       });
     }
     if (navigationOptions.performNavigation !== false) {

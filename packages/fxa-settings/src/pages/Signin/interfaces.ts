@@ -27,6 +27,7 @@ export type SigninUnblockIntegration = Pick<
   | 'getClientId'
   | 'wantsTwoStepAuthentication'
   | 'clientInfo'
+  | 'requiresKeys'
   | 'wantsKeys'
   | 'data'
   | 'isDesktopSync'
@@ -48,6 +49,7 @@ export type SigninIntegration =
       | 'isSync'
       | 'getService'
       | 'getClientId'
+      | 'requiresKeys'
       | 'wantsKeys'
       | 'data'
       | 'isDesktopSync'
@@ -58,6 +60,7 @@ export type SigninIntegration =
       | 'getWebChannelServices'
       | 'getCmsInfo'
       | 'isFirefoxMobileClient'
+      | 'isFirefoxDesktopClient'
       | 'getLegalTerms'
     >
   | SigninOAuthIntegration;
@@ -69,6 +72,7 @@ export type SigninOAuthIntegration = Pick<
   | 'getService'
   | 'getClientId'
   | 'wantsTwoStepAuthentication'
+  | 'requiresKeys'
   | 'wantsKeys'
   | 'wantsLogin'
   | 'data'
@@ -80,6 +84,7 @@ export type SigninOAuthIntegration = Pick<
   | 'getWebChannelServices'
   | 'getCmsInfo'
   | 'isFirefoxMobileClient'
+  | 'isFirefoxDesktopClient'
   | 'getLegalTerms'
 >;
 
@@ -115,7 +120,7 @@ export interface SigninProps {
   localizedSuccessBannerDescription?: string;
   flowQueryParams?: QueryParams;
   useFxAStatusResult: UseFxAStatusResult;
-  isSignedIntoFirefoxDesktop?: boolean;
+  isSignedIntoFirefox?: boolean;
   setCurrentSplitLayout?: (value: boolean) => void;
 }
 

@@ -195,7 +195,7 @@ describe('Signin utils', () => {
 
       it('navigates to OAuth redirect for successful OAuth flow', async () => {
         const mockOAuthIntegration = createMockSigninOAuthIntegration();
-        (mockOAuthIntegration as any).wantsKeys = jest
+        (mockOAuthIntegration as any).requiresKeys = jest
           .fn()
           .mockReturnValue(false);
 
@@ -250,9 +250,9 @@ describe('Signin utils', () => {
         );
       });
 
-      it('returns early for OAuth integration with wantsKeys', async () => {
+      it('returns early for OAuth integration with requiresKeys', async () => {
         const mockOAuthIntegration = createMockSigninOAuthIntegration();
-        (mockOAuthIntegration as any).wantsKeys = jest
+        (mockOAuthIntegration as any).requiresKeys = jest
           .fn()
           .mockReturnValue(true);
 

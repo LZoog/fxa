@@ -254,6 +254,7 @@ const ConfirmSignupCode = ({
               code,
               redirect,
               state,
+              scopes: integration.data.scope,
             });
             // Mobile sync will close the web view, OAuth Desktop mimics DesktopV3 behavior
             if (integration.isFirefoxDesktopClient()) {
@@ -278,6 +279,7 @@ const ConfirmSignupCode = ({
               code,
               redirect,
               state,
+              scopes: integration.data.scope,
             });
             if (integration.isFirefoxClientServiceVpn()) {
               navigate('/post_verify/service_welcome', {

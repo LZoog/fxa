@@ -13,6 +13,7 @@ export type IndexIntegration = Pick<
   | 'isSync'
   | 'getClientId'
   | 'getService'
+  | 'requiresKeys'
   | 'wantsKeys'
   | 'isFirefoxClientServiceRelay'
   | 'isFirefoxClientServiceSmartWindow'

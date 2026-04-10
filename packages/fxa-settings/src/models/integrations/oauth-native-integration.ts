@@ -126,10 +126,55 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     );
   }
 
-  // See JSDoc comment above the generic integration base class wantsKeys
-  wantsKeys() {
-    return true;
+  /**
+   * Checks whether any requested scope has scoped keys configured,
+   * validating the redirect URI matches. Shared by requiresKeys()
+   * and wantsKeysIfPasswordEntered().
+   */
+  private _scopeRequestsKeys(): boolean {
+    if (!this.opts.scopedKeysEnabled) {
+      return false;
+    }
+    if (this.data.keysJwk == null) {
+      return false;
+    }
+    if (!this.data.scope) {
+      return false;
+    }
+
+    const validation = this.opts.scopedKeysValidation;
+    const individualScopes = scopeStrToArray(this.data.scope || '');
+
+    let wantsScopeThatHasKeys = false;
+    individualScopes.forEach((scope) => {
+      // eslint-disable-next-line no-prototype-builtins
+      if (validation.hasOwnProperty(scope)) {
+        if (
+          validation[scope].redirectUris.includes(this.clientInfo?.redirectUri)
+        ) {
+          wantsScopeThatHasKeys = true;
+        } else {
+          throw new Error('Invalid redirect parameter');
+        }
+      }
+    });
+
+    return wantsScopeThatHasKeys;
   }
+
+  // Sync requires keys, which forces password entry.
+  requiresKeys(): boolean {
+    return this.isSync() && this._scopeRequestsKeys();
+  }
+
+  // Non-Sync browser services (Relay, VPN, SmartWindow) want keys
+  // opportunistically if the user enters a password for another reason,
+  // so they can turn Sync on without being bounced back to FxA.
+  wantsKeysIfPasswordEntered(): boolean {
+    return this.isFirefoxNonSync() && this._scopeRequestsKeys();
+  }
+
+  // wantsKeys() is inherited from the base class (requiresKeys || wantsKeysIfPasswordEntered)
 
   getWebChannelServices(syncEngines?: SyncEngines) {
     if (this.isFirefoxClientServiceRelay()) {
@@ -145,6 +190,13 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
       return { sync: syncEngines || {} };
     }
     return undefined;
+  }
+
+  // TODO FXA-12939: When server-side scope resolution (ADR 0049) is implemented,
+  // granted scopes may differ from requested scopes. Update this to return
+  // the actual granted scopes from the server response.
+  getGrantedScopes(): string | undefined {
+    return this.data.scope;
   }
 
   getServiceName() {
@@ -163,4 +215,13 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     // TODO: handle Thunderbird case better? FXA-10848
     return 'Firefox';
   }
+}
+
+// move to helper file
+function scopeStrToArray(scopes: string) {
+  const arrScopes = scopes
+    .trim()
+    .split(/\s+|\++/g)
+    .filter((x) => x.length > 0);
+  return new Set(arrScopes);
 }
