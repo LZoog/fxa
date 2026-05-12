@@ -30,8 +30,15 @@ test.describe('vpn integration', () => {
     await signin.goto('/authorization', vpnMobileOAuthQueryParams);
 
     // User is already signed in — cached signin view, no password required
+    // (Mobile sends `keys_optional`, so no password prompt for the VPN scope).
     await expect(signin.cachedSigninHeading).toBeVisible();
     await expect(page.getByText(email)).toBeVisible();
+
+    // "Use a different account" link is hidden when signed into Firefox with
+    // a Firefox client + service requested — the active browser account is bound.
+    await expect(
+      page.getByRole('link', { name: /use a different account/i })
+    ).toBeHidden();
 
     await signin.signInButton.click();
 

@@ -91,9 +91,14 @@ const Signin = ({
 
   const legalTerms = integration.getLegalTerms();
 
-  // The user is in an authorization flow when they're signed into Firefox,
-  // it's a Firefox client (desktop or mobile), and a specific service is requested.
-  const isAuthorizationFlow =
+  // Hide account switch link when the user is signed into Firefox, they're in a
+  // Firefox signin/authorization flow, and a 'service' is included; In these flows the active
+  // browser account is bound (Desktop Relay/VPN/SmartWindow, Mobile
+  // authorization), so account switching isn't a meaningful option here.
+  // This is also why Mobile can safely send the `keys_optional` capability:
+  // the only Mobile flows that trigger cached sign-in are ones where the user
+  // can't reach the index page to switch accounts.
+  const hideAccountSwitchLink =
     isSignedIntoFirefox &&
     integration.isFirefoxClient() &&
     !!integration.getService();
@@ -106,13 +111,10 @@ const Signin = ({
 
   // Relay browser service login launched in Firefox desktop 135, and the "keys optional"
   // capability (Sync decoupling) launched in Fx desktop 147, meaning all Relay service users
-  // in those Fx versions require a password. This also covers Mobile until Sync has been
-  // decoupled. If the user is already signed into Firefox (authorization flow), they've
-  // already entered their password — skip it.
+  // in those Fx versions require a password.
+  // This also covers Mobile until Sync has been decoupled.
   const syncNotDecoupledRequiresPassword =
-    !supportsKeysOptionalLogin &&
-    !isSignedIntoFirefox &&
-    integration.wantsKeysIfPasswordEntered();
+    !supportsKeysOptionalLogin && integration.wantsKeysIfPasswordEntered();
 
   // Redirect-based RPs (OAuthWeb) that request scoped keys always need a password for key
   // derivation. In practice today, we don't have RPs that need this, but we do support it.
@@ -435,14 +437,8 @@ const Signin = ({
   const cmsInfo = integration.getCmsInfo();
   const cachedPageCms = cmsInfo?.SigninCachedPage;
   const signinPageCms = cmsInfo?.SigninPage;
-  const authorizePageCms = cmsInfo?.AuthorizePage;
 
-  let activePageCms = cachedPageCms;
-  if (showPasswordInput) {
-    activePageCms = signinPageCms;
-  } else if (isAuthorizationFlow) {
-    activePageCms = authorizePageCms || cachedPageCms;
-  }
+  const activePageCms = showPasswordInput ? signinPageCms : cachedPageCms;
   const title = activePageCms?.pageTitle;
   // If cachedPageCms is the active page but does not have a CMS entry,
   // we reference the splitLayout property from the signinPageCms.
@@ -600,9 +596,7 @@ const Signin = ({
       <TermsPrivacyAgreement legalTerms={legalTerms} />
 
       <div className="flex flex-col mt-8 tablet:justify-between tablet:flex-row">
-        {/* Hide the account change link in the authorization flow — the user is
-         * already signed into Firefox and can't switch accounts in this context */}
-        {!isAuthorizationFlow && (
+        {!hideAccountSwitchLink && (
           <FtlMsg id="signin-use-a-different-account-link">
             <a
               href="/"

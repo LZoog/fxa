@@ -246,7 +246,7 @@ export const CmsCachedCachedPage: Story = {
   name: 'CMS > Regular layout > Cached',
 };
 
-export const AuthorizationDefault: Story = {
+export const CachedSignedIntoFirefoxMobileWithService: Story = {
   ...story({
     sessionToken: MOCK_SESSION_TOKEN,
     isSignedIntoFirefox: true,
@@ -255,28 +255,7 @@ export const AuthorizationDefault: Story = {
       isSync: false,
     }),
   }),
-  name: 'Authorization flow > Default',
-};
-
-export const AuthorizationWithCmsOverrides: Story = {
-  ...story({
-    sessionToken: MOCK_SESSION_TOKEN,
-    isSignedIntoFirefox: true,
-    integration: createMockSigninOAuthNativeIntegration({
-      service: OAuthNativeServices.Vpn,
-      isSync: false,
-      cmsInfo: {
-        ...MOCK_CMS_INFO,
-        AuthorizePage: {
-          headline: 'Authorize Mozilla VPN',
-          description: 'Grant access to Mozilla VPN',
-          primaryButtonText: 'Authorize',
-          pageTitle: 'Authorize Mozilla VPN',
-        },
-      },
-    }),
-  }),
-  name: 'Authorization flow > With CMS overrides',
+  name: 'Cached > Signed into Firefox + Firefox client + service > "Use a different account" link hidden',
 };
 
 export const CmsCachedNoCachedPageConfig: Story = {

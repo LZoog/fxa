@@ -1808,7 +1808,7 @@ describe('Signin component', () => {
         ).not.toBeInTheDocument();
       });
 
-      it('hides "use a different account" link in authorization flow (desktop)', () => {
+      it('hides "use a different account" link when signed into Firefox desktop with a service', () => {
         const integration = createMockSigninOAuthNativeSyncIntegration();
         renderWithLocalizationProvider(
           <Subject
@@ -1823,7 +1823,7 @@ describe('Signin component', () => {
         ).not.toBeInTheDocument();
       });
 
-      it('hides "use a different account" link in authorization flow (mobile)', () => {
+      it('hides "use a different account" link when signed into Firefox mobile with a service', () => {
         const integration = createMockSigninOAuthNativeIntegration({
           service: OAuthNativeServices.Vpn,
           isSync: false,
@@ -1842,7 +1842,7 @@ describe('Signin component', () => {
         ).not.toBeInTheDocument();
       });
 
-      it('shows "use a different account" link outside authorization flow', () => {
+      it('shows "use a different account" link when not signed into Firefox', () => {
         renderWithLocalizationProvider(
           <Subject sessionToken={MOCK_SESSION_TOKEN} />
         );
@@ -2046,16 +2046,6 @@ describe('Signin component', () => {
         },
       };
 
-      const authorizeCmsInfo: RelierCmsInfo = {
-        ...cachedCmsInfo,
-        AuthorizePage: {
-          headline: 'Authorize VPN',
-          description: 'Grant access to Mozilla VPN',
-          primaryButtonText: 'Authorize',
-          pageTitle: 'Authorize VPN',
-        },
-      };
-
       it('cached user sees SigninCachedPage CMS content', () => {
         render({
           integration: createMockSigninWebIntegration({
@@ -2123,30 +2113,7 @@ describe('Signin component', () => {
         ).not.toBeInTheDocument();
       });
 
-      it('authorization flow uses AuthorizePage CMS content', () => {
-        render({
-          integration: createMockSigninOAuthNativeIntegration({
-            service: OAuthNativeServices.Vpn,
-            isSync: false,
-            cmsInfo: authorizeCmsInfo,
-          }),
-          isSignedIntoFirefox: true,
-          sessionToken: MOCK_SESSION_TOKEN,
-          hasPassword: true,
-        });
-
-        expect(
-          screen.getByRole('heading', { name: 'Authorize VPN' })
-        ).toBeInTheDocument();
-        expect(
-          screen.getByText('Grant access to Mozilla VPN')
-        ).toBeInTheDocument();
-        expect(
-          screen.queryByRole('heading', { name: 'Welcome back' })
-        ).not.toBeInTheDocument();
-      });
-
-      it('authorization flow falls back to SigninCachedPage when no AuthorizePage', () => {
+      it('signed-into-Firefox cached signin uses SigninCachedPage CMS content', () => {
         render({
           integration: createMockSigninOAuthNativeIntegration({
             service: OAuthNativeServices.Vpn,
@@ -2154,44 +2121,11 @@ describe('Signin component', () => {
             cmsInfo: cachedCmsInfo,
           }),
           isSignedIntoFirefox: true,
+          supportsKeysOptionalLogin: true,
           sessionToken: MOCK_SESSION_TOKEN,
           hasPassword: true,
         });
 
-        expect(
-          screen.getByRole('heading', { name: 'Welcome back' })
-        ).toBeInTheDocument();
-      });
-
-      it('authorization flow falls back to default when neither page is set', () => {
-        render({
-          integration: createMockSigninOAuthNativeIntegration({
-            service: OAuthNativeServices.Vpn,
-            isSync: false,
-          }),
-          isSignedIntoFirefox: true,
-          sessionToken: MOCK_SESSION_TOKEN,
-          hasPassword: true,
-        });
-
-        expect(
-          screen.getByRole('heading', { name: 'Sign in' })
-        ).toBeInTheDocument();
-      });
-
-      it('non-authorization flow ignores AuthorizePage', () => {
-        render({
-          integration: createMockSigninWebIntegration({
-            cmsInfo: authorizeCmsInfo,
-          }),
-          isSignedIntoFirefox: false,
-          sessionToken: MOCK_SESSION_TOKEN,
-          hasPassword: true,
-        });
-
-        expect(
-          screen.queryByRole('heading', { name: 'Authorize VPN' })
-        ).not.toBeInTheDocument();
         expect(
           screen.getByRole('heading', { name: 'Welcome back' })
         ).toBeInTheDocument();
