@@ -10,10 +10,8 @@ import { useForm } from 'react-hook-form';
 import AppLayout from '../../../components/AppLayout';
 import CardHeader from '../../../components/CardHeader';
 import TermsPrivacyAgreement from '../../../components/TermsPrivacyAgreement';
-import { REACT_ENTRYPOINT } from '../../../constants';
 import { AuthUiErrors } from '../../../lib/auth-errors/auth-errors';
 import GleanMetrics from '../../../lib/glean';
-import { usePageViewEvent } from '../../../lib/metrics';
 import { useFtlMsgResolver, isWebIntegration } from '../../../models';
 import { SigninCachedProps } from '../interfaces';
 import { handleNavigation, ensureCanLinkAcountOrRedirect } from '../utils';
@@ -45,7 +43,6 @@ const SigninCached = ({
   onSessionExpired,
 }: SigninCachedProps & RouteComponentProps) => {
   const config = useConfig();
-  usePageViewEvent(viewName, REACT_ENTRYPOINT);
   const location = useLocation();
   const navigateWithQuery = useNavigateWithQuery();
   const ftlMsgResolver = useFtlMsgResolver();
@@ -60,13 +57,13 @@ const SigninCached = ({
   const clientId = integration.getClientId();
   const legalTerms = integration.getLegalTerms();
 
-  // Hide "Use a different account" when the user is signed into Firefox and a
-  // Firefox service is requesting authorization. In these flows the active
-  // browser account is bound (Desktop Relay/VPN/SmartWindow, Mobile
-  // authorization), so account switching isn't a meaningful option here.
-  // This is also why Mobile can safely send the `keys_optional` capability:
-  // the only Mobile flows that trigger cached sign-in are ones where the user
-  // can't reach the index page to switch accounts.
+  // Hide "Use a different account" when the user is signed into Firefox already
+  // and they're in a Firefox login/authorization flow. On Desktop, users cannot
+  // choose another account due to the inability to merge account/sync data (the
+  // "merge stop"/warning) and on Mobile if cached sign-in is shown (Fx 151+),
+  // they're already signed into Sync and are authorizing a new service, like
+  // `service=vpn`, and Sync has not been decoupled yet and the Sync scope is
+  // not requested so they cannot use another account in this flow.
   const hideAccountSwitchLink =
     isSignedIntoFirefox &&
     integration.isFirefoxClient() &&
@@ -95,6 +92,7 @@ const SigninCached = ({
       GleanMetrics.cachedLogin.success();
 
       // Sync merge check for cached signin
+      // Pattern matches SigninPasswordlessCode
       if (
         (integration.isSync() || integration.isFirefoxNonSync()) &&
         !hasPassword &&
@@ -107,6 +105,7 @@ const SigninCached = ({
           navigateWithQuery,
         });
         if (!canLink) {
+          // User cancelled the merge - abort signin
           setSigninLoading(false);
           return;
         }

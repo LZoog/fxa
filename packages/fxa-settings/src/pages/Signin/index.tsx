@@ -12,10 +12,8 @@ import CardHeader from '../../components/CardHeader';
 import InputPassword from '../../components/InputPassword';
 import TermsPrivacyAgreement from '../../components/TermsPrivacyAgreement';
 import ThirdPartyAuth from '../../components/ThirdPartyAuth';
-import { REACT_ENTRYPOINT } from '../../constants';
 import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
 import GleanMetrics from '../../lib/glean';
-import { usePageViewEvent } from '../../lib/metrics';
 import {
   useSensitiveDataClient,
   useFtlMsgResolver,
@@ -58,7 +56,6 @@ const Signin = ({
   setCurrentSplitLayout,
 }: SigninProps & RouteComponentProps) => {
   const config = useConfig();
-  usePageViewEvent(viewName, REACT_ENTRYPOINT);
   const location = useLocation();
   const navigateWithQuery = useNavigateWithQuery();
   const ftlMsgResolver = useFtlMsgResolver();
