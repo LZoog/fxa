@@ -7,13 +7,13 @@ import Signin from '.';
 import { Meta, StoryObj } from '@storybook/react';
 import {
   Subject,
+  SubjectProps,
   createMockSigninOAuthIntegration,
   createMockSigninOAuthNativeSyncIntegration,
   createMockSigninOAuthNativeIntegration,
   MOCK_CMS_INFO,
 } from './mocks';
 import { withLocalization } from 'fxa-react/lib/storybooks';
-import { SigninProps } from './interfaces';
 import { MOCK_SERVICE, MOCK_SESSION_TOKEN } from '../mocks';
 import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
 import { BeginSigninError } from '../../lib/error-utils';
@@ -27,13 +27,9 @@ const meta: Meta<typeof Signin> = {
 };
 export default meta;
 
-type Story = StoryObj<
-  Partial<SigninProps> & { supportsKeysOptionalLogin?: boolean }
->;
+type Story = StoryObj<SubjectProps>;
 
-const story = (
-  props: Partial<SigninProps> & { supportsKeysOptionalLogin?: boolean } = {}
-): Story => ({
+const story = (props: SubjectProps = {}): Story => ({
   render: () => <Subject {...props} />,
 });
 

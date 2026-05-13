@@ -23,6 +23,7 @@ import {
   createMockSigninOAuthNativeIntegration,
   createMockSigninOAuthNativeSyncIntegration,
   Subject,
+  SubjectProps,
 } from './mocks';
 import {
   MOCK_CMS_INFO,
@@ -38,7 +39,6 @@ import { MozServices } from '../../lib/types';
 import * as utils from 'fxa-react/lib/utils';
 import VerificationMethods from '../../constants/verification-methods';
 import VerificationReasons from '../../constants/verification-reasons';
-import { SigninProps } from './interfaces';
 import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
 import firefox from '../../lib/channels/firefox';
 import { navigate } from '@reach/router';
@@ -139,9 +139,8 @@ async function enterPasswordAndSubmit() {
   await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD);
   await submit();
 }
-const render = (
-  props: Partial<SigninProps> & { supportsKeysOptionalLogin?: boolean } = {}
-) => renderWithLocalizationProvider(<Subject {...props} />);
+const render = (props: SubjectProps = {}) =>
+  renderWithLocalizationProvider(<Subject {...props} />);
 
 /* Element rendered or not rendered functions */
 function signInHeaderRendered(service: MozServices = MozServices.Default) {
@@ -1823,7 +1822,10 @@ describe('Signin component', () => {
         ).not.toBeInTheDocument();
       });
 
-      it('hides "use a different account" link when signed into Firefox mobile with a service', () => {
+      it('hides "use a different account" link when signed into Firefox mobile with a service (cached view via keys_optional)', () => {
+        // Mobile authorization flow: VPN service + Mobile client + cached session.
+        // Mobile sends `keys_optional`, routing to SigninCached, which hides the
+        // link when isSignedIntoFirefox && isFirefoxClient && getService().
         const integration = createMockSigninOAuthNativeIntegration({
           service: OAuthNativeServices.Vpn,
           isSync: false,
@@ -1834,6 +1836,7 @@ describe('Signin component', () => {
             integration={integration}
             sessionToken={MOCK_SESSION_TOKEN}
             isSignedIntoFirefox={true}
+            supportsKeysOptionalLogin={true}
           />
         );
 

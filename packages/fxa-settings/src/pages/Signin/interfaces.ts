@@ -112,13 +112,9 @@ export interface LocationState {
   skipPasswordlessRedirect?: boolean;
 }
 
-export interface SigninProps {
+interface SigninSharedProps {
   integration: SigninIntegration;
   email: string;
-  beginSigninHandler: BeginSigninHandler;
-  cachedSigninHandler: CachedSigninHandler;
-  sendUnblockEmailHandler: SendUnblockEmailHandler;
-  sessionToken?: hexstring;
   hasLinkedAccount: boolean;
   hasPassword: boolean;
   serviceName: MozServices;
@@ -129,9 +125,23 @@ export interface SigninProps {
   localizedSuccessBannerHeading?: string;
   localizedSuccessBannerDescription?: string;
   flowQueryParams?: QueryParams;
-  useFxAStatusResult: UseFxAStatusResult;
   isSignedIntoFirefox?: boolean;
   setCurrentSplitLayout?: (value: boolean) => void;
+}
+
+export interface SigninProps extends SigninSharedProps {
+  beginSigninHandler: BeginSigninHandler;
+  sendUnblockEmailHandler: SendUnblockEmailHandler;
+  useFxAStatusResult: UseFxAStatusResult;
+}
+
+export interface SigninCachedProps extends SigninSharedProps {
+  sessionToken: hexstring;
+  cachedSigninHandler: CachedSigninHandler;
+  /** Container-owned escape hatch: invoked with a localized error message when
+   * the cached session is invalid (e.g. SESSION_EXPIRED). The container flips
+   * to the password view and surfaces this message as the initial banner error. */
+  onSessionExpired: (localizedErrorMessage: string) => void;
 }
 
 export type BeginSigninHandler = (

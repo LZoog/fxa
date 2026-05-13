@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import * as UseValidateModule from '../../lib/hooks/useValidate';
-import * as SigninModule from './index';
+import * as SigninDeciderModule from './SigninDecider';
 import * as ModelsModule from '../../models';
 import { OAuthNativeServices } from '@fxa/accounts/oauth';
 import * as ReactUtils from 'fxa-react/lib/utils';
@@ -14,7 +14,7 @@ import * as SentryModule from '@sentry/browser';
 import { LocationProvider } from '@reach/router';
 import { renderWithLocalizationProvider } from 'fxa-react/lib/test-utils/localizationProvider';
 import SigninContainer from './container';
-import { BeginSigninResult, SigninProps } from './interfaces';
+import { BeginSigninResult } from './interfaces';
 import { MozServices } from '../../lib/types';
 import { act, screen, waitFor } from '@testing-library/react';
 import { Integration, IntegrationType, WebIntegration } from '../../models';
@@ -88,6 +88,9 @@ function mockSyncDesktopV3Integration() {
     getClientId: () => undefined,
     isSync: () => true,
     wantsKeys: () => true,
+    requiresKeys: () => true,
+    wantsKeysIfPasswordEntered: () => false,
+    wantsLogin: () => false,
     data: { service: 'sync' },
     isDesktopSync: () => true,
     isFirefoxClientServiceRelay: () => false,
@@ -104,6 +107,9 @@ function mockOAuthWebIntegration(
     getClientId: () => MOCK_CLIENT_ID,
     isSync: () => false,
     wantsKeys: () => true,
+    requiresKeys: () => false,
+    wantsKeysIfPasswordEntered: () => false,
+    wantsLogin: () => false,
     data,
     isDesktopSync: () => false,
     isFirefoxClientServiceRelay: () => false,
@@ -119,6 +125,9 @@ function mockOAuthNativeIntegration() {
     getClientId: () => undefined,
     isSync: () => true,
     wantsKeys: () => true,
+    requiresKeys: () => true,
+    wantsKeysIfPasswordEntered: () => false,
+    wantsLogin: () => false,
     isDesktopSync: () => true,
     isFirefoxClientServiceRelay: () => false,
     isFirefoxNonSync: () => false,
@@ -137,6 +146,9 @@ function mockFirefoxNonSyncIntegration() {
     getClientId: () => MOCK_CLIENT_ID,
     isSync: () => false,
     wantsKeys: () => false,
+    requiresKeys: () => false,
+    wantsKeysIfPasswordEntered: () => false,
+    wantsLogin: () => false,
     isDesktopSync: () => false,
     isFirefoxClientServiceRelay: () => true,
     isFirefoxNonSync: () => true,
@@ -389,19 +401,30 @@ jest.mock('@reach/router', () => {
   };
 });
 
-let currentSigninProps: SigninProps | undefined;
+/**
+ * Capture the props the container resolves and hands to its decider. Mocking
+ * at the decider layer (above the password-vs-cached split) keeps tests
+ * focused on container-level resolution: account info, handlers
+ * (beginSigninHandler, cachedSigninHandler, sendUnblockEmailHandler), avatar,
+ * etc. Tests can assert on any prop regardless of which view the decider
+ * would have routed to.
+ *
+ * Typed `any` because tests reach into the union of both child prop shapes
+ * by field name; assertions on specific fields still guard correctness.
+ */
+let currentSigninProps: any;
 function mockSigninModule() {
   currentSigninProps = undefined;
   jest
-    .spyOn(SigninModule, 'default')
-    .mockImplementation((props: SigninProps) => {
+    .spyOn(SigninDeciderModule, 'default')
+    .mockImplementation((props: any) => {
       currentSigninProps = props;
       return <div>signin mock</div>;
     });
 }
 
 function mockReactUtilsModule() {
-  jest.spyOn(ReactUtils, 'hardNavigate').mockImplementation(() => { });
+  jest.spyOn(ReactUtils, 'hardNavigate').mockImplementation(() => {});
 }
 
 let mockGetCredentials: jest.SpyInstance;
@@ -469,7 +492,7 @@ describe('signin container', () => {
         await waitFor(() => {
           expect(currentSigninProps?.email).toBe(MOCK_QUERY_PARAM_EMAIL);
         });
-        expect(SigninModule.default).toHaveBeenCalled();
+        expect(SigninDeciderModule.default).toHaveBeenCalled();
       });
       it('router state takes precedence over query param state', async () => {
         mockUseValidateModule();
@@ -478,7 +501,7 @@ describe('signin container', () => {
         await waitFor(() => {
           expect(currentSigninProps?.email).toBe(MOCK_ROUTER_STATE_EMAIL);
         });
-        expect(SigninModule.default).toHaveBeenCalled();
+        expect(SigninDeciderModule.default).toHaveBeenCalled();
       });
       it('can be set from router state', async () => {
         mockLocationState = MOCK_LOCATION_STATE_COMPLETE;
@@ -486,7 +509,7 @@ describe('signin container', () => {
         await waitFor(() => {
           expect(currentSigninProps?.email).toBe(MOCK_ROUTER_STATE_EMAIL);
         });
-        expect(SigninModule.default).toHaveBeenCalled();
+        expect(SigninDeciderModule.default).toHaveBeenCalled();
       });
       it('if it matches email in local storage, session token in local storage is used', async () => {
         const storedAccount = {
@@ -505,13 +528,13 @@ describe('signin container', () => {
             storedAccount.sessionToken
           );
         });
-        expect(SigninModule.default).toHaveBeenCalled();
+        expect(SigninDeciderModule.default).toHaveBeenCalled();
       });
       it('is handled if not provided in query params or location state', async () => {
         render();
         expect(CacheModule.currentAccount).toHaveBeenCalled();
         expect(mockNavigate).toHaveBeenCalledWith('/');
-        expect(SigninModule.default).not.toHaveBeenCalled();
+        expect(SigninDeciderModule.default).not.toHaveBeenCalled();
       });
       it('uses local storage value if email is not provided via query param or router state', async () => {
         mockCurrentAccount(MOCK_STORED_ACCOUNT);
@@ -520,7 +543,7 @@ describe('signin container', () => {
         await waitFor(() => {
           expect(currentSigninProps?.email).toBe(MOCK_STORED_ACCOUNT.email);
         });
-        expect(SigninModule.default).toHaveBeenCalled();
+        expect(SigninDeciderModule.default).toHaveBeenCalled();
       });
       it('falls back to last logged in account in local storage if current local storage account does not exist', async () => {
         const LAST_STORED_ACCOUNT = {
@@ -537,7 +560,7 @@ describe('signin container', () => {
         await waitFor(() => {
           expect(currentSigninProps?.email).toBe(LAST_STORED_ACCOUNT.email);
         });
-        expect(SigninModule.default).toHaveBeenCalled();
+        expect(SigninDeciderModule.default).toHaveBeenCalled();
       });
     });
     describe('loading spinner', () => {
@@ -553,7 +576,7 @@ describe('signin container', () => {
         render();
         await waitFor(() => {
           screen.getByLabelText('Loading…');
-          expect(SigninModule.default).not.toHaveBeenCalled();
+          expect(SigninDeciderModule.default).not.toHaveBeenCalled();
         });
       });
       it('renders if hasPassword is undefined', async () => {
@@ -565,7 +588,7 @@ describe('signin container', () => {
         render();
         await waitFor(() => {
           screen.getByLabelText('Loading…');
-          expect(SigninModule.default).not.toHaveBeenCalled();
+          expect(SigninDeciderModule.default).not.toHaveBeenCalled();
         });
       });
     });
@@ -1240,7 +1263,7 @@ describe('signin container', () => {
       // doesn't overwrite the initial hasPassword=false from locationState.
       mockAuthClient.accountStatusByEmail = jest
         .fn()
-        .mockReturnValue(new Promise(() => { }));
+        .mockReturnValue(new Promise(() => {}));
       mockLocationState = {
         email: MOCK_ROUTER_STATE_EMAIL,
         hasPassword: false,
@@ -1352,7 +1375,7 @@ describe('signin container', () => {
 
       // The Signin component should render (not redirect to passwordless code)
       await waitFor(() => {
-        expect(SigninModule.default).toHaveBeenCalled();
+        expect(SigninDeciderModule.default).toHaveBeenCalled();
         expect(currentSigninProps?.sessionToken).toBe(MOCK_SESSION_TOKEN);
       });
 
@@ -1608,7 +1631,7 @@ describe('signin container', () => {
     });
 
     it('calls session.isValid and discards token when session is invalid', async () => {
-      const storedAccount: { sessionToken?: string;[key: string]: any } = {
+      const storedAccount: { sessionToken?: string; [key: string]: any } = {
         ...MOCK_STORED_ACCOUNT,
         email: MOCK_QUERY_PARAM_EMAIL,
         sessionToken: MOCK_SESSION_TOKEN,

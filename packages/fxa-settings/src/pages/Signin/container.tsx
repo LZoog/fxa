@@ -4,7 +4,7 @@
 
 import { RouteComponentProps, useLocation } from '@reach/router';
 import { useNavigateWithQuery } from '../../lib/hooks/useNavigateWithQuery';
-import Signin from '.';
+import SigninDecider from './SigninDecider';
 import {
   Integration,
   useAuthClient,
@@ -695,7 +695,7 @@ const SigninContainer = ({
   }
 
   return (
-    <Signin
+    <SigninDecider
       {...{
         integration,
         serviceName,
