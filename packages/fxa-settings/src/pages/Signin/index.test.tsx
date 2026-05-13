@@ -955,21 +955,9 @@ describe('Signin component', () => {
     });
 
     describe('user does not have a password', () => {
-      it('renders as expected without linked account', () => {
-        render({ hasPassword: false });
-
-        signInHeaderRendered();
-        defaultAvatarAndEmailRendered();
-        signInButtonAndSeparatorRendered();
-        thirdPartyAuthRendered();
-        privacyAndTermsRendered();
-        differentAccountLinkRendered();
-        expect(
-          screen.queryByRole('link', { name: 'Forgot password?' })
-        ).not.toBeInTheDocument();
-
-        passwordInputNotRendered();
-      });
+      // Note: passwordless without a linked account is redirected by the
+      // container's useEffect to /signin_passwordless_code, so it's unreachable
+      // here. We only test the linked-account variants.
 
       it('renders as expected with linked account', () => {
         render({ hasPassword: false, hasLinkedAccount: true });
@@ -1972,42 +1960,6 @@ describe('Signin component', () => {
       expect(cmsLogo).toMatchSnapshot('cms logo');
       expect(cmsHeadline).toMatchSnapshot('cms headline');
       expect(cmsDescription).toMatchSnapshot('cms description');
-    });
-
-    it('renders CardHeader with CMS content when password is not needed', () => {
-      const cmsProps = {
-        cmsInfo: {
-          ...MOCK_CMS_INFO,
-          SigninCachedPage: undefined,
-          SigninPage: {
-            headline: 'CMS override',
-            description: 'just for you!',
-            primaryButtonText: 'Click me',
-            pageTitle: 'I am a title',
-          },
-        },
-      };
-
-      // No SigninCachedPage and password not needed, so CMS headline
-      // is not available and the heading falls back to default
-      render({
-        integration: createMockSigninWebIntegration(cmsProps),
-        hasPassword: false,
-      });
-
-      // No CMS headline from SigninCachedPage, so no CMS logo rendered
-      expect(
-        screen.queryByRole('img', {
-          name: cmsProps.cmsInfo.shared.logoAltText,
-        })
-      ).not.toBeInTheDocument();
-
-      // Falls back to the default "Sign in" text
-      expect(
-        screen.getByRole('heading', {
-          name: 'Sign in',
-        })
-      ).toBeInTheDocument();
     });
 
     it('renders the CMS-styled submit button', () => {

@@ -144,6 +144,13 @@ export interface SigninCachedProps extends SigninSharedProps {
   onSessionExpired: (localizedErrorMessage: string) => void;
 }
 
+/**
+ * Third-party-auth-only signin: user has a linked account (Google/Apple) but
+ * no password set, and no cached session. The only meaningful action is to
+ * authenticate via the linked provider — no password form, no Sign-in button.
+ */
+export type SigninThirdPartyProps = SigninSharedProps;
+
 export type BeginSigninHandler = (
   email: string,
   password: string

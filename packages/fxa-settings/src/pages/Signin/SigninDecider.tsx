@@ -5,6 +5,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import Signin from '.';
 import SigninCached from './SigninCached';
+import SigninThirdParty from './SigninThirdParty';
 import { isOAuthIntegration, isOAuthWebIntegration } from '../../models';
 import { UseFxAStatusResult } from '../../lib/hooks/useFxAStatus';
 import { MozServices } from '../../lib/types';
@@ -43,10 +44,10 @@ export interface SigninDeciderProps {
 }
 
 /**
- * Decides whether the user sees the password-entry view (`<Signin>`) or the
- * cached-signin view (`<SigninCached>`). The decision logic was previously
- * inline in `Signin/index.tsx`; hoisting it here lets each child component
- * own a single, focused concern.
+ * Decides which of the three signin views the user sees:
+ *  - `<SigninCached>`     — has a valid cached session, 1-click sign in
+ *  - `<SigninThirdParty>` — linked third-party provider, no password, no session
+ *  - `<Signin>`           — password entry (default)
  *
  * Also owns the SESSION_EXPIRED handoff: if `<SigninCached>` reports an
  * expired session, this component flips state and the next render falls
@@ -140,12 +141,38 @@ export const SigninDecider = ({
     );
   }
 
-  // When falling through from cached → password (SESSION_EXPIRED), surface
+  // When falling through from cached → another view (SESSION_EXPIRED), surface
   // the carried-over error message as the initial banner. The ref is read
-  // once on Signin's mount; subsequent re-renders of this container don't
-  // reset Signin's banner state because Signin owns its own useState.
+  // once on the child's mount; subsequent re-renders don't reset the child's
+  // banner state because each child owns its own useState.
   const initialBannerError =
     sessionExpiredErrorRef.current ?? localizedErrorFromLocationState;
+
+  // Linked-account-passwordless without a cached session (or after a cached
+  // session expired): nothing to enter, the user authenticates via their
+  // third-party provider (Google/Apple).
+  if (hasLinkedAccount && !hasPassword) {
+    return (
+      <SigninThirdParty
+        {...{
+          integration,
+          serviceName,
+          email,
+          hasLinkedAccount,
+          hasPassword,
+          avatarData,
+          avatarLoading,
+          localizedErrorFromLocationState: initialBannerError,
+          finishOAuthFlowHandler,
+          localizedSuccessBannerHeading,
+          localizedSuccessBannerDescription,
+          flowQueryParams,
+          isSignedIntoFirefox,
+          setCurrentSplitLayout,
+        }}
+      />
+    );
+  }
 
   return (
     <Signin

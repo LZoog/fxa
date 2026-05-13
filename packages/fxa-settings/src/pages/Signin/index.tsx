@@ -78,7 +78,6 @@ const Signin = ({
   const isOAuthNative = isOAuthNativeIntegration(integration);
   const isSync = integration.isSync();
   const clientId = integration.getClientId();
-  const hasLinkedAccountAndNoPassword = hasLinkedAccount && !hasPassword;
 
   const legalTerms = integration.getLegalTerms();
 
@@ -274,12 +273,6 @@ const Signin = ({
 
   const cmsInfo = integration.getCmsInfo();
   const signinPageCms = cmsInfo?.SigninPage;
-  const cachedPageCms = cmsInfo?.SigninCachedPage;
-  // When the user has no password (linked-account-only or unreachable
-  // passwordless-no-session edge case), we render the cached-style "Sign in"
-  // header instead of "Enter your password" — there's no password to enter.
-  // This preserves the original component's header behavior for these cases.
-  const showCachedStyleHeader = !hasPassword;
   const title = signinPageCms?.pageTitle;
   const splitLayout = signinPageCms?.splitLayout;
   const additionalAccessibilityInfo =
@@ -296,37 +289,18 @@ const Signin = ({
           }}
         />
       )}
-      {showCachedStyleHeader ? (
-        <CardHeader
-          headingText="Sign in"
-          headingTextFtlId="signin-header"
-          subheadingWithDefaultServiceFtlId="signin-subheader-without-logo-default"
-          subheadingWithCustomServiceFtlId="signin-subheader-without-logo-with-servicename"
-          {...{
-            clientId,
-            serviceName,
-            cmsLogoUrl: cmsInfo?.shared.logoUrl,
-            cmsLogoAltText: cmsInfo?.shared.logoAltText,
-            cmsHeadline: cachedPageCms?.headline,
-            cmsDescription: cachedPageCms?.description,
-            cmsHeadlineFontSize: cmsInfo?.shared.headlineFontSize,
-            cmsHeadlineTextColor: cmsInfo?.shared.headlineTextColor,
-          }}
-        />
-      ) : (
-        <CardHeader
-          headingText="Enter your password"
-          headingAndSubheadingFtlId="signin-password-needed-header-2"
-          {...{
-            cmsLogoUrl: cmsInfo?.shared.logoUrl,
-            cmsLogoAltText: cmsInfo?.shared.logoAltText,
-            cmsHeadline: signinPageCms?.headline,
-            cmsDescription: signinPageCms?.description,
-            cmsHeadlineFontSize: cmsInfo?.shared.headlineFontSize,
-            cmsHeadlineTextColor: cmsInfo?.shared.headlineTextColor,
-          }}
-        />
-      )}
+      <CardHeader
+        headingText="Enter your password"
+        headingAndSubheadingFtlId="signin-password-needed-header-2"
+        {...{
+          cmsLogoUrl: cmsInfo?.shared.logoUrl,
+          cmsLogoAltText: cmsInfo?.shared.logoAltText,
+          cmsHeadline: signinPageCms?.headline,
+          cmsDescription: signinPageCms?.description,
+          cmsHeadlineFontSize: cmsInfo?.shared.headlineFontSize,
+          cmsHeadlineTextColor: cmsInfo?.shared.headlineTextColor,
+        }}
+      />
       {localizedBannerError && (
         <Banner
           type="error"
@@ -345,60 +319,53 @@ const Signin = ({
           additionalAccessibilityInfo,
         }}
       />
-      {!hasLinkedAccountAndNoPassword && (
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <input type="email" className="hidden" value={email} disabled />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <input type="email" className="hidden" value={email} disabled />
 
-          {hasPassword && (
-            <InputPassword
-              name="password"
-              anchorPosition="start"
-              className="mb-5"
-              label={localizedPasswordFormLabel}
-              errorText={passwordTooltipErrorText}
-              tooltipPosition="bottom"
-              required
-              autoFocus
-              onChange={() => {
-                // Only log the engage event once. Note that this text box is autofocused, so
-                // using autofocus wouldn't be a good way to do this.
-                if (hasEngaged === false) {
-                  setHasEngaged(true);
-                  GleanMetrics.login.engage();
-                }
+        <InputPassword
+          name="password"
+          anchorPosition="start"
+          className="mb-5"
+          label={localizedPasswordFormLabel}
+          errorText={passwordTooltipErrorText}
+          tooltipPosition="bottom"
+          required
+          autoFocus
+          onChange={() => {
+            // Only log the engage event once. Note that this text box is autofocused, so
+            // using autofocus wouldn't be a good way to do this.
+            if (hasEngaged === false) {
+              setHasEngaged(true);
+              GleanMetrics.login.engage();
+            }
 
-                // clear error tooltip if user types in the field
-                if (passwordTooltipErrorText) {
-                  setPasswordTooltipErrorText('');
-                }
-                // if the request errored, loading state must be marked as false to reenable submission on input type
-                setSigninLoading(false);
-              }}
-              inputRef={register()}
-            />
-          )}
+            // clear error tooltip if user types in the field
+            if (passwordTooltipErrorText) {
+              setPasswordTooltipErrorText('');
+            }
+            // if the request errored, loading state must be marked as false to reenable submission on input type
+            setSigninLoading(false);
+          }}
+          inputRef={register()}
+        />
 
-          <div className="flex">
-            <FtlMsg id="signin-button">
-              <CmsButtonWithFallback
-                type="submit"
-                disabled={signinLoading}
-                buttonColor={cmsInfo?.shared.buttonColor}
-                buttonText={signinPageCms?.primaryButtonText}
-              >
-                Sign in
-              </CmsButtonWithFallback>
-            </FtlMsg>
-          </div>
-        </form>
-      )}
+        <div className="flex">
+          <FtlMsg id="signin-button">
+            <CmsButtonWithFallback
+              type="submit"
+              disabled={signinLoading}
+              buttonColor={cmsInfo?.shared.buttonColor}
+              buttonText={signinPageCms?.primaryButtonText}
+            >
+              Sign in
+            </CmsButtonWithFallback>
+          </FtlMsg>
+        </div>
+      </form>
 
       {!hideThirdPartyAuth && (
         <ThirdPartyAuth
           showSeparator={true}
-          separatorType={
-            hasLinkedAccountAndNoPassword ? 'signInWith' : undefined
-          }
           {...{ viewName, flowQueryParams }}
         />
       )}
@@ -433,19 +400,17 @@ const Signin = ({
             </a>
           </FtlMsg>
         )}
-        {hasPassword && !hasLinkedAccountAndNoPassword && (
-          <FtlMsg id="signin-forgot-password-link">
-            <Link
-              to={`/reset_password${
-                location?.search ? `/${location?.search}` : ''
-              }`}
-              className="text-sm link-blue mx-auto tablet:mx-0"
-              onClick={() => GleanMetrics.login.forgotPassword()}
-            >
-              Forgot password?
-            </Link>
-          </FtlMsg>
-        )}
+        <FtlMsg id="signin-forgot-password-link">
+          <Link
+            to={`/reset_password${
+              location?.search ? `/${location?.search}` : ''
+            }`}
+            className="text-sm link-blue mx-auto tablet:mx-0"
+            onClick={() => GleanMetrics.login.forgotPassword()}
+          >
+            Forgot password?
+          </Link>
+        </FtlMsg>
       </div>
     </AppLayout>
   );
