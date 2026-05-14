@@ -152,10 +152,8 @@ export const SigninDecider = ({
   const initialBannerError =
     sessionExpiredErrorRef.current ?? localizedErrorFromLocationState;
 
-  // Linked-account-passwordless without a cached session. Third-party auth is
-  // the right path even for non-Sync OAuthNative + !keys-optional: after
-  // Google/Apple auth the user is routed through set_password, which derives
-  // the keys required by the integration.
+  // Linked-account-passwordless without a cached session. If keys are required
+  // users will be taken to "Set password" after signing in.
   if (hasLinkedAccount && !hasPassword) {
     return (
       <SigninThirdParty

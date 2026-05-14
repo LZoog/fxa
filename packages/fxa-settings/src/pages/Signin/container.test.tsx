@@ -402,14 +402,6 @@ jest.mock('@reach/router', () => {
   };
 });
 
-/**
- * Capture the props the container resolves and hands to its decider. Mocking
- * at the decider layer (above the password-vs-cached split) keeps tests
- * focused on container-level resolution: account info, handlers
- * (beginSigninHandler, cachedSigninHandler, sendUnblockEmailHandler), avatar,
- * etc. Tests can assert on any prop regardless of which view the decider
- * would have routed to.
- */
 let currentSigninProps: SigninDeciderProps | undefined;
 function mockSigninModule() {
   currentSigninProps = undefined;
