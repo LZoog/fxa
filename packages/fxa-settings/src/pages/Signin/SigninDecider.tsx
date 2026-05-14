@@ -93,11 +93,20 @@ export const SigninDecider = ({
   }, []);
 
   const isOAuth = isOAuthIntegration(integration);
+
+  // Relay browser service login launched in Firefox desktop 135, and the "keys optional"
+  // capability (Sync decoupling) launched in Fx desktop 147, meaning all Relay service users
+  // in those Fx versions require a password.
+  // This also covers Mobile until Sync has been decoupled.
   const syncNotDecoupledRequiresPassword =
     !useFxAStatusResult.supportsKeysOptionalLogin &&
     integration.wantsKeysIfPasswordEntered();
+
+  // Redirect-based RPs (OAuthWeb) that request scoped keys always need a password for key
+  // derivation. In practice today, we don't have RPs that need this, but we do support it.
   const redirectRpRequiresKeys =
     isOAuthWebIntegration(integration) && integration.wantsKeys();
+
   const passwordNeeded =
     !hasCachedSession ||
     integration.requiresKeys() ||
@@ -105,11 +114,19 @@ export const SigninDecider = ({
     redirectRpRequiresKeys ||
     // The password is forced when the RP requests prompt=login
     (isOAuth && integration.wantsLogin());
+
+  // Do we have a session token, and can we defer the key fetch?
   const keysOptional =
     hasCachedSession && useFxAStatusResult.supportsKeysOptionalLogin;
-  // Cached view is appropriate when we have a valid cached session AND either
-  // the user is passwordless, the flow doesn't need a password, or the
-  // browser supports keys-optional. Otherwise show the password input.
+
+  // Determine whether to show the cached view (no password input). Keys always
+  // require a password for derivation, but we can skip it when:
+  // - The user is already signed into Firefox (authorization flow) AND the
+  //   service doesn't require keys (Sync always requires them), OR
+  // - The browser supports "keys optional" (Sync decoupled from other services)
+  //
+  // Passwordless users always see cached sign-in and are redirected to set a
+  // password after signing in, if a password is required (e.g. for Sync).
   const showCached =
     !!sessionToken &&
     hasCachedSession &&

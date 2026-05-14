@@ -4,86 +4,205 @@
 
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import userEvent, { UserEvent } from '@testing-library/user-event';
 import { renderWithLocalizationProvider } from 'fxa-react/lib/test-utils/localizationProvider';
-import { LocationProvider } from '@reach/router';
+import { OAuthNativeServices } from '@fxa/accounts/oauth';
 
-import SigninDecider, { SigninDeciderProps } from './SigninDecider';
+import GleanMetrics from '../../lib/glean';
 import {
-  createMockSigninWebIntegration,
+  Subject,
+  SubjectProps,
   createCachedSigninResponseError,
-  mockBeginSigninHandler,
-  mockSendUnblockEmailHandler,
+  createMockSigninOAuthNativeIntegration,
+  createMockSigninOAuthNativeSyncIntegration,
 } from './mocks';
-import {
-  MOCK_AVATAR_NON_DEFAULT,
-  MOCK_EMAIL,
-  MOCK_SESSION_TOKEN,
-  mockFinishOAuthFlowHandler,
-} from '../mocks';
-import { AppContext } from '../../models';
-import { mockAppContext } from '../../models/mocks';
-import { mockUseFxAStatus } from '../../lib/hooks/useFxAStatus/mocks';
-import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
-import { MozServices } from '../../lib/types';
+import { MOCK_SESSION_TOKEN } from '../mocks';
 
-// Routing decisions are already exercised end-to-end by `Signin/index.test.tsx`
-// (which renders via `Subject` → `SigninDecider`). This file covers only the
-// SESSION_EXPIRED hand-off — the one decider behavior the page-level tests
-// can't reach because it requires the cached → password view transition.
+jest.mock('../../lib/glean', () => ({
+  __esModule: true,
+  default: {
+    isDone: jest.fn(),
+    login: {
+      view: jest.fn(),
+      submit: jest.fn(),
+      success: jest.fn(),
+      error: jest.fn(),
+      forgotPassword: jest.fn(),
+      diffAccountLinkClick: jest.fn(),
+      engage: jest.fn(),
+      lockedAccountBannerView: jest.fn(),
+    },
+    cachedLogin: {
+      view: jest.fn(),
+      submit: jest.fn(),
+      success: jest.fn(),
+      forgotPassword: jest.fn(),
+    },
+    thirdPartyAuth: {
+      loginNoPwView: jest.fn(),
+      startGoogleAuthFromLogin: jest.fn(),
+      startAppleAuthFromLogin: jest.fn(),
+      appleDeeplink: jest.fn(),
+      googleDeeplink: jest.fn(),
+    },
+  },
+}));
 
-describe('SigninDecider SESSION_EXPIRED carry-over', () => {
-  it('flips from cached to password view AND surfaces the localized error in the password banner', async () => {
-    const expiredResponse = createCachedSigninResponseError({
-      errno: AuthUiErrors.SESSION_EXPIRED.errno!,
+jest.mock('../../lib/storage-utils', () => ({
+  storeAccountData: jest.fn(),
+}));
+
+jest.mock('../../models', () => ({
+  ...jest.requireActual('../../models'),
+  useSensitiveDataClient: () => ({ setDataType: jest.fn() }),
+  useSession: () => ({ sendVerificationCode: jest.fn() }),
+  useConfig: () => ({ servicesWithEmailVerification: ['123456'] }),
+}));
+
+jest.mock('@reach/router', () => ({
+  ...jest.requireActual('@reach/router'),
+  navigate: jest.fn(),
+  useNavigate: () => jest.fn(),
+}));
+
+const render = (props: SubjectProps = {}) =>
+  renderWithLocalizationProvider(<Subject {...props} />);
+
+const passwordInputRendered = () => screen.getByLabelText('Password');
+const passwordInputNotRendered = () =>
+  expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+const thirdPartyAuthRendered = () => {
+  screen.getByRole('button', { name: /Continue with Google/ });
+  screen.getByRole('button', { name: /Continue with Apple/ });
+};
+
+let user: UserEvent;
+const submit = () =>
+  user.click(screen.getByRole('button', { name: 'Sign in' }));
+
+describe('SigninDecider routing', () => {
+  beforeEach(() => {
+    user = userEvent.setup();
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  describe('cached vs password based on keys-optional', () => {
+    it('routes to cached signin for service=relay when supportsKeysOptionalLogin is true', () => {
+      const integration = createMockSigninOAuthNativeIntegration({
+        service: OAuthNativeServices.Relay,
+        isSync: false,
+      });
+      render({
+        integration,
+        sessionToken: MOCK_SESSION_TOKEN,
+        supportsKeysOptionalLogin: true,
+      });
+
+      passwordInputNotRendered();
+      expect(GleanMetrics.cachedLogin.view).toHaveBeenCalledWith({
+        event: { thirdPartyLinks: false },
+      });
     });
-    const cachedSigninHandler = jest.fn().mockResolvedValue(expiredResponse);
 
-    const props: SigninDeciderProps = {
-      integration: createMockSigninWebIntegration(),
-      email: MOCK_EMAIL,
-      sessionToken: MOCK_SESSION_TOKEN,
-      serviceName: MozServices.Default,
-      hasLinkedAccount: false,
-      hasPassword: true,
-      avatarData: { account: { avatar: MOCK_AVATAR_NON_DEFAULT } },
-      avatarLoading: false,
-      finishOAuthFlowHandler: mockFinishOAuthFlowHandler,
-      beginSigninHandler: mockBeginSigninHandler,
-      cachedSigninHandler,
-      sendUnblockEmailHandler: mockSendUnblockEmailHandler,
-      useFxAStatusResult: mockUseFxAStatus({
+    it('routes to cached signin for service=smartwindow when supportsKeysOptionalLogin is true', () => {
+      const integration = createMockSigninOAuthNativeIntegration({
+        service: OAuthNativeServices.SmartWindow,
+        isSync: false,
+      });
+      render({
+        integration,
+        sessionToken: MOCK_SESSION_TOKEN,
+        supportsKeysOptionalLogin: true,
+      });
+
+      passwordInputNotRendered();
+      expect(GleanMetrics.cachedLogin.view).toHaveBeenCalledWith({
+        event: { thirdPartyLinks: false },
+      });
+    });
+
+    it('routes to password signin for service=relay when supportsKeysOptionalLogin is false', () => {
+      const integration = createMockSigninOAuthNativeIntegration({
+        service: OAuthNativeServices.Relay,
+        isSync: false,
+      });
+      render({
+        integration,
+        sessionToken: MOCK_SESSION_TOKEN,
         supportsKeysOptionalLogin: false,
-      }),
-    };
-    renderWithLocalizationProvider(
-      <LocationProvider>
-        <AppContext.Provider value={mockAppContext()}>
-          <SigninDecider {...props} />
-        </AppContext.Provider>
-      </LocationProvider>
-    );
+        isSignedIntoFirefox: false,
+      });
 
-    // Initially the cached view is rendered.
-    expect(
-      screen.getByRole('heading', { name: 'Sign in' })
-    ).toBeInTheDocument();
+      passwordInputRendered();
+      expect(GleanMetrics.login.view).toHaveBeenCalledWith({
+        event: { thirdPartyLinks: false },
+      });
+    });
+  });
 
-    // Click Sign in → cached handler returns SESSION_EXPIRED → decider flips
-    // to password view and surfaces the error message in the banner.
-    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+  describe('cached vs password based on integration requesting keys', () => {
+    it('routes to password signin when integration wants keys and user has a password', () => {
+      const integration = createMockSigninOAuthNativeSyncIntegration();
+      render({ integration, sessionToken: MOCK_SESSION_TOKEN });
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: /Enter your password/i })
-      ).toBeInTheDocument();
+      passwordInputRendered();
     });
 
-    // The banner shows the localized SESSION_EXPIRED message — the user is
-    // informed why they were asked to enter their password.
-    const banners = screen.queryAllByText(
-      /session expired|session has expired|sign in again/i
-    );
-    expect(banners.length).toBeGreaterThan(0);
+    it('routes to cached signin when integration wants keys but user has no password', () => {
+      const integration = createMockSigninOAuthNativeSyncIntegration();
+      render({
+        integration,
+        sessionToken: MOCK_SESSION_TOKEN,
+        hasPassword: false,
+        hasLinkedAccount: true,
+      });
+
+      passwordInputNotRendered();
+      // Cached sign-in button is shown instead.
+      screen.getByRole('button', { name: 'Sign in' });
+    });
+  });
+
+  describe('SESSION_EXPIRED handoff', () => {
+    it('flips from cached to password when cached session expires', async () => {
+      const cachedSigninHandler = jest
+        .fn()
+        .mockReturnValueOnce(createCachedSigninResponseError());
+      render({
+        sessionToken: MOCK_SESSION_TOKEN,
+        cachedSigninHandler,
+      });
+
+      await submit();
+      await waitFor(() => {
+        expect(cachedSigninHandler).toHaveBeenCalledWith(MOCK_SESSION_TOKEN);
+        screen.getByText('Session expired. Sign in to continue.');
+        passwordInputRendered();
+      });
+    });
+
+    it('flips from cached to third party auth when session expires for passwordless user with linked account', async () => {
+      const cachedSigninHandler = jest
+        .fn()
+        .mockReturnValueOnce(createCachedSigninResponseError());
+      render({
+        sessionToken: MOCK_SESSION_TOKEN,
+        hasPassword: false,
+        hasLinkedAccount: true,
+        cachedSigninHandler,
+      });
+
+      await submit();
+      await waitFor(() => {
+        expect(cachedSigninHandler).toHaveBeenCalledWith(MOCK_SESSION_TOKEN);
+        screen.getByText('Session expired. Sign in to continue.');
+        passwordInputNotRendered();
+        thirdPartyAuthRendered();
+      });
+    });
   });
 });

@@ -1013,58 +1013,6 @@ describe('Signin component', () => {
       passwordInputNotRendered();
     });
 
-    it('shows cached signin for service=relay when supportsKeysOptionalLogin is true', () => {
-      const integration = createMockSigninOAuthNativeIntegration({
-        service: OAuthNativeServices.Relay,
-        isSync: false,
-      });
-      render({
-        integration,
-        sessionToken: MOCK_SESSION_TOKEN,
-        supportsKeysOptionalLogin: true,
-      });
-
-      passwordInputNotRendered();
-      expect(GleanMetrics.cachedLogin.view).toHaveBeenCalledWith({
-        event: { thirdPartyLinks: false },
-      });
-    });
-
-    it('shows cached signin for service=smartwindow when supportsKeysOptionalLogin is true', () => {
-      const integration = createMockSigninOAuthNativeIntegration({
-        service: OAuthNativeServices.SmartWindow,
-        isSync: false,
-      });
-      render({
-        integration,
-        sessionToken: MOCK_SESSION_TOKEN,
-        supportsKeysOptionalLogin: true,
-      });
-
-      passwordInputNotRendered();
-      expect(GleanMetrics.cachedLogin.view).toHaveBeenCalledWith({
-        event: { thirdPartyLinks: false },
-      });
-    });
-
-    it('requires password for service=relay when supportsKeysOptionalLogin is false', () => {
-      const integration = createMockSigninOAuthNativeIntegration({
-        service: OAuthNativeServices.Relay,
-        isSync: false,
-      });
-      render({
-        integration,
-        sessionToken: MOCK_SESSION_TOKEN,
-        supportsKeysOptionalLogin: false,
-        isSignedIntoFirefox: false,
-      });
-
-      passwordInputRendered();
-      expect(GleanMetrics.login.view).toHaveBeenCalledWith({
-        event: { thirdPartyLinks: false },
-      });
-    });
-
     it('sends webchannel message if cached signin for service=relay when supportsKeysOptionalLogin is true', async () => {
       const fxaLoginSpy = jest.spyOn(firefox, 'fxaLogin');
 
@@ -1119,25 +1067,6 @@ describe('Signin component', () => {
 
         afterEach(() => {
           hardNavigateSpy.mockRestore();
-        });
-
-        it('renders password input when integration wants keys and user has a password', () => {
-          const integration = createMockSigninOAuthNativeSyncIntegration();
-          render({ integration, sessionToken: MOCK_SESSION_TOKEN });
-          passwordInputRendered();
-        });
-
-        it('does not render password input when integration wants keys but user has no password', () => {
-          const integration = createMockSigninOAuthNativeSyncIntegration();
-          render({
-            integration,
-            sessionToken: MOCK_SESSION_TOKEN,
-            hasPassword: false,
-            hasLinkedAccount: true,
-          });
-          passwordInputNotRendered();
-          // Should show cached sign-in button instead
-          screen.getByRole('button', { name: 'Sign in' });
         });
 
         it('passes isSignInWithThirdPartyAuth for cached Sync passwordless user', async () => {
@@ -1669,47 +1598,6 @@ describe('Signin component', () => {
     });
 
     describe('errored submission', () => {
-      it('requires password if cached credentials have expired', async () => {
-        const cachedSigninHandler = jest
-          .fn()
-          .mockReturnValueOnce(createCachedSigninResponseError());
-        renderWithLocalizationProvider(
-          <Subject
-            sessionToken={MOCK_SESSION_TOKEN}
-            {...{ cachedSigninHandler }}
-          />
-        );
-
-        await submit();
-        await waitFor(() => {
-          expect(cachedSigninHandler).toHaveBeenCalledWith(MOCK_SESSION_TOKEN);
-          screen.getByText('Session expired. Sign in to continue.');
-          passwordInputRendered();
-        });
-      });
-
-      it('shows third party auth instead of password when session expires for passwordless user', async () => {
-        const cachedSigninHandler = jest
-          .fn()
-          .mockReturnValueOnce(createCachedSigninResponseError());
-        renderWithLocalizationProvider(
-          <Subject
-            sessionToken={MOCK_SESSION_TOKEN}
-            hasPassword={false}
-            hasLinkedAccount={true}
-            {...{ cachedSigninHandler }}
-          />
-        );
-
-        await submit();
-        await waitFor(() => {
-          expect(cachedSigninHandler).toHaveBeenCalledWith(MOCK_SESSION_TOKEN);
-          screen.getByText('Session expired. Sign in to continue.');
-          passwordInputNotRendered();
-          thirdPartyAuthRendered();
-        });
-      });
-
       it('displays other errors', async () => {
         const unexpectedError = AuthUiErrors.UNEXPECTED_ERROR;
         const cachedSigninHandler = jest.fn().mockReturnValueOnce(
