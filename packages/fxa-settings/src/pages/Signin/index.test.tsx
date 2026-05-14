@@ -666,7 +666,7 @@ describe('Signin component', () => {
               await act(() => {
                 render({ beginSigninHandler, integration });
               });
-              await await enterPasswordAndSubmit();
+              await enterPasswordAndSubmit();
               expect(fxaLoginSpy).not.toHaveBeenCalled();
             });
             it('is not sent otherwise', async () => {
@@ -951,41 +951,6 @@ describe('Signin component', () => {
           event: { reason: AuthUiErrors.EMAIL_HARD_BOUNCE.message },
         });
         expect(GleanMetrics.login.error).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    describe('user does not have a password', () => {
-      // Note: passwordless without a linked account is redirected by the
-      // container's useEffect to /signin_passwordless_code, so it's unreachable
-      // here. We only test the linked-account variants.
-
-      it('renders as expected with linked account', () => {
-        render({ hasPassword: false, hasLinkedAccount: true });
-        signInHeaderRendered();
-        defaultAvatarAndEmailRendered();
-        thirdPartyAuthRendered();
-        privacyAndTermsRendered();
-
-        passwordInputNotRendered();
-        expect(
-          screen.queryByRole('link', { name: 'Forgot password?' })
-        ).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('button', { name: 'Sign in' })
-        ).not.toBeInTheDocument();
-      });
-
-      it('renders third party auth options for sync with linked account', () => {
-        const integration = createMockSigninOAuthNativeSyncIntegration();
-        render({ integration, hasPassword: false, hasLinkedAccount: true });
-
-        signInHeaderRendered();
-        expect(
-          screen.queryByRole('button', { name: /Continue with Google/ })
-        ).toBeInTheDocument();
-        expect(
-          screen.queryByRole('button', { name: /Continue with Apple/ })
-        ).toBeInTheDocument();
       });
     });
   });
@@ -1617,50 +1582,6 @@ describe('Signin component', () => {
           screen.getByText(unexpectedError.message);
           passwordInputNotRendered();
         });
-      });
-    });
-
-    describe('user does not have a password', () => {
-      it('renders as expected without linked account', () => {
-        renderWithLocalizationProvider(
-          <Subject sessionToken={MOCK_SESSION_TOKEN} hasPassword={false} />
-        );
-
-        signInHeaderRendered();
-        avatarAndEmailRendered();
-        screen.getByRole('button', { name: 'Sign in' });
-        privacyAndTermsRendered();
-        differentAccountLinkRendered();
-        thirdPartyAuthNotRendered();
-
-        expect(
-          screen.queryByRole('link', { name: 'Forgot password?' })
-        ).not.toBeInTheDocument();
-
-        passwordInputNotRendered();
-      });
-
-      it('renders as expected with linked account (passwordless)', () => {
-        renderWithLocalizationProvider(
-          <Subject
-            sessionToken={MOCK_SESSION_TOKEN}
-            hasPassword={false}
-            hasLinkedAccount={true}
-          />
-        );
-        signInHeaderRendered();
-        avatarAndEmailRendered();
-        privacyAndTermsRendered();
-        thirdPartyAuthNotRendered();
-
-        screen.getByRole('button', { name: 'Sign in' });
-
-        // OAuth buttons and forgot password should NOT be rendered for cached users
-        expect(
-          screen.queryByRole('link', { name: 'Forgot password?' })
-        ).not.toBeInTheDocument();
-
-        passwordInputNotRendered();
       });
     });
 

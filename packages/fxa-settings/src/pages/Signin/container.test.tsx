@@ -4,6 +4,7 @@
 
 import * as UseValidateModule from '../../lib/hooks/useValidate';
 import * as SigninDeciderModule from './SigninDecider';
+import { SigninDeciderProps } from './SigninDecider';
 import * as ModelsModule from '../../models';
 import { OAuthNativeServices } from '@fxa/accounts/oauth';
 import * as ReactUtils from 'fxa-react/lib/utils';
@@ -408,16 +409,13 @@ jest.mock('@reach/router', () => {
  * (beginSigninHandler, cachedSigninHandler, sendUnblockEmailHandler), avatar,
  * etc. Tests can assert on any prop regardless of which view the decider
  * would have routed to.
- *
- * Typed `any` because tests reach into the union of both child prop shapes
- * by field name; assertions on specific fields still guard correctness.
  */
-let currentSigninProps: any;
+let currentSigninProps: SigninDeciderProps | undefined;
 function mockSigninModule() {
   currentSigninProps = undefined;
   jest
     .spyOn(SigninDeciderModule, 'default')
-    .mockImplementation((props: any) => {
+    .mockImplementation((props: SigninDeciderProps) => {
       currentSigninProps = props;
       return <div>signin mock</div>;
     });

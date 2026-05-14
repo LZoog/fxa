@@ -4,7 +4,7 @@
 
 import { RouteComponentProps } from '@reach/router';
 import { FtlMsg } from 'fxa-react/lib/utils';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import AppLayout from '../../../components/AppLayout';
 import CardHeader from '../../../components/CardHeader';
 import TermsPrivacyAgreement from '../../../components/TermsPrivacyAgreement';
@@ -13,7 +13,8 @@ import GleanMetrics from '../../../lib/glean';
 import { useNavigateWithQuery } from '../../../lib/hooks/useNavigateWithQuery';
 import Banner from '../../../components/Banner';
 import { SigninThirdPartyProps } from '../interfaces';
-import SigninUserBlock from '../SigninUserBlock';
+import SigninUserLockup from '../SigninUserLockup';
+import { useCachedSigninLockup } from '../useCachedSigninLockup';
 
 export const viewName = 'signin';
 
@@ -33,12 +34,17 @@ const SigninThirdParty = ({
   setCurrentSplitLayout,
 }: SigninThirdPartyProps & RouteComponentProps) => {
   const navigateWithQuery = useNavigateWithQuery();
-  const clientId = integration.getClientId();
-  const legalTerms = integration.getLegalTerms();
 
-  const [localizedBannerError] = useState(
-    localizedErrorFromLocationState || ''
-  );
+  const {
+    clientId,
+    legalTerms,
+    cmsInfo,
+    cachedPageCms,
+    title,
+    splitLayout,
+    additionalAccessibilityInfo,
+    localizedBannerError,
+  } = useCachedSigninLockup({ integration, localizedErrorFromLocationState });
 
   // Hide "Use a different account" when the user is signed into Firefox Desktop.
   // Users cannot choose another account due to the inability to merge
@@ -52,18 +58,6 @@ const SigninThirdParty = ({
     // preserved here.
     GleanMetrics.cachedLogin.view({ event: { thirdPartyLinks: true } });
   }, []);
-
-  const cmsInfo = integration.getCmsInfo();
-  // Linked-passwordless reuses the cached page's "Sign in" framing — same
-  // header text, same CMS surface — since there's no password to enter.
-  const cachedPageCms = cmsInfo?.SigninCachedPage;
-  const signinPageCms = cmsInfo?.SigninPage;
-  const title = cachedPageCms?.pageTitle;
-  const splitLayout = cachedPageCms
-    ? cachedPageCms.splitLayout
-    : signinPageCms?.splitLayout;
-  const additionalAccessibilityInfo =
-    cmsInfo?.shared.additionalAccessibilityInfo;
 
   return (
     <AppLayout {...{ cmsInfo, title, splitLayout, setCurrentSplitLayout }}>
@@ -98,7 +92,7 @@ const SigninThirdParty = ({
           content={{ localizedHeading: localizedBannerError }}
         />
       )}
-      <SigninUserBlock
+      <SigninUserLockup
         {...{
           email,
           avatarData,

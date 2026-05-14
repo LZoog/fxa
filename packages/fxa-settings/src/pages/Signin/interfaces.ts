@@ -138,17 +138,9 @@ export interface SigninProps extends SigninSharedProps {
 export interface SigninCachedProps extends SigninSharedProps {
   sessionToken: hexstring;
   cachedSigninHandler: CachedSigninHandler;
-  /** Container-owned escape hatch: invoked with a localized error message when
-   * the cached session is invalid (e.g. SESSION_EXPIRED). The container flips
-   * to the password view and surfaces this message as the initial banner error. */
   onSessionExpired: (localizedErrorMessage: string) => void;
 }
 
-/**
- * Third-party-auth-only signin: user has a linked account (Google/Apple) but
- * no password set, and no cached session. The only meaningful action is to
- * authenticate via the linked provider — no password form, no Sign-in button.
- */
 export type SigninThirdPartyProps = SigninSharedProps;
 
 export type BeginSigninHandler = (

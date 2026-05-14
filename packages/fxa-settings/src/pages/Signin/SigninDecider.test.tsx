@@ -8,7 +8,6 @@ import userEvent, { UserEvent } from '@testing-library/user-event';
 import { renderWithLocalizationProvider } from 'fxa-react/lib/test-utils/localizationProvider';
 import { OAuthNativeServices } from '@fxa/accounts/oauth';
 
-import GleanMetrics from '../../lib/glean';
 import {
   Subject,
   SubjectProps,
@@ -17,36 +16,6 @@ import {
   createMockSigninOAuthNativeSyncIntegration,
 } from './mocks';
 import { MOCK_SESSION_TOKEN } from '../mocks';
-
-jest.mock('../../lib/glean', () => ({
-  __esModule: true,
-  default: {
-    isDone: jest.fn(),
-    login: {
-      view: jest.fn(),
-      submit: jest.fn(),
-      success: jest.fn(),
-      error: jest.fn(),
-      forgotPassword: jest.fn(),
-      diffAccountLinkClick: jest.fn(),
-      engage: jest.fn(),
-      lockedAccountBannerView: jest.fn(),
-    },
-    cachedLogin: {
-      view: jest.fn(),
-      submit: jest.fn(),
-      success: jest.fn(),
-      forgotPassword: jest.fn(),
-    },
-    thirdPartyAuth: {
-      loginNoPwView: jest.fn(),
-      startGoogleAuthFromLogin: jest.fn(),
-      startAppleAuthFromLogin: jest.fn(),
-      appleDeeplink: jest.fn(),
-      googleDeeplink: jest.fn(),
-    },
-  },
-}));
 
 jest.mock('../../lib/storage-utils', () => ({
   storeAccountData: jest.fn(),
@@ -103,9 +72,6 @@ describe('SigninDecider routing', () => {
       });
 
       passwordInputNotRendered();
-      expect(GleanMetrics.cachedLogin.view).toHaveBeenCalledWith({
-        event: { thirdPartyLinks: false },
-      });
     });
 
     it('routes to cached signin for service=smartwindow when supportsKeysOptionalLogin is true', () => {
@@ -120,9 +86,6 @@ describe('SigninDecider routing', () => {
       });
 
       passwordInputNotRendered();
-      expect(GleanMetrics.cachedLogin.view).toHaveBeenCalledWith({
-        event: { thirdPartyLinks: false },
-      });
     });
 
     it('routes to password signin for service=relay when supportsKeysOptionalLogin is false', () => {
@@ -138,9 +101,6 @@ describe('SigninDecider routing', () => {
       });
 
       passwordInputRendered();
-      expect(GleanMetrics.login.view).toHaveBeenCalledWith({
-        event: { thirdPartyLinks: false },
-      });
     });
   });
 

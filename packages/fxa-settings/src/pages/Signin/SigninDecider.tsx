@@ -117,9 +117,7 @@ export const SigninDecider = ({
   // Passwordless users always see cached sign-in and are redirected to set a
   // password after signing in, if a password is required (e.g. for Sync).
   const showCached =
-    !!sessionToken &&
-    hasCachedSession &&
-    (!hasPassword || !passwordNeeded || keysOptional);
+    hasCachedSession && (!hasPassword || !passwordNeeded || keysOptional);
 
   if (showCached) {
     return (
@@ -154,7 +152,10 @@ export const SigninDecider = ({
   const initialBannerError =
     sessionExpiredErrorRef.current ?? localizedErrorFromLocationState;
 
-  // Linked-account-passwordless without a cached session
+  // Linked-account-passwordless without a cached session. Third-party auth is
+  // the right path even for non-Sync OAuthNative + !keys-optional: after
+  // Google/Apple auth the user is routed through set_password, which derives
+  // the keys required by the integration.
   if (hasLinkedAccount && !hasPassword) {
     return (
       <SigninThirdParty

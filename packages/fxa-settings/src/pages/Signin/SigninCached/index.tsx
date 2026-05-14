@@ -20,7 +20,8 @@ import { getLocalizedErrorMessage } from '../../../lib/error-utils';
 import Banner from '../../../components/Banner';
 import CmsButtonWithFallback from '../../../components/CmsButtonWithFallback';
 import { useConfig } from '../../../models';
-import SigninUserBlock from '../SigninUserBlock';
+import SigninUserLockup from '../SigninUserLockup';
+import { useCachedSigninLockup } from '../useCachedSigninLockup';
 
 export const viewName = 'signin';
 
@@ -48,14 +49,21 @@ const SigninCached = ({
   const ftlMsgResolver = useFtlMsgResolver();
   const webRedirectCheck = useWebRedirect(integration.data.redirectTo);
 
-  const [localizedBannerError, setLocalizedBannerError] = useState(
-    localizedErrorFromLocationState || ''
-  );
   const [signinLoading, setSigninLoading] = useState<boolean>(false);
 
   const isSync = integration.isSync();
-  const clientId = integration.getClientId();
-  const legalTerms = integration.getLegalTerms();
+
+  const {
+    clientId,
+    legalTerms,
+    cmsInfo,
+    cachedPageCms,
+    title,
+    splitLayout,
+    additionalAccessibilityInfo,
+    localizedBannerError,
+    setLocalizedBannerError,
+  } = useCachedSigninLockup({ integration, localizedErrorFromLocationState });
 
   // Hide "Use a different account" when the user is signed into Firefox already
   // and they're in a Firefox login/authorization flow. On Desktop, users cannot
@@ -177,21 +185,10 @@ const SigninCached = ({
     webRedirectCheck,
     isServiceWithEmailVerification,
     hasLinkedAccount,
+    setLocalizedBannerError,
     hasPassword,
     onSessionExpired,
   ]);
-
-  const cmsInfo = integration.getCmsInfo();
-  const cachedPageCms = cmsInfo?.SigninCachedPage;
-  const signinPageCms = cmsInfo?.SigninPage;
-  const title = cachedPageCms?.pageTitle;
-  // If cachedPageCms is the active page but does not have a CMS entry,
-  // we reference the splitLayout property from the signinPageCms.
-  const splitLayout = cachedPageCms
-    ? cachedPageCms.splitLayout
-    : signinPageCms?.splitLayout;
-  const additionalAccessibilityInfo =
-    cmsInfo?.shared.additionalAccessibilityInfo;
 
   return (
     <AppLayout {...{ cmsInfo, title, splitLayout, setCurrentSplitLayout }}>
@@ -226,7 +223,7 @@ const SigninCached = ({
           content={{ localizedHeading: localizedBannerError }}
         />
       )}
-      <SigninUserBlock
+      <SigninUserLockup
         {...{
           email,
           avatarData,

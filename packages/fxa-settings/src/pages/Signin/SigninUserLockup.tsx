@@ -10,7 +10,7 @@ import { AvatarResponse } from './interfaces';
 
 const avatarClassNames = 'h-12 w-12 desktop:h-22 desktop:w-22';
 
-export interface SigninUserBlockProps {
+export interface SigninUserLockupProps {
   email: string;
   avatarData: AvatarResponse | undefined;
   avatarLoading: boolean;
@@ -18,13 +18,13 @@ export interface SigninUserBlockProps {
   additionalAccessibilityInfo?: string;
 }
 
-const SigninUserBlock = ({
+const SigninUserLockup = ({
   email,
   avatarData,
   avatarLoading,
   sessionToken,
   additionalAccessibilityInfo,
-}: SigninUserBlockProps) => (
+}: SigninUserLockupProps) => (
   <div className="mt-8 mb-7 desktop:my-6">
     <div className="flex desktop:flex-col items-center gap-3 desktop:gap-2">
       {sessionToken && avatarData?.account?.avatar ? (
@@ -56,4 +56,4 @@ const SigninUserBlock = ({
   </div>
 );
 
-export default SigninUserBlock;
+export default SigninUserLockup;
