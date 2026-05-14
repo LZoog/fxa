@@ -4,7 +4,7 @@
 
 import { RouteComponentProps, useLocation } from '@reach/router';
 import { useNavigateWithQuery } from '../../lib/hooks/useNavigateWithQuery';
-import SigninDecider from './SigninDecider';
+import SigninDecider from './components/SigninDecider';
 import {
   Integration,
   useAuthClient,

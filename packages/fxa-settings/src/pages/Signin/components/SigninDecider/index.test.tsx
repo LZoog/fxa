@@ -14,15 +14,15 @@ import {
   createCachedSigninResponseError,
   createMockSigninOAuthNativeIntegration,
   createMockSigninOAuthNativeSyncIntegration,
-} from './mocks';
-import { MOCK_SESSION_TOKEN } from '../mocks';
+} from '../../mocks';
+import { MOCK_SESSION_TOKEN } from '../../../mocks';
 
-jest.mock('../../lib/storage-utils', () => ({
+jest.mock('../../../../lib/storage-utils', () => ({
   storeAccountData: jest.fn(),
 }));
 
-jest.mock('../../models', () => ({
-  ...jest.requireActual('../../models'),
+jest.mock('../../../../models', () => ({
+  ...jest.requireActual('../../../../models'),
   useSensitiveDataClient: () => ({ setDataType: jest.fn() }),
   useSession: () => ({ sendVerificationCode: jest.fn() }),
   useConfig: () => ({ servicesWithEmailVerification: ['123456'] }),

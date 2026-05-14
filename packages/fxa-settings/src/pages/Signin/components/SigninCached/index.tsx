@@ -3,25 +3,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { RouteComponentProps, useLocation } from '@reach/router';
-import { useNavigateWithQuery } from '../../../lib/hooks/useNavigateWithQuery';
+import { useNavigateWithQuery } from '../../../../lib/hooks/useNavigateWithQuery';
 import { FtlMsg } from 'fxa-react/lib/utils';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import AppLayout from '../../../components/AppLayout';
-import CardHeader from '../../../components/CardHeader';
-import TermsPrivacyAgreement from '../../../components/TermsPrivacyAgreement';
-import { AuthUiErrors } from '../../../lib/auth-errors/auth-errors';
-import GleanMetrics from '../../../lib/glean';
-import { useFtlMsgResolver, isWebIntegration } from '../../../models';
-import { SigninCachedProps } from '../interfaces';
-import { handleNavigation, ensureCanLinkAcountOrRedirect } from '../utils';
-import { useWebRedirect } from '../../../lib/hooks/useWebRedirect';
-import { getLocalizedErrorMessage } from '../../../lib/error-utils';
-import Banner from '../../../components/Banner';
-import CmsButtonWithFallback from '../../../components/CmsButtonWithFallback';
-import { useConfig } from '../../../models';
+import AppLayout from '../../../../components/AppLayout';
+import CardHeader from '../../../../components/CardHeader';
+import TermsPrivacyAgreement from '../../../../components/TermsPrivacyAgreement';
+import { AuthUiErrors } from '../../../../lib/auth-errors/auth-errors';
+import GleanMetrics from '../../../../lib/glean';
+import { useFtlMsgResolver, isWebIntegration } from '../../../../models';
+import { SigninCachedProps } from '../../interfaces';
+import { handleNavigation, ensureCanLinkAcountOrRedirect } from '../../utils';
+import { useWebRedirect } from '../../../../lib/hooks/useWebRedirect';
+import { getLocalizedErrorMessage } from '../../../../lib/error-utils';
+import Banner from '../../../../components/Banner';
+import CmsButtonWithFallback from '../../../../components/CmsButtonWithFallback';
+import { useConfig } from '../../../../models';
 import SigninUserLockup from '../SigninUserLockup';
-import { useCachedSigninLockup } from '../useCachedSigninLockup';
+import { useCachedSigninLockup } from '../../useCachedSigninLockup';
 
 export const viewName = 'signin';
 

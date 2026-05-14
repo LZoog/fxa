@@ -29,7 +29,7 @@ import { SensitiveData } from '../../lib/sensitive-data-client';
 import { BannerLinkProps } from '../../components/Banner/interfaces';
 import CmsButtonWithFallback from '../../components/CmsButtonWithFallback';
 import { useConfig } from '../../models';
-import SigninUserLockup from './SigninUserLockup';
+import SigninUserLockup from './components/SigninUserLockup';
 
 export const viewName = 'signin';
 

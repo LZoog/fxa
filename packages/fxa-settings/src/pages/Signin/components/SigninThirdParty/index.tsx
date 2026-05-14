@@ -5,16 +5,16 @@
 import { RouteComponentProps } from '@reach/router';
 import { FtlMsg } from 'fxa-react/lib/utils';
 import React, { useEffect } from 'react';
-import AppLayout from '../../../components/AppLayout';
-import CardHeader from '../../../components/CardHeader';
-import TermsPrivacyAgreement from '../../../components/TermsPrivacyAgreement';
-import ThirdPartyAuth from '../../../components/ThirdPartyAuth';
-import GleanMetrics from '../../../lib/glean';
-import { useNavigateWithQuery } from '../../../lib/hooks/useNavigateWithQuery';
-import Banner from '../../../components/Banner';
-import { SigninThirdPartyProps } from '../interfaces';
+import AppLayout from '../../../../components/AppLayout';
+import CardHeader from '../../../../components/CardHeader';
+import TermsPrivacyAgreement from '../../../../components/TermsPrivacyAgreement';
+import ThirdPartyAuth from '../../../../components/ThirdPartyAuth';
+import GleanMetrics from '../../../../lib/glean';
+import { useNavigateWithQuery } from '../../../../lib/hooks/useNavigateWithQuery';
+import Banner from '../../../../components/Banner';
+import { SigninThirdPartyProps } from '../../interfaces';
 import SigninUserLockup from '../SigninUserLockup';
-import { useCachedSigninLockup } from '../useCachedSigninLockup';
+import { useCachedSigninLockup } from '../../useCachedSigninLockup';
 
 export const viewName = 'signin';
 

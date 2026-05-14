@@ -8,18 +8,18 @@ import { LocationProvider } from '@reach/router';
 import { renderWithLocalizationProvider } from 'fxa-react/lib/test-utils/localizationProvider';
 
 import SigninThirdParty from '.';
-import { AppContext } from '../../../models';
-import { mockAppContext } from '../../../models/mocks';
+import { AppContext } from '../../../../models';
+import { mockAppContext } from '../../../../models/mocks';
 import {
   createMockSigninOAuthNativeSyncIntegration,
   createMockSigninWebIntegration,
-} from '../mocks';
+} from '../../mocks';
 import {
   MOCK_AVATAR_NON_DEFAULT,
   MOCK_EMAIL,
   mockFinishOAuthFlowHandler,
-} from '../../mocks';
-import { MozServices } from '../../../lib/types';
+} from '../../../mocks';
+import { MozServices } from '../../../../lib/types';
 
 const renderSigninThirdParty = (
   props: Partial<React.ComponentProps<typeof SigninThirdParty>> = {}

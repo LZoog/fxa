@@ -3,21 +3,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { useCallback, useRef, useState } from 'react';
-import Signin from '.';
-import SigninCached from './SigninCached';
-import SigninThirdParty from './SigninThirdParty';
-import { isOAuthIntegration, isOAuthWebIntegration } from '../../models';
-import { UseFxAStatusResult } from '../../lib/hooks/useFxAStatus';
-import { MozServices } from '../../lib/types';
-import { useFinishOAuthFlowHandler } from '../../lib/oauth/hooks';
-import { QueryParams } from '../..';
+import Signin from '../..';
+import SigninCached from '../SigninCached';
+import SigninThirdParty from '../SigninThirdParty';
+import { isOAuthIntegration, isOAuthWebIntegration } from '../../../../models';
+import { UseFxAStatusResult } from '../../../../lib/hooks/useFxAStatus';
+import { MozServices } from '../../../../lib/types';
+import { useFinishOAuthFlowHandler } from '../../../../lib/oauth/hooks';
+import { QueryParams } from '../../../..';
 import {
   AvatarResponse,
   BeginSigninHandler,
   CachedSigninHandler,
   SendUnblockEmailHandler,
   SigninIntegration,
-} from './interfaces';
+} from '../../interfaces';
 
 export interface SigninDeciderProps {
   integration: SigninIntegration;

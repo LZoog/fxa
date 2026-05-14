@@ -5,8 +5,8 @@
 import React from 'react';
 import classNames from 'classnames';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
-import Avatar from '../../components/Settings/Avatar';
-import { AvatarResponse } from './interfaces';
+import Avatar from '../../../../components/Settings/Avatar';
+import { AvatarResponse } from '../../interfaces';
 
 const avatarClassNames = 'h-12 w-12 desktop:h-22 desktop:w-22';
 

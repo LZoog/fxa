@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import * as UseValidateModule from '../../lib/hooks/useValidate';
-import * as SigninDeciderModule from './SigninDecider';
-import { SigninDeciderProps } from './SigninDecider';
+import * as SigninDeciderModule from './components/SigninDecider';
+import { SigninDeciderProps } from './components/SigninDecider';
 import * as ModelsModule from '../../models';
 import { OAuthNativeServices } from '@fxa/accounts/oauth';
 import * as ReactUtils from 'fxa-react/lib/utils';

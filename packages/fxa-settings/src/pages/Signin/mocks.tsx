@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from 'react';
-import SigninDecider from './SigninDecider';
+import SigninDecider from './components/SigninDecider';
 import VerificationMethods from '../../constants/verification-methods';
 import VerificationReasons from '../../constants/verification-reasons';
 import { MozServices } from '../../lib/types';
