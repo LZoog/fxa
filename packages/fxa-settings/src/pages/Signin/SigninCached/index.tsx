@@ -62,8 +62,9 @@ const SigninCached = ({
   // choose another account due to the inability to merge account/sync data (the
   // "merge stop"/warning) and on Mobile if cached sign-in is shown (Fx 151+),
   // they're already signed into Sync and are authorizing a new service, like
-  // `service=vpn`, and Sync has not been decoupled yet and the Sync scope is
-  // not requested so they cannot use another account in this flow.
+  // `service=vpn`, and Sync has not been decoupled yet, meaning in that flow
+  // the Sync scope is not requested, so Mobile cannot use another account because
+  // they cannot sign in without Sync.
   const hideAccountSwitchLink =
     isSignedIntoFirefox &&
     integration.isFirefoxClient() &&

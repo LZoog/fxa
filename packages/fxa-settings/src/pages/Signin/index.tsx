@@ -34,12 +34,10 @@ import SigninUserBlock from './SigninUserBlock';
 export const viewName = 'signin';
 
 // Password-input signin. The container only renders this component when the
-// flow needs a password — passwordless users and cached signins are routed
-// to <SigninCached> instead.
+// flow needs a password.
 const Signin = ({
   integration,
   email,
-  serviceName,
   hasLinkedAccount,
   beginSigninHandler,
   sendUnblockEmailHandler,

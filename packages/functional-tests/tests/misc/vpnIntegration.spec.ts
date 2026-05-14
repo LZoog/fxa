@@ -34,7 +34,7 @@ test.describe('vpn integration', () => {
     await expect(page.getByText(email)).toBeVisible();
 
     // "Use a different account" link is hidden when signed into Firefox with
-    // a Firefox client + service requested — the active browser account is bound.
+    // a Firefox client + service requested on cached sign-in
     await expect(
       page.getByRole('link', { name: /use a different account/i })
     ).toBeHidden();
