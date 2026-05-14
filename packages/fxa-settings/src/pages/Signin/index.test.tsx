@@ -1699,9 +1699,6 @@ describe('Signin component', () => {
       });
 
       it('hides "use a different account" link when signed into Firefox mobile with a service (cached view via keys_optional)', () => {
-        // Mobile authorization flow: VPN service + Mobile client + cached session.
-        // Mobile sends `keys_optional`, routing to SigninCached, which hides the
-        // link when isSignedIntoFirefox && isFirefoxClient && getService().
         const integration = createMockSigninOAuthNativeIntegration({
           service: OAuthNativeServices.Vpn,
           isSync: false,

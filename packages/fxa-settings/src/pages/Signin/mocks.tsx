@@ -351,10 +351,7 @@ export type SubjectProps = Partial<SigninProps> & {
 
 /**
  * Routes through the container's `SigninDecider` so tests exercise the
- * password-vs-cached decision logic end-to-end. Callers pass the same prop
- * shape as before (sessionToken, cachedSigninHandler, etc.) and the decider
- * routes to `<Signin>` or `<SigninCached>` automatically based on
- * sessionToken + hasPassword + integration state.
+ * password-vs-cached decision logic end-to-end.
  */
 export const Subject = ({
   integration = createMockSigninWebIntegration(),

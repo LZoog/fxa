@@ -79,9 +79,9 @@ const Signin = ({
 
   const legalTerms = integration.getLegalTerms();
 
-  // Hide "Use a different account" only on Firefox Desktop — Desktop's merge
-  // warning prevents the user from switching accounts in this flow anyway, so
-  // the link would lead to a dead end. Mobile and other clients keep the link.
+  // Hide "Use a different account" when the user is signed into Firefox Desktop.
+  // Users cannot choose another account due to the inability to merge
+  // account/sync data (the "merge stop"/warning).
   const hideAccountSwitchLink =
     isSignedIntoFirefox && integration.isFirefoxDesktopClient();
 

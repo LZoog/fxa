@@ -162,7 +162,6 @@ describe('SigninDecider routing', () => {
       });
 
       passwordInputNotRendered();
-      // Cached sign-in button is shown instead.
       screen.getByRole('button', { name: 'Sign in' });
     });
   });

@@ -44,15 +44,8 @@ export interface SigninDeciderProps {
 }
 
 /**
- * Decides which of the three signin views the user sees:
- *  - `<SigninCached>`     — has a valid cached session, 1-click sign in
- *  - `<SigninThirdParty>` — linked third-party provider, no password, no session
- *  - `<Signin>`           — password entry (default)
- *
- * Also owns the SESSION_EXPIRED handoff: if `<SigninCached>` reports an
- * expired session, this component flips state and the next render falls
- * through to `<Signin>`, carrying the localized error message forward via
- * a ref so the password view can surface it in its banner.
+ * Decides which of the three signin views the user sees and
+ * handles SESSION_EXPIRED by flipping to cached signin.
  */
 export const SigninDecider = ({
   integration,
@@ -81,10 +74,6 @@ export const SigninDecider = ({
   const [hasCachedSession, setHasCachedSession] =
     useState<boolean>(!!sessionToken);
 
-  // Carries a localized error message forward when SigninCached hands off to
-  // Signin. Using a ref (not state) keeps the container free of UI concerns
-  // — the password view reads the ref on first render and renders its own
-  // banner. Persists across the unmount/mount of SigninCached → Signin.
   const sessionExpiredErrorRef = useRef<string | null>(null);
 
   const onSessionExpired = useCallback((localizedErrorMessage: string) => {
@@ -165,9 +154,7 @@ export const SigninDecider = ({
   const initialBannerError =
     sessionExpiredErrorRef.current ?? localizedErrorFromLocationState;
 
-  // Linked-account-passwordless without a cached session (or after a cached
-  // session expired): nothing to enter, the user authenticates via their
-  // third-party provider (Google/Apple).
+  // Linked-account-passwordless without a cached session
   if (hasLinkedAccount && !hasPassword) {
     return (
       <SigninThirdParty

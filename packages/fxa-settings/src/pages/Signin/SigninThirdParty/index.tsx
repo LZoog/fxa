@@ -18,9 +18,7 @@ import SigninUserBlock from '../SigninUserBlock';
 export const viewName = 'signin';
 
 // Third-party-auth-only signin: user has a linked account (Google/Apple) but
-// no password set, so the only meaningful action is to authenticate via the
-// linked provider. No password input, no Sign-in button — just ThirdPartyAuth
-// buttons and the option to switch accounts.
+// no password set, so they must authenticate via the linked provider.
 const SigninThirdParty = ({
   integration,
   email,
@@ -42,17 +40,16 @@ const SigninThirdParty = ({
     localizedErrorFromLocationState || ''
   );
 
-  // Same hide rule as the password view: Desktop's merge warning blocks
-  // account switching, so the link would lead to a dead end. Mobile users
-  // see the link.
+  // Hide "Use a different account" when the user is signed into Firefox Desktop.
+  // Users cannot choose another account due to the inability to merge
+  // account/sync data (the "merge stop"/warning).
   const hideAccountSwitchLink =
     isSignedIntoFirefox && integration.isFirefoxDesktopClient();
 
   useEffect(() => {
-    // TODO: linked-passwordless users were historically tracked under
-    // cachedLogin.view (alongside true cached signins) because they share
-    // the simplified header. Preserved here to avoid distorting the metric;
-    // a dedicated event would be a follow-up coordinated with data science.
+    // NOTE: linked-passwordless users were historically tracked under
+    // cachedLogin.view because they share similarities, so that is
+    // preserved here.
     GleanMetrics.cachedLogin.view({ event: { thirdPartyLinks: true } });
   }, []);
 
