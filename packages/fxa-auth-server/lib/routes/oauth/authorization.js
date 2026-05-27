@@ -7,6 +7,8 @@ const Joi = require('joi');
 
 const { OauthError } = require('@fxa/accounts/errors');
 const { AppError: AuthError } = require('@fxa/accounts/errors');
+const { OAuthNativeClients } = require('@fxa/accounts/oauth');
+const ScopeSet = require('fxa-shared').oauth.scopes;
 const validators = require('../../oauth/validators');
 const { validateRequestedGrant, generateTokens } = require('../../oauth/grant');
 const { makeAssertionJWT } = require('../../oauth/util');
@@ -19,6 +21,13 @@ const DESCRIPTION =
 
 const RESPONSE_TYPE_CODE = 'code';
 const RESPONSE_TYPE_TOKEN = 'token';
+
+// ADR 0049 server-side scope resolution applies only to OAuthNative
+// (Firefox) clients. Lowercased once at module load so client_id
+// matching is case-insensitive.
+const OAUTH_NATIVE_CLIENT_IDS = new Set(
+  Object.values(OAuthNativeClients).map((id) => id.toLowerCase())
+);
 
 const ACCESS_TYPE_ONLINE = 'online';
 const ACCESS_TYPE_OFFLINE = 'offline';
@@ -90,6 +99,10 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
       code,
       state,
       redirect: redirect.href,
+      // ADR 0049: return the granted scope so the caller has a single
+      // source of truth — important when scope was resolved server-side
+      // from `service=`. Always set; non-empty after grant validation.
+      scope: grant.scope.toString(),
     };
   }
 
@@ -233,29 +246,34 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
     });
   }
 
-  async function authorizationHandler(req) {
+  async function authorizationHandler(req, payloadOverride) {
+    // payloadOverride lets the /oauth/authorization route inject a
+    // server-resolved `scope` (ADR 0049) without mutating req.payload.
+    // The assertion is always read from req.payload — it's minted at
+    // the route layer and is not part of the resolution override.
+    const payload = payloadOverride ?? req.payload;
     const claims = await verifyAssertion(req.payload.assertion);
 
     const client = await oauthDB.getClient(
-      Buffer.from(req.payload.client_id, 'hex')
+      Buffer.from(payload.client_id, 'hex')
     );
     if (!client) {
-      log.debug('notFound', { id: req.payload.client_id });
-      throw OauthError.unknownClient(req.payload.client_id);
+      log.debug('notFound', { id: payload.client_id });
+      throw OauthError.unknownClient(payload.client_id);
     }
-    validateClientDetails(client, req.payload);
-    const grant = await validateRequestedGrant(claims, client, req.payload);
+    validateClientDetails(client, payload);
+    const grant = await validateRequestedGrant(claims, client, payload);
     try {
       await recordAuthorizationRows(req, grant);
     } catch (err) {
       statsd?.increment('accountAuthorization.write_failed');
       log.warn('accountAuthorization.write_failed', { err: err.message });
     }
-    switch (req.payload.response_type) {
+    switch (payload.response_type) {
       case RESPONSE_TYPE_CODE:
-        return await generateAuthorizationCode(client, req.payload, grant);
+        return await generateAuthorizationCode(client, payload, grant);
       case RESPONSE_TYPE_TOKEN: {
-        const tokens = await generateImplicitGrant(client, req.payload, grant);
+        const tokens = await generateImplicitGrant(client, payload, grant);
         req.emitMetricsEvent('token.created', {
           service: hex(grant.clientId),
           uid: hex(grant.userId),
@@ -265,7 +283,7 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
       default:
         // Joi validation means this should never happen.
         log.fatal('joi.response_type', {
-          response_type: req.payload.response_type,
+          response_type: payload.response_type,
         });
         throw OauthError.invalidResponseType();
     }
@@ -410,7 +428,10 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
               'auth_at',
               'expires_in',
             ])
-            .with('code', ['state', 'redirect'])
+            // scope is included on the code response (ADR 0049) so callers
+            // see the granted scope even when it was resolved server-side
+            // from service=.
+            .with('code', ['state', 'redirect', 'scope'])
             .without('code', ['access_token']),
         },
         handler: function (req) {
@@ -485,6 +506,9 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
             redirect: Joi.string(),
             code: Joi.string(),
             state: Joi.string().max(512),
+            // ADR 0049: granted scope, returned even when the client passed
+            // `scope` explicitly so the caller has a single source of truth.
+            scope: Joi.string().description(DESCRIPTION.scope),
           }),
         },
       },
@@ -505,8 +529,45 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
           throw AuthError.unverifiedSession();
         }
 
+        // ADR 0049: server-side scope resolution from `service=` for
+        // OAuthNative (Firefox) clients. Only kicks in when both
+        // service= is present and the client did not specify scope=;
+        // an explicit scope still wins. `validators.scope` transforms
+        // the wire string into a ScopeSet, so a present `req.payload.scope`
+        // is a ScopeSet here. Compute lazily so requests without a
+        // service= param skip the work entirely.
+        let payloadOverride;
+        if (req.payload.service) {
+          const wireScope = req.payload.scope;
+          const wireScopeIsEmpty = !wireScope || wireScope.isEmpty();
+          if (wireScopeIsEmpty) {
+            if (!OAUTH_NATIVE_CLIENT_IDS.has(clientId.toLowerCase())) {
+              throw OauthError.invalidRequestParameter({ keys: ['scope'] });
+            }
+            const serviceParam = req.payload.service.toLowerCase();
+            const clientIdHex = clientId.toLowerCase();
+            if (
+              !oauthDB.isKnownService(serviceParam) ||
+              !oauthDB.isClientAllowedForService(serviceParam, clientIdHex)
+            ) {
+              throw OauthError.invalidRequestParameter({ keys: ['service'] });
+            }
+            const resolvedScope =
+              oauthDB.getCanonicalScopeForService(serviceParam);
+            if (!resolvedScope) {
+              // isKnownService is true iff a canonical scope exists, so
+              // this should be unreachable. Defensive guard for config drift.
+              throw OauthError.invalidRequestParameter({ keys: ['service'] });
+            }
+            payloadOverride = {
+              ...req.payload,
+              scope: ScopeSet.fromString(resolvedScope),
+            };
+          }
+        }
+
         req.payload.assertion = await makeAssertionJWT(config, sessionToken);
-        const result = await authorizationHandler(req);
+        const result = await authorizationHandler(req, payloadOverride);
 
         const geoData = req.app.geo;
         const country = geoData.location && geoData.location.country;

@@ -3050,7 +3050,15 @@ export default class AuthClient {
       code_challenge?: string;
     } = {},
     headers?: Headers
-  ) {
+  ): Promise<{
+    code: string;
+    state: string;
+    redirect: string;
+    // ADR 0049: granted scope, returned even when the client passed `scope`
+    // explicitly so the caller has a single source of truth for what was
+    // actually authorized.
+    scope: string;
+  }> {
     return this.sessionPost(
       '/oauth/authorization',
       sessionToken,

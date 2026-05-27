@@ -150,13 +150,6 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     return undefined;
   }
 
-  // TODO: When server-side scope resolution (ADR 0049) is implemented,
-  // granted scopes may differ from requested scopes. Update this to return
-  // the actual granted scopes from the server response.
-  getGrantedScopes(): string | undefined {
-    return this.data.scope;
-  }
-
   getServiceName() {
     if (this.isDefaultSyncService()) {
       return Constants.RELIER_SYNC_SERVICE_NAME;

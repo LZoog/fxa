@@ -20,18 +20,24 @@ export type OAuthData = {
   code: string;
   state: string;
   redirect: string; // you probably don't want this, see comment below
+  // ADR 0049: granted scope from the auth-server. Single source of truth
+  // for what was actually authorized; pass to fxaOAuthLogin so Firefox
+  // knows which scopes the refresh token will carry.
+  scope: string;
 };
 
 interface FinishOAuthFlowHandlerError {
   redirect: undefined;
   code: undefined;
   state: undefined;
+  scope: undefined;
   error: AuthError;
 }
 interface FinishOAuthFlowHandlerSuccess {
   redirect: string;
   code: string;
   state: string;
+  scope: string;
   error: undefined;
 }
 
@@ -271,6 +277,7 @@ export function useFinishOAuthFlowHandler(
         redirect,
         code: oAuthData.code,
         state,
+        scope: oAuthData.scope,
       };
     },
     [authClient, oAuthIntegration, isSyncOAuth]

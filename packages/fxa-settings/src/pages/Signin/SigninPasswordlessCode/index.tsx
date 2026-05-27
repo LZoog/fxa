@@ -371,7 +371,7 @@ const SigninPasswordlessCode = ({
             });
             return;
           } else {
-            const { redirect, code, state, error } =
+            const { redirect, code, state, scope, error } =
               await finishOAuthFlowHandler(
                 result.uid,
                 result.sessionToken,
@@ -391,6 +391,7 @@ const SigninPasswordlessCode = ({
                 code,
                 redirect,
                 state,
+                scopes: scope,
               });
               const { error: navError } =
                 await handleNavigation(navigationOptions);
