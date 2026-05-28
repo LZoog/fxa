@@ -69,19 +69,3 @@ export const googleRegStart = new EventMetricType(
   },
   []
 );
-
-/**
- * User viewed the third party login page without password set.
- *
- * Generated from `third_party_auth.login_no_pw_view`.
- */
-export const loginNoPwView = new EventMetricType(
-  {
-    category: 'third_party_auth',
-    name: 'login_no_pw_view',
-    sendInPings: ['events'],
-    lifetime: 'ping',
-    disabled: false,
-  },
-  []
-);

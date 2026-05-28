@@ -7,6 +7,57 @@
 import EventMetricType from '@mozilla/glean/private/metrics/event';
 
 /**
+ * User clicked "Continue with Apple" from the alternative auth options
+ * view (linked account passwordless signin).
+ *
+ * Generated from `login.alternative_auth_apple_start`.
+ */
+export const alternativeAuthAppleStart = new EventMetricType(
+  {
+    category: 'login',
+    name: 'alternative_auth_apple_start',
+    sendInPings: ['events'],
+    lifetime: 'ping',
+    disabled: false,
+  },
+  []
+);
+
+/**
+ * User clicked "Continue with Google" from the alternative auth options
+ * view (linked account passwordless signin).
+ *
+ * Generated from `login.alternative_auth_google_start`.
+ */
+export const alternativeAuthGoogleStart = new EventMetricType(
+  {
+    category: 'login',
+    name: 'alternative_auth_google_start',
+    sendInPings: ['events'],
+    lifetime: 'ping',
+    disabled: false,
+  },
+  []
+);
+
+/**
+ * User viewed the alternative auth options on the linked-passwordless
+ * signin view (third-party auth and/or passkey).
+ *
+ * Generated from `login.alternative_auth_view`.
+ */
+export const alternativeAuthView = new EventMetricType(
+  {
+    category: 'login',
+    name: 'alternative_auth_view',
+    sendInPings: ['events'],
+    lifetime: 'ping',
+    disabled: false,
+  },
+  []
+);
+
+/**
  * Event that indicates the user chose to use one of their recovery methods during
  * sign in.
  *
