@@ -247,6 +247,8 @@ const CompleteResetPasswordContainer = ({
       });
 
       if (isOAuth) {
+        // `scope` is the server-resolved scope per ADR 0049, only
+        // forwarded to Firefox via fxaOAuthLogin; ignored otherwise.
         const { error, redirect, code, state, scope } =
           await finishOAuthFlowHandler(
             accountResetData.uid,
@@ -269,7 +271,7 @@ const CompleteResetPasswordContainer = ({
           code,
           redirect,
           state,
-          scopes: scope,
+          scope,
         });
       }
     }

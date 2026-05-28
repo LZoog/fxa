@@ -230,6 +230,8 @@ const ConfirmSignupCode = ({
           });
           return;
         } else {
+          // `scope` is the server-resolved scope per ADR 0049, only
+          // forwarded to Firefox via fxaOAuthLogin; ignored otherwise.
           const { redirect, code, state, scope, error } =
             await finishOAuthFlowHandler(
               uid,
@@ -255,7 +257,7 @@ const ConfirmSignupCode = ({
               code,
               redirect,
               state,
-              scopes: scope,
+              scope,
             });
             // Mobile sync will close the web view, OAuth Desktop mimics DesktopV3 behavior
             if (integration.isFirefoxDesktopClient()) {
@@ -284,7 +286,7 @@ const ConfirmSignupCode = ({
               code,
               redirect,
               state,
-              scopes: scope,
+              scope,
             });
             if (integration.isFirefoxClientServiceVpn()) {
               navigate('/post_verify/service_welcome', {

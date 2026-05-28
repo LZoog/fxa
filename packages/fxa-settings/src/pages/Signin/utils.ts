@@ -384,7 +384,7 @@ export async function handleNavigation(navigationOptions: NavigationOptions) {
         code: oauthData.code,
         redirect: oauthData.redirect,
         state: oauthData.state,
-        scopes: oauthData.scope,
+        scope: oauthData.scope,
       });
     }
     if (navigationOptions.performNavigation !== false) {
@@ -578,6 +578,8 @@ const getOAuthNavigationTarget = async (
     };
   }
 
+  // `scope` is the server-resolved scope per ADR 0049, only forwarded
+  // to Firefox via fxaOAuthLogin; ignored otherwise.
   const { error, redirect, code, state, scope } =
     await navigationOptions.finishOAuthFlowHandler(
       navigationOptions.signinData.uid,

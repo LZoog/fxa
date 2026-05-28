@@ -147,10 +147,10 @@ export type FxAOAuthLogin = {
   declinedSyncEngines?: string[];
   offeredSyncEngines?: string[];
   /**
-   * Space-separated list of granted scopes, sent so the browser knows
-   * which scopes were authorized in this flow.
+   * Granted scope. Space-separated list of scopes per OAuth RFC 6749 §3.3,
+   * sent so the browser knows what was authorized in this flow.
    */
-  scopes?: string;
+  scope?: string;
 };
 
 // ref: https://searchfox.org/mozilla-central/rev/82828dba9e290914eddd294a0871533875b3a0b5/services/fxaccounts/FxAccountsWebChannel.sys.mjs#230

@@ -811,7 +811,7 @@ describe('Signin component', () => {
                   code: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.code,
                   redirect: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.redirect,
                   state: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.state,
-                  scopes: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.scope,
+                  scope: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.scope,
                 });
 
                 const fxaLoginCallOrder =
@@ -861,7 +861,7 @@ describe('Signin component', () => {
                   code: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.code,
                   redirect: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.redirect,
                   state: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.state,
-                  scopes: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.scope,
+                  scope: MOCK_OAUTH_FLOW_HANDLER_RESPONSE.scope,
                 });
 
                 const fxaLoginCallOrder =

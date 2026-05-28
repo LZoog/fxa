@@ -7,7 +7,7 @@ const Joi = require('joi');
 
 const { OauthError } = require('@fxa/accounts/errors');
 const { AppError: AuthError } = require('@fxa/accounts/errors');
-const { OAuthNativeClients } = require('@fxa/accounts/oauth');
+const { OAUTH_NATIVE_CLIENT_IDS } = require('@fxa/accounts/oauth');
 const ScopeSet = require('fxa-shared').oauth.scopes;
 const validators = require('../../oauth/validators');
 const { validateRequestedGrant, generateTokens } = require('../../oauth/grant');
@@ -21,13 +21,6 @@ const DESCRIPTION =
 
 const RESPONSE_TYPE_CODE = 'code';
 const RESPONSE_TYPE_TOKEN = 'token';
-
-// ADR 0049 server-side scope resolution applies only to OAuthNative
-// (Firefox) clients. Lowercased once at module load so client_id
-// matching is case-insensitive.
-const OAUTH_NATIVE_CLIENT_IDS = new Set(
-  Object.values(OAuthNativeClients).map((id) => id.toLowerCase())
-);
 
 const ACCESS_TYPE_ONLINE = 'online';
 const ACCESS_TYPE_OFFLINE = 'offline';
@@ -99,9 +92,12 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
       code,
       state,
       redirect: redirect.href,
-      // ADR 0049: return the granted scope so the caller has a single
-      // source of truth — important when scope was resolved server-side
-      // from `service=`. Always set; non-empty after grant validation.
+      // RFC 6749 §5.1: response should include `scope` when the granted
+      // scope differs from requested. We always include it so the caller
+      // has a single source of truth — especially important when scope
+      // was resolved server-side from `service=` per ADR 0049. Today only
+      // Firefox (via fxaOAuthLogin) consumes this field downstream; other
+      // RPs may ignore it. Always non-empty after grant validation.
       scope: grant.scope.toString(),
     };
   }

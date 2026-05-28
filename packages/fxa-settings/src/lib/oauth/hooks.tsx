@@ -124,15 +124,23 @@ async function getOAuthData(
     acr_values: integration.data.acrValues,
     code_challenge: integration.data.codeChallenge,
     code_challenge_method: integration.data.codeChallengeMethod,
-    scope: integration.getNormalizedScope(),
   };
+  // ADR 0049: only forward scope when present; an empty scope from
+  // OAuthNativeIntegration signals "let the server resolve from
+  // service=". Sending an empty string would skip the gate (no
+  // resolution) and hit grant validation with no scope.
+  const normalizedScope = integration.getNormalizedScope();
+  if (normalizedScope) {
+    opts.scope = normalizedScope;
+  }
   if (keysJwe) {
     opts.keys_jwe = keysJwe;
   }
   if (integration.data.accessType === 'offline') {
     opts.access_type = integration.data.accessType;
   }
-  // Drives the per-service accountAuthorizations row on the auth-server.
+  // Drives the per-service accountAuthorizations row on the auth-server,
+  // and (per ADR 0049) drives scope resolution when scope is absent.
   if (integration.data.service) {
     opts.service = integration.data.service;
   }

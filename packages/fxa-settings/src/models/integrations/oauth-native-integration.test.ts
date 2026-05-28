@@ -419,4 +419,172 @@ describe('OAuthNativeIntegration', function () {
       expect(model.getWebChannelServices()).toEqual({ vpn: {} });
     });
   });
+
+  // ADR 0049: client-side helpers for missing-scope-but-service-present URLs.
+  // The server's /oauth/authorization gate resolves the scope from `service=`;
+  // these tests exercise the client-side fallbacks so key/permission decisions
+  // still match what the server is about to grant.
+  describe('ADR 0049 scope tolerance', () => {
+    const SYNC_SCOPE = 'https://identity.mozilla.com/apps/oldsync';
+    const RELAY_SCOPE = 'https://identity.mozilla.com/apps/relay';
+
+    function buildModel(opts: {
+      scope?: string;
+      service?: OAuthNativeServices;
+      scopedKeysValidation?: Record<string, { redirectUris: string[] }>;
+      keysJwk?: string;
+    }) {
+      // Fresh data sources without a preset scope; the outer beforeEach
+      // primes oauthData with scope: 'profile' which would defeat the
+      // missing-scope tests.
+      const freshData = new GenericData({
+        clientId: OAuthNativeClients.FirefoxDesktop,
+      });
+      const freshOauthData = new GenericData({});
+      const m = new OAuthNativeIntegration(freshData, freshOauthData, {
+        scopedKeysEnabled: true,
+        scopedKeysValidation: opts.scopedKeysValidation ?? {},
+        isPromptNoneEnabled: true,
+        isPromptNoneEnabledClientIds: [],
+      });
+      m.clientInfo = mockClientInfo(OAuthNativeClients.FirefoxDesktop);
+      if (opts.service !== undefined) {
+        m.data.service = opts.service;
+      }
+      // Bind-decorated `scope` validates non-empty; omit when the test
+      // wants to mirror the runtime "URL has no scope" state.
+      if (opts.scope !== undefined) {
+        m.data.scope = opts.scope;
+      }
+      if (opts.keysJwk !== undefined) {
+        m.data.keysJwk = opts.keysJwk;
+      }
+      return m;
+    }
+
+    describe('getEffectiveScope', () => {
+      it('returns the URL scope when present', () => {
+        const m = buildModel({
+          scope: 'profile',
+          service: OAuthNativeServices.Sync,
+        });
+        expect(m.getEffectiveScope()).toBe('profile');
+      });
+
+      it('derives the scope from service when URL scope is missing', () => {
+        const m = buildModel({ service: OAuthNativeServices.Sync });
+        expect(m.getEffectiveScope()).toBe(SYNC_SCOPE);
+      });
+
+      it('derives the scope for each known native service', () => {
+        expect(
+          buildModel({ service: OAuthNativeServices.Relay }).getEffectiveScope()
+        ).toBe(RELAY_SCOPE);
+        expect(
+          buildModel({
+            service: OAuthNativeServices.Vpn,
+          }).getEffectiveScope()
+        ).toBe('https://identity.mozilla.com/apps/vpn');
+        expect(
+          buildModel({
+            service: OAuthNativeServices.SmartWindow,
+          }).getEffectiveScope()
+        ).toBe('https://identity.mozilla.com/apps/smartwindow');
+      });
+
+      it('returns "" when both URL scope and service are missing', () => {
+        const m = buildModel({});
+        expect(m.getEffectiveScope()).toBe('');
+      });
+    });
+
+    describe('getNormalizedScope', () => {
+      it('returns "" when URL scope is missing (server resolves)', () => {
+        const m = buildModel({ service: OAuthNativeServices.Sync });
+        expect(m.getNormalizedScope()).toBe('');
+      });
+
+      it('returns the URL scope when present (explicit scope wins)', () => {
+        const m = buildModel({
+          scope: SYNC_SCOPE,
+          service: OAuthNativeServices.Sync,
+          scopedKeysValidation: {
+            [SYNC_SCOPE]: { redirectUris: ['https://mock.com'] },
+          },
+        });
+        expect(m.getNormalizedScope()).toBe(SYNC_SCOPE);
+      });
+    });
+
+    describe('_scopeRequestsKeys (via requiresKeys / wantsKeysIfPasswordEntered)', () => {
+      it('Sync without URL scope still requires keys when service=sync', () => {
+        const m = buildModel({
+          service: OAuthNativeServices.Sync,
+          keysJwk: 'mock',
+          scopedKeysValidation: {
+            [SYNC_SCOPE]: { redirectUris: ['https://mock.com'] },
+          },
+        });
+        expect(m.requiresKeys()).toBe(true);
+        expect(m.wantsKeys()).toBe(true);
+      });
+
+      it('Relay without URL scope wants keys opportunistically when service=relay', () => {
+        const m = buildModel({
+          service: OAuthNativeServices.Relay,
+          keysJwk: 'mock',
+          scopedKeysValidation: {
+            [RELAY_SCOPE]: { redirectUris: ['https://mock.com'] },
+          },
+        });
+        expect(m.wantsKeysIfPasswordEntered()).toBe(true);
+        expect(m.requiresKeys()).toBe(false);
+      });
+
+      it('returns false when keysJwk is missing even if service maps to keys-configured scope', () => {
+        const m = buildModel({
+          service: OAuthNativeServices.Sync,
+          scopedKeysValidation: {
+            [SYNC_SCOPE]: { redirectUris: ['https://mock.com'] },
+          },
+        });
+        expect(m.requiresKeys()).toBe(false);
+      });
+
+      it('returns false when service scope is not in scopedKeysValidation', () => {
+        const m = buildModel({
+          service: OAuthNativeServices.Sync,
+          keysJwk: 'mock',
+          scopedKeysValidation: {},
+        });
+        expect(m.requiresKeys()).toBe(false);
+      });
+
+      it('returns false when the redirect URI does not match the validation entry', () => {
+        const m = buildModel({
+          service: OAuthNativeServices.Sync,
+          keysJwk: 'mock',
+          scopedKeysValidation: {
+            [SYNC_SCOPE]: { redirectUris: ['https://different.com'] },
+          },
+        });
+        expect(m.requiresKeys()).toBe(false);
+      });
+
+      it('explicit URL scope still drives the decision when present', () => {
+        // service=sync would normally force keys, but the URL passed a
+        // non-keys scope: the explicit scope wins, super._scopeRequestsKeys
+        // runs against it and finds no validation match.
+        const m = buildModel({
+          scope: 'profile',
+          service: OAuthNativeServices.Sync,
+          keysJwk: 'mock',
+          scopedKeysValidation: {
+            [SYNC_SCOPE]: { redirectUris: ['https://mock.com'] },
+          },
+        });
+        expect(m.requiresKeys()).toBe(false);
+      });
+    });
+  });
 });
