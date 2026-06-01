@@ -572,6 +572,7 @@ describe('/oauth/authorization POST ADR 0049 service-driven scope resolution', (
   const FIREFOX_IOS = '1b1a3e44c54fbb58';
   const NON_NATIVE_CLIENT = '0123456789abcdef';
   const VPN_SCOPE = 'https://identity.mozilla.com/apps/vpn';
+  const OLDSYNC_SCOPE = 'https://identity.mozilla.com/apps/oldsync';
   const OAUTH_INVALID_PARAMETER_ERRNO = 109;
 
   function makeRoute(oauthDB: Record<string, any>) {
@@ -626,7 +627,7 @@ describe('/oauth/authorization POST ADR 0049 service-driven scope resolution', (
     const route = makeRoute({
       isKnownService: () => false,
       isClientAllowedForService: () => true,
-      getCanonicalScopeForService: () => undefined,
+      resolveScopesForService: () => undefined,
     });
     await expect(
       route.handler(
@@ -647,8 +648,10 @@ describe('/oauth/authorization POST ADR 0049 service-driven scope resolution', (
       isKnownService: (s: string) => s === 'smartwindow',
       // Mobile (iOS) is not in smartwindow.clientIds.
       isClientAllowedForService: () => false,
-      getCanonicalScopeForService: () =>
+      resolveScopesForService: () => [
         'https://identity.mozilla.com/apps/smartwindow',
+        'profile:uid',
+      ],
     });
     await expect(
       route.handler(
@@ -669,11 +672,13 @@ describe('/oauth/authorization POST ADR 0049 service-driven scope resolution', (
     // downstream (assertion verification, no oauthDB.getClient stub,
     // etc.). We just confirm we did not throw an INVALID_PARAMETER
     // error citing scope or service.
+    const resolveScopesForService = jest.fn((s: string) =>
+      s === 'vpn' ? [VPN_SCOPE, 'profile'] : undefined
+    );
     const route = makeRoute({
       isKnownService: (s: string) => s === 'vpn',
       isClientAllowedForService: () => true,
-      getCanonicalScopeForService: (s: string) =>
-        s === 'vpn' ? VPN_SCOPE : undefined,
+      resolveScopesForService,
     });
     try {
       await route.handler(
@@ -686,6 +691,41 @@ describe('/oauth/authorization POST ADR 0049 service-driven scope resolution', (
         expect(keys).not.toEqual(['service']);
       }
     }
+    // Resolver invoked with withKeys=false when keys_jwe is absent.
+    expect(resolveScopesForService).toHaveBeenCalledWith('vpn', false);
+  });
+
+  it('passes withKeys=true to the resolver when keys_jwe is in the payload', async () => {
+    // Conditional Sync grant: user entered a password (client computed
+    // keys_jwe), so the resolver should return the multi-scope set plus
+    // the keys-conditional scope.
+    const resolveScopesForService = jest.fn((s: string, withKeys: boolean) => {
+      if (s !== 'vpn') return undefined;
+      return withKeys
+        ? [VPN_SCOPE, 'profile', OLDSYNC_SCOPE]
+        : [VPN_SCOPE, 'profile'];
+    });
+    const route = makeRoute({
+      isKnownService: (s: string) => s === 'vpn',
+      isClientAllowedForService: () => true,
+      resolveScopesForService,
+    });
+    try {
+      await route.handler(
+        makeRequest({
+          client_id: FIREFOX_DESKTOP,
+          service: 'vpn',
+          keys_jwe: 'mock.jwe.payload',
+        })
+      );
+    } catch (err: any) {
+      if (err.errno === OAUTH_INVALID_PARAMETER_ERRNO) {
+        const keys = err.output?.payload?.validation?.keys;
+        expect(keys).not.toEqual(['scope']);
+        expect(keys).not.toEqual(['service']);
+      }
+    }
+    expect(resolveScopesForService).toHaveBeenCalledWith('vpn', true);
   });
 
   it('skips the gate when scope is explicitly provided, even with service for an OAuthNative client', async () => {
@@ -694,7 +734,7 @@ describe('/oauth/authorization POST ADR 0049 service-driven scope resolution', (
     const oauthDB = {
       isKnownService: jest.fn(),
       isClientAllowedForService: jest.fn(),
-      getCanonicalScopeForService: jest.fn(),
+      resolveScopesForService: jest.fn(),
     };
     const route = makeRoute(oauthDB);
     try {
@@ -716,6 +756,6 @@ describe('/oauth/authorization POST ADR 0049 service-driven scope resolution', (
     }
     expect(oauthDB.isKnownService).not.toHaveBeenCalled();
     expect(oauthDB.isClientAllowedForService).not.toHaveBeenCalled();
-    expect(oauthDB.getCanonicalScopeForService).not.toHaveBeenCalled();
+    expect(oauthDB.resolveScopesForService).not.toHaveBeenCalled();
   });
 });

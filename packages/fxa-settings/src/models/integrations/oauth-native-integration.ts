@@ -10,11 +10,7 @@ import {
   OAuthIntegrationOptions,
   OAuthWebIntegration,
 } from './oauth-web-integration';
-import {
-  OAuthNativeClients,
-  OAuthNativeServices,
-  OAUTH_NATIVE_SERVICE_SCOPES,
-} from '@fxa/accounts/oauth';
+import { OAuthNativeClients, OAuthNativeServices } from '@fxa/accounts/oauth';
 
 export function isOAuthNativeIntegration(integration: {
   type: IntegrationType;
@@ -138,23 +134,6 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     return this.isFirefoxNonSync() && this._scopeRequestsKeys();
   }
 
-  // ADR 0049: under server-side scope resolution, the URL may omit
-  // `scope=` for native flows and the server resolves it from `service=`.
-  // For client-side decisions that previously inspected `data.scope`
-  // (e.g. whether to request scoped keys, what service this is), use
-  // this helper instead. Returns the explicit URL scope when present,
-  // otherwise the canonical scope for the URL's `service=`, else ''.
-  getEffectiveScope(): string {
-    if (this.data.scope) {
-      return this.data.scope;
-    }
-    const service = this.data.service as OAuthNativeServices | undefined;
-    if (service && OAUTH_NATIVE_SERVICE_SCOPES[service]) {
-      return OAUTH_NATIVE_SERVICE_SCOPES[service];
-    }
-    return '';
-  }
-
   // ADR 0049: when the URL omits `scope=`, send empty so the server's
   // /oauth/authorization gate resolves it from `service=`. Bypasses
   // super.getPermissions() which would otherwise throw on empty scope.
@@ -166,29 +145,26 @@ export class OAuthNativeIntegration extends OAuthWebIntegration {
     return super.getNormalizedScope();
   }
 
-  // ADR 0049: when the URL omits `scope=`, derive the effective scope
-  // from `service=` so key-related decisions (Sync requires keys, Relay/
-  // VPN/SmartWindow want keys opportunistically) match what the server
-  // is about to resolve. Otherwise defer to the parent's URL-scope-based
-  // check.
+  // ADR 0049: when the URL omits `scope=`, decide based on the service
+  // (which we know is a Firefox native flow by virtue of being in
+  // OAuthNativeIntegration) instead of scanning a non-existent scope.
+  // Sync flows force password (requiresKeys); non-Sync Firefox flows
+  // offer keys opportunistically (wantsKeysIfPasswordEntered). When the
+  // user enters a password, the client wraps keysJwe and sends it; the
+  // server then adds apps/oldsync to the resolved scope set.
+  //
+  // The redirectUri-vs-scope check that super._scopeRequestsKeys does is
+  // skipped here — there is no URL scope to validate, and OAuthNative
+  // clientIds are already gated by the OAUTH_NATIVE_CLIENT_IDS allowlist
+  // on the auth-server side.
   protected override _scopeRequestsKeys(): boolean {
     if (this.data.scope) {
       return super._scopeRequestsKeys();
     }
-    if (!this.opts.scopedKeysEnabled || this.data.keysJwk == null) {
-      return false;
-    }
-    const effective = this.getEffectiveScope();
-    if (!effective) {
-      return false;
-    }
-    const validation = this.opts.scopedKeysValidation;
-    // eslint-disable-next-line no-prototype-builtins
-    if (!validation.hasOwnProperty(effective)) {
-      return false;
-    }
-    return validation[effective].redirectUris.includes(
-      this.clientInfo?.redirectUri
+    return (
+      this.opts.scopedKeysEnabled &&
+      this.data.keysJwk != null &&
+      this.isFirefoxClient()
     );
   }
 

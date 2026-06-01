@@ -12,6 +12,7 @@ const AccessToken = require('./accessToken');
 const { SHORT_ACCESS_TOKEN_TTL_IN_MS } = require('fxa-shared/oauth/constants');
 const RefreshTokenMetadata = require('./refreshTokenMetadata');
 const { ConnectedServicesDb } = require('fxa-shared/connected-services');
+const resolveScopesForService = require('./resolve-scopes-for-service');
 
 const JWT_ACCESS_TOKENS_ENABLED = config.get(
   'oauthServer.jwtAccessTokens.enabled'
@@ -52,6 +53,17 @@ const EXCHANGE_ALLOWED_CLIENTS_FOR_SERVICE = new Map(
     service,
     new Set((clientIds || []).map((c) => c.toLowerCase())),
   ])
+);
+
+// ADR 0049 `/oauth/authorization` scope resolution: per-service base scope
+// set, plus a single conditional scope added when keysJwe is present.
+// Distinct from EXCHANGE_SERVICE_SCOPES (token-exchange canonical map) —
+// see config docs for the rationale.
+const AUTHORIZATION_SERVICE_SCOPES = config.get(
+  'oauthServer.authorization.serviceScopes'
+);
+const AUTHORIZATION_KEYS_CONDITIONAL_SCOPE = config.get(
+  'oauthServer.authorization.keysConditionalScope'
 );
 
 // Token-exchange consent-check outcomes. Callers in lib/routes/oauth/token.js
@@ -405,6 +417,16 @@ class OauthDB extends ConnectedServicesDb {
   // Returns undefined for scopes that no service owns.
   getServiceForCanonicalScope(scope) {
     return EXCHANGE_SCOPE_TO_SERVICE.get(scope);
+  }
+
+  // ADR 0049 scope resolution: see resolveScopesForService below.
+  resolveScopesForService(serviceName, withKeys) {
+    return resolveScopesForService(
+      AUTHORIZATION_SERVICE_SCOPES,
+      AUTHORIZATION_KEYS_CONDITIONAL_SCOPE,
+      serviceName,
+      withKeys
+    );
   }
 }
 

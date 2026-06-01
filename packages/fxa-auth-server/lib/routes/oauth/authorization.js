@@ -548,16 +548,25 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
             ) {
               throw OauthError.invalidRequestParameter({ keys: ['service'] });
             }
-            const resolvedScope =
-              oauthDB.getCanonicalScopeForService(serviceParam);
-            if (!resolvedScope) {
-              // isKnownService is true iff a canonical scope exists, so
+            // ADR 0049 multi-scope resolution. keys_jwe in the payload
+            // means the user entered a password and the client wrapped
+            // scoped keys, so the resolver appends apps/oldsync. This
+            // mirrors today's URL-scope-present flow where Firefox
+            // includes apps/oldsync among the requested scopes whenever
+            // keys can be fetched.
+            const withKeys = req.payload.keys_jwe != null;
+            const resolvedScopes = oauthDB.resolveScopesForService(
+              serviceParam,
+              withKeys
+            );
+            if (!resolvedScopes) {
+              // isKnownService is true iff a scope set is configured, so
               // this should be unreachable. Defensive guard for config drift.
               throw OauthError.invalidRequestParameter({ keys: ['service'] });
             }
             payloadOverride = {
               ...req.payload,
-              scope: ScopeSet.fromString(resolvedScope),
+              scope: ScopeSet.fromArray(resolvedScopes),
             };
           }
         }
