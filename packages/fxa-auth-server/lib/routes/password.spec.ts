@@ -643,7 +643,7 @@ describe('/password', () => {
         mailer: mocks.mockMailer(),
         log: mocks.mockLog(),
         customs: mocks.mockCustoms(),
-        statsd: mocks.mockStatsd(),
+        statsd: createMock<StatsD>(),
       });
 
       let err: any;

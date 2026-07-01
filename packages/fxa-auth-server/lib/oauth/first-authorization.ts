@@ -2,49 +2,51 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Decide whether an OAuth signin is the *first* time a user has used a given
-// service / relying party, from the existing accountAuthorizations consent rows
-// read just before this authorization's rows are written.
-//
-// Two grains, because the ledger keys on (uid, scope, service, clientId):
-//  - Browser service (an OAuthNative service): Firefox shares a client ID across all
-//    OAuth Native services for that client, so "new to the service" must key on `service`.
-//  - Web RP (service=''): the clientId *is* the RP, so key on clientId.
-//
-// `sync` is included but NOT currently reliable: Desktop always creates a sync-scoped
-// access token even when signing into another service, so a first sync can't be told apart
-// from a first use of that other service. Native clients with no resolved service are
-// ambiguous and excluded (return false).
+// Whether an OAuth signin is the user's *first* use of a service / relying
+// party, used to set `firstAuthorization` on the `login` event (FXA-13784).
+// Two grains, since the accountAuthorizations ledger keys on
+// (uid, scope, service, clientId):
+//  - Native (browser) client with a resolved service: "new to the service",
+//    keyed on `service` (ignoring clientId), so it's correct across the user's
+//    devices/apps. NOT currently reliable for `sync` — Desktop always creates a
+//    sync-scoped access token even when signing into another service, so a first
+//    `sync` can't be told apart; emitted anyway (flagged in the docs) pending a
+//    desktop fix.
+//  - Web RP (non-native client): "new to the RP", keyed on `clientId`. Any
+//    `service=` a web RP sends is intentionally ignored — `service` is only
+//    meaningful for native clients, so a web RP cannot spoof a browser service.
+//  - Native client with no resolved service: ambiguous; returns false without a
+//    DB query.
 
-export type ConsentRowLike = {
-  service: string;
-  /** Hex-encoded OAuth client id (the caller normalizes Buffer rows to hex). */
-  clientId: string;
-};
+export interface FirstAuthorizationDb {
+  /** True iff the user has any prior consent row for this service. */
+  hasConsentForService(uid: string, service: string): Promise<boolean>;
+  /** True iff the user has any prior consent row for this client. */
+  hasConsentForClient(uid: string, clientId: string): Promise<boolean>;
+}
 
-export function deriveFirstAuthorization(params: {
-  /** Resolved native service for this authorization ('' for web RPs). */
-  serviceValue: string;
-  /** Hex OAuth client id for this authorization. */
-  clientIdHex: string;
-  /** Whether clientIdHex is a native (browser) client. */
-  isNativeClient: boolean;
-  /** The user's accountAuthorizations rows read *before* this auth's writes. */
-  existingConsents: ConsentRowLike[];
-}): boolean {
-  const { serviceValue, clientIdHex, isNativeClient, existingConsents } =
-    params;
+export async function isFirstAuthorization(
+  db: FirstAuthorizationDb,
+  params: {
+    uid: string;
+    /** Resolved native service for this authorization ('' for web RPs). */
+    serviceValue: string;
+    /** Hex OAuth client id for this authorization. */
+    clientIdHex: string;
+    /** Whether clientIdHex is a native (browser) client. */
+    isNativeClient: boolean;
+  }
+): Promise<boolean> {
+  const { uid, serviceValue, clientIdHex, isNativeClient } = params;
 
-  if (serviceValue) {
-    // OAuthNative: new to the service= query param passed in
-    return !existingConsents.some((r) => r.service === serviceValue);
+  if (isNativeClient && serviceValue) {
+    return !(await db.hasConsentForService(uid, serviceValue));
   }
 
-  if (!serviceValue && !isNativeClient) {
-    // Web RP: new to the RP, identified by clientId.
-    return !existingConsents.some((r) => r.clientId === clientIdHex);
+  if (!isNativeClient) {
+    return !(await db.hasConsentForClient(uid, clientIdHex));
   }
 
-  // Native client with no resolved service: ambiguous
+  // Native client with no resolved service: ambiguous, no query needed.
   return false;
 }

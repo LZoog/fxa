@@ -14,7 +14,7 @@ const { validateRequestedGrant, generateTokens } = require('../../oauth/grant');
 const { makeAssertionJWT } = require('../../oauth/util');
 const verifyAssertion = require('../../oauth/assertion');
 const {
-  deriveFirstAuthorization,
+  isFirstAuthorization,
 } = require('../../oauth/first-authorization');
 const OAUTH_DOCS = require('../../../docs/swagger/oauth-api').default;
 const OAUTH_SERVER_DOCS =
@@ -208,10 +208,14 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
         serviceValue = inferred[0];
       }
     }
-    // Expose the resolved service so the `login` event reports `service` at the
-    // same grain as `firstAuthorization` (serviceTag alone misses scope-only
-    // flows, e.g. VPN cached sign-in that sends scope but no service=).
-    req.app.oauthService = serviceValue;
+    // Expose the resolved service for native clients so the `login` event can
+    // report the browser service (matching the grain of `firstAuthorization`,
+    // incl. scope-only flows like VPN cached sign-in) instead of the shared
+    // client id. Only set for native clients — `service` is meaningless and
+    // spoofable for web RPs, which fall back to the client id on the event.
+    if (OAUTH_NATIVE_CLIENT_IDS.has(clientIdHex) && serviceValue) {
+      req.app.oauthService = serviceValue;
+    }
     if (!oauthDB.isClientAllowedForService(serviceValue, clientIdHex)) {
       statsd?.increment('accountAuthorization.skipped', {
         reason: 'client_not_allowed',
@@ -228,21 +232,18 @@ module.exports = ({ log, oauthDB, config, statsd }) => {
     }
     const now = Date.now();
     const uidHex = hex(grant.userId);
-    // Read existing consents *before* the writes to detect the user's first use
-    // of this service / RP (drives `firstAuthorization` on the `login` event).
-    // Best-effort, so its own try/catch keeps a read failure from suppressing
-    // the load-bearing consent writes below.
+    // Detect the user's first use of this service / RP, to drive
+    // `firstAuthorization` on the `login` event. Best-effort: its own try/catch
+    // keeps a read failure from suppressing the load-bearing consent writes
+    // below, and the targeted existence query short-circuits (no DB call) when
+    // the result is knowably false.
     let firstAuthorization = false;
     try {
-      const existingConsents = await oauthDB.listAccountConsentsByUid(uidHex);
-      firstAuthorization = deriveFirstAuthorization({
+      firstAuthorization = await isFirstAuthorization(oauthDB, {
+        uid: uidHex,
         serviceValue,
         clientIdHex,
         isNativeClient: OAUTH_NATIVE_CLIENT_IDS.has(clientIdHex),
-        existingConsents: existingConsents.map((r) => ({
-          service: r.service,
-          clientId: hex(r.clientId),
-        })),
       });
     } catch (err) {
       statsd?.increment('accountAuthorization.first_auth_read_failed');

@@ -5,110 +5,129 @@
 import { OAuthNativeClients, OAuthNativeServices } from '@fxa/accounts/oauth';
 
 import {
-  deriveFirstAuthorization,
-  ConsentRowLike,
+  isFirstAuthorization,
+  FirstAuthorizationDb,
 } from './first-authorization';
 
+const UID = 'a'.repeat(32);
 const DESKTOP = OAuthNativeClients.FirefoxDesktop; // native
-const IOS = OAuthNativeClients.FirefoxIOS; // native, different app
 const WEB_RP = '98e6508e88680e1b'; // arbitrary non-native web RP (no enum)
 
-function row(service: string, clientIdHex: string): ConsentRowLike {
-  return { service, clientId: clientIdHex };
+function mockDb(
+  overrides: Partial<jest.Mocked<FirstAuthorizationDb>> = {}
+): jest.Mocked<FirstAuthorizationDb> {
+  return {
+    hasConsentForService: jest.fn().mockResolvedValue(false),
+    hasConsentForClient: jest.fn().mockResolvedValue(false),
+    ...overrides,
+  };
 }
 
-describe('deriveFirstAuthorization', () => {
-  describe('browser service (native client)', () => {
-    it('is true on the first authorization of the service', () => {
-      expect(
-        deriveFirstAuthorization({
+describe('isFirstAuthorization', () => {
+  describe('native (browser) client with a resolved service', () => {
+    it('is true when the user has no prior consent for the service', async () => {
+      const db = mockDb();
+      await expect(
+        isFirstAuthorization(db, {
+          uid: UID,
           serviceValue: OAuthNativeServices.SmartWindow,
           clientIdHex: DESKTOP,
           isNativeClient: true,
-          existingConsents: [],
         })
-      ).toBe(true);
+      ).resolves.toBe(true);
+      expect(db.hasConsentForService).toHaveBeenCalledWith(
+        UID,
+        OAuthNativeServices.SmartWindow
+      );
+      expect(db.hasConsentForClient).not.toHaveBeenCalled();
     });
 
-    it('is true even when the user already used a different service on the same client', () => {
-      expect(
-        deriveFirstAuthorization({
-          serviceValue: OAuthNativeServices.SmartWindow,
-          clientIdHex: DESKTOP,
-          isNativeClient: true,
-          existingConsents: [row(OAuthNativeServices.Sync, DESKTOP)],
-        })
-      ).toBe(true);
-    });
-
-    it('is false on a repeat authorization of the service', () => {
-      expect(
-        deriveFirstAuthorization({
-          serviceValue: OAuthNativeServices.SmartWindow,
-          clientIdHex: DESKTOP,
-          isNativeClient: true,
-          existingConsents: [row(OAuthNativeServices.SmartWindow, DESKTOP)],
-        })
-      ).toBe(false);
-    });
-
-    it('is false when the prior consent for the service came from a different client (cross-device)', () => {
-      expect(
-        deriveFirstAuthorization({
+    it('is false when the user already has consent for the service', async () => {
+      const db = mockDb({
+        hasConsentForService: jest.fn().mockResolvedValue(true),
+      });
+      await expect(
+        isFirstAuthorization(db, {
+          uid: UID,
           serviceValue: OAuthNativeServices.Vpn,
           clientIdHex: DESKTOP,
           isNativeClient: true,
-          existingConsents: [row(OAuthNativeServices.Vpn, IOS)],
         })
-      ).toBe(false);
+      ).resolves.toBe(false);
+    });
+
+    it('is true on the first sync authorization (sync is included, though unreliable)', async () => {
+      const db = mockDb();
+      await expect(
+        isFirstAuthorization(db, {
+          uid: UID,
+          serviceValue: OAuthNativeServices.Sync,
+          clientIdHex: DESKTOP,
+          isNativeClient: true,
+        })
+      ).resolves.toBe(true);
+      expect(db.hasConsentForService).toHaveBeenCalledWith(
+        UID,
+        OAuthNativeServices.Sync
+      );
     });
   });
 
-  describe('web RP (non-native client, no resolved service)', () => {
-    it('is true on the first authorization of the RP', () => {
-      expect(
-        deriveFirstAuthorization({
+  describe('web RP (non-native client)', () => {
+    it('is true when the user has no prior consent for the client', async () => {
+      const db = mockDb();
+      await expect(
+        isFirstAuthorization(db, {
+          uid: UID,
           serviceValue: '',
           clientIdHex: WEB_RP,
           isNativeClient: false,
-          existingConsents: [],
         })
-      ).toBe(true);
+      ).resolves.toBe(true);
+      expect(db.hasConsentForClient).toHaveBeenCalledWith(UID, WEB_RP);
+      expect(db.hasConsentForService).not.toHaveBeenCalled();
     });
 
-    it('is true when the user has used a different RP before', () => {
-      expect(
-        deriveFirstAuthorization({
+    it('is false when the user already authorized the client', async () => {
+      const db = mockDb({
+        hasConsentForClient: jest.fn().mockResolvedValue(true),
+      });
+      await expect(
+        isFirstAuthorization(db, {
+          uid: UID,
           serviceValue: '',
           clientIdHex: WEB_RP,
           isNativeClient: false,
-          existingConsents: [row('', 'aaaaaaaaaaaaaaaa')],
         })
-      ).toBe(true);
+      ).resolves.toBe(false);
     });
 
-    it('is false on a repeat authorization of the RP, regardless of scope', () => {
-      expect(
-        deriveFirstAuthorization({
-          serviceValue: '',
-          clientIdHex: WEB_RP,
-          isNativeClient: false,
-          existingConsents: [row('', WEB_RP)],
-        })
-      ).toBe(false);
+    it('ignores a service= sent by a web RP and keys on clientId (no spoofing a browser service)', async () => {
+      const db = mockDb();
+      await isFirstAuthorization(db, {
+        uid: UID,
+        serviceValue: OAuthNativeServices.Sync,
+        clientIdHex: WEB_RP,
+        isNativeClient: false,
+      });
+      expect(db.hasConsentForClient).toHaveBeenCalledWith(UID, WEB_RP);
+      expect(db.hasConsentForService).not.toHaveBeenCalled();
     });
   });
 
-  describe('ambiguous native client with no resolved service', () => {
-    it('is false (not a marketing RP, service unknown)', () => {
-      expect(
-        deriveFirstAuthorization({
+  describe('native client with no resolved service', () => {
+    it('is false without any DB query (ambiguous)', async () => {
+      const db = mockDb();
+      await expect(
+        isFirstAuthorization(db, {
+          uid: UID,
           serviceValue: '',
           clientIdHex: DESKTOP,
           isNativeClient: true,
-          existingConsents: [],
         })
-      ).toBe(false);
+      ).resolves.toBe(false);
+      expect(db.hasConsentForService).not.toHaveBeenCalled();
+      expect(db.hasConsentForClient).not.toHaveBeenCalled();
     });
   });
 });

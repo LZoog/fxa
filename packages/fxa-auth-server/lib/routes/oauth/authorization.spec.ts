@@ -357,7 +357,8 @@ describe('/authorization POST consent write', () => {
       ),
       getServiceForCanonicalScope: jest.fn(() => undefined),
       recordSignInConsent: jest.fn().mockResolvedValue(undefined),
-      listAccountConsentsByUid: jest.fn().mockResolvedValue([]),
+      hasConsentForService: jest.fn().mockResolvedValue(false),
+      hasConsentForClient: jest.fn().mockResolvedValue(false),
       ...overrides,
     };
   }
@@ -504,8 +505,8 @@ describe('/authorization POST consent write', () => {
     );
   });
 
-  it('reads existing consents before writing and flags firstAuthorization for a first-time RP', async () => {
-    // buildOauthDB defaults listAccountConsentsByUid to [] (no prior consent).
+  it('checks the consent ledger before writing and flags firstAuthorization for a first-time RP', async () => {
+    // buildOauthDB defaults hasConsentForClient to false (no prior consent).
     const oauthDB = buildOauthDB();
 
     const { app } = await runHandler({
@@ -513,16 +514,17 @@ describe('/authorization POST consent write', () => {
       payload: { scope: 'profile' },
     });
 
-    expect(oauthDB.listAccountConsentsByUid).toHaveBeenCalledWith(UID_HEX);
+    expect(oauthDB.hasConsentForClient).toHaveBeenCalledWith(
+      UID_HEX,
+      CLIENT_ID
+    );
     expect(oauthDB.recordSignInConsent).toHaveBeenCalled();
     expect(app.firstAuthorization).toBe(true);
   });
 
   it('does not flag firstAuthorization on a repeat authorization of the same RP', async () => {
     const oauthDB = buildOauthDB({
-      listAccountConsentsByUid: jest
-        .fn()
-        .mockResolvedValue([{ service: '', clientId: CLIENT_ID }]),
+      hasConsentForClient: jest.fn().mockResolvedValue(true),
     });
 
     const { app } = await runHandler({
@@ -535,7 +537,6 @@ describe('/authorization POST consent write', () => {
 
   it('does not flag firstAuthorization when the consent write fails', async () => {
     const oauthDB = buildOauthDB({
-      listAccountConsentsByUid: jest.fn().mockResolvedValue([]),
       recordSignInConsent: jest.fn().mockRejectedValue(new Error('db down')),
     });
 
@@ -548,11 +549,9 @@ describe('/authorization POST consent write', () => {
     expect(app.firstAuthorization).toBeUndefined();
   });
 
-  it('still writes consent (and reports first_auth_read_failed) when the firstAuthorization read fails', async () => {
+  it('still writes consent (and reports first_auth_read_failed) when the firstAuthorization check fails', async () => {
     const oauthDB = buildOauthDB({
-      listAccountConsentsByUid: jest
-        .fn()
-        .mockRejectedValue(new Error('read down')),
+      hasConsentForClient: jest.fn().mockRejectedValue(new Error('read down')),
     });
     const log = { ...mockLog, warn: jest.fn() };
     const statsd = { increment: jest.fn() };
