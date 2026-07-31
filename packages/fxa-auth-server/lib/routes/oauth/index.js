@@ -11,7 +11,13 @@ module.exports = (
   authServerCacheRedis
 ) => {
   const routes = [
-    require('./authorization')({ log, oauthDB, config, statsd }),
+    require('./authorization')({
+      log,
+      oauthDB,
+      config,
+      statsd,
+      authServerCacheRedis,
+    }),
     require('./authorized-clients/destroy')({ oauthDB }),
     require('./authorized-clients/list')({ oauthDB }),
     require('./client/get')({ log, oauthDB }),

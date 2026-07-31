@@ -99,6 +99,10 @@ const ACCOUNT_ACTIVITY_UPDATE_AFTER_MS = config.get(
 
 // VPN-in-Desktop DAU bandaid (FXA-14159).
 const vpnInDesktopDauBandaid = require('../../oauth/vpn-in-desktop-dau-bandaid');
+const { OAuthNativeServices } = require('@fxa/accounts/oauth');
+const {
+  excludeDauCacheKey,
+} = require('../../oauth/desktop-sync-consent-bandaid');
 // The client and scope the bandaid targets are fixed product facts, not
 // operational knobs, so they're constants rather than config: Firefox Desktop
 // is the only client that mints a VPN token for every signed-in user, and the
@@ -296,8 +300,21 @@ module.exports = ({
     // `exclude_dau` so this token creation is excluded from the DAU signal (the
     // event still fires). Exposed on the authorization_code / fxa-credentials
     // grants only; absent elsewhere, so it coerces to false.
-    requestedGrant.excludeDau = params.exclude_dau === true;
+    // Either the client asked to be excluded, or the authorization_code grant
+    // already carried the server-side decision (FXA-14263).
+    requestedGrant.excludeDau =
+      params.exclude_dau === true || requestedGrant.excludeDau === true;
     return requestedGrant;
+  }
+
+  // Only a code whose grant carried the Sync scope can have an exclude-DAU
+  // flag waiting for it. Resolved from config rather than hardcoded, and only
+  // consulted once the cheaper client-id check has already passed.
+  function codeCarriesSyncScope(codeObj) {
+    const syncScope = oauthDB.getCanonicalScopeForService(
+      OAuthNativeServices.Sync
+    );
+    return !!syncScope && !!codeObj.scope?.contains(syncScope);
   }
 
   async function validateAuthorizationCodeGrant(client, params) {
@@ -363,6 +380,32 @@ module.exports = ({
     }
     // Looks legit! Codes are one-time-use, so remove it from the db.
     await oauthDB.removeCode(buf(code));
+    // FXA-14263: /oauth/authorization is the only request that sees `service=`,
+    // so it decides whether this sign-in counts toward Sync DAU and leaves the
+    // answer against the code's hash. Absent key means "count it", so a Redis
+    // failure degrades to today's behaviour. No delete needed — the key expires
+    // with the code, and the code itself is already one-time-use.
+    // Cheap constant checks first: only a Firefox Desktop code carrying the
+    // Sync scope can ever have a flag written for it, so every other
+    // redemption skips Redis entirely rather than paying a round trip on the
+    // token path for a guaranteed miss.
+    if (
+      authServerCacheRedis &&
+      hex(codeObj.clientId) === FIREFOX_DESKTOP_CLIENT_ID &&
+      codeCarriesSyncScope(codeObj)
+    ) {
+      try {
+        const cached = await authServerCacheRedis.get(
+          excludeDauCacheKey(encrypt.hash(code).toString('hex'))
+        );
+        if (cached === '1') {
+          codeObj.excludeDau = true;
+        }
+      } catch (err) {
+        statsd?.increment('oauth.excludeDau.readFailed');
+        log.warn('oauth.excludeDau.readFailed', { err: err?.message });
+      }
+    }
     return codeObj;
   }
 
