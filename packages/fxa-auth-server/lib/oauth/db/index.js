@@ -426,6 +426,15 @@ class OauthDB extends ConnectedServicesDb {
     return this.mysql._deleteAllAccountConsentsForUser(uid);
   }
 
+  // Revokes this client's consent rows on sign-out / disconnect, but only once
+  // the client has no refresh tokens left for the user (FXA-14101). Resolves to
+  // the number of rows removed. See lib/oauth/revoke-consents-on-disconnect.ts
+  // for the call sites and their best-effort contract.
+  async deleteConsentsForClientIfUnused(uid, clientId) {
+    await this.ready();
+    return this.mysql._deleteAccountConsentsForClientIfUnused(uid, clientId);
+  }
+
   async listAccountConsentsByUid(uid) {
     await this.ready();
     return this.mysql._listAccountConsentsByUid(uid);

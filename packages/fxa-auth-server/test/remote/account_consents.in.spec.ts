@@ -639,20 +639,175 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
     expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
   });
 
-  it('revoking via authorized-clients (connected services) leaves consent rows intact', async () => {
-    // Revoking an OAuth client in the Settings "Connected Services" UI
-    // sweeps tokens/codes but must NOT clear the consent ledger; the
-    // user has not withdrawn their ToS authorization.
+  // FXA-14101. Disconnecting a client in the Settings "Connected Services" UI
+  // returns the user to a pre-authorization state for that client: the rows go
+  // away, so the next token exchange for the scope denies. Rows only go once
+  // the client has no refresh tokens left, so signing one device out while
+  // another stays connected must not withdraw the authorization.
+  describe('revoking via authorized-clients (connected services)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const authorizedClients = require('../../lib/oauth/authorized_clients');
-    const uid = testClient.uid;
-    await writeConsent();
-    const before = await db.listAccountConsentsByUid(uid);
-    expect(before.length).toBeGreaterThan(0);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const ScopeSet = require('fxa-shared').oauth.scopes;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const hashRefreshToken = require('fxa-shared/auth/encrypt').hash;
 
-    await authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid);
+    const buf = (v: string) => Buffer.from(v, 'hex');
+    // generateRefreshToken is one of the auto-proxied MysqlStore methods, so it
+    // isn't on the OauthDB facade type.
+    const oauthServerDb = db as any;
 
-    const after = await db.listAccountConsentsByUid(uid);
-    expect(after).toHaveLength(before.length);
+    async function issueRefreshToken(clientId = E2E_PUBLIC_CLIENT_ID) {
+      const refreshToken = await oauthServerDb.generateRefreshToken({
+        clientId: buf(clientId),
+        userId: buf(testClient.uid),
+        email: testClient.email,
+        scope: ScopeSet.fromArray([PROFILE_SCOPE, OLDSYNC_SCOPE]),
+      });
+      return hashRefreshToken(refreshToken.token).toString('hex');
+    }
+
+    it('removes the consent rows when the client has no refresh tokens left', async () => {
+      const uid = testClient.uid;
+      await writeConsent();
+      expect((await db.listAccountConsentsByUid(uid)).length).toBeGreaterThan(
+        0
+      );
+
+      await authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+    });
+
+    it('denies the next token exchange for the revoked scope', async () => {
+      const uid = testClient.uid;
+      await seed({
+        uid,
+        scope: VPN_SCOPE,
+        service: 'vpn',
+        clientId: E2E_PUBLIC_CLIENT_ID,
+      });
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'allowed',
+        service: 'vpn',
+      });
+
+      await authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid);
+
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'denied',
+        service: 'vpn',
+        reason: 'no-consent',
+      });
+    });
+
+    it('keeps the rows while the client still has another refresh token', async () => {
+      const uid = testClient.uid;
+      await writeConsent();
+      const before = await db.listAccountConsentsByUid(uid);
+      expect(before.length).toBeGreaterThan(0);
+
+      const first = await issueRefreshToken();
+      await issueRefreshToken();
+
+      // Sign out one of the two devices on this client.
+      await authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid, first);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(
+        before.length
+      );
+    });
+
+    it('removes the rows once the last refresh token is signed out', async () => {
+      const uid = testClient.uid;
+      await writeConsent();
+      expect((await db.listAccountConsentsByUid(uid)).length).toBeGreaterThan(
+        0
+      );
+
+      const first = await issueRefreshToken();
+      const second = await issueRefreshToken();
+      await authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid, first);
+      await authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid, second);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+    });
+
+    it('clears the rows when concurrent disconnects race for the same client', async () => {
+      // Settings disconnects every client sharing a display name in parallel,
+      // so both requests observe each other's tokens. The conditional DELETE
+      // is what keeps the rows from being orphaned here.
+      const uid = testClient.uid;
+      await writeConsent();
+      const first = await issueRefreshToken();
+      const second = await issueRefreshToken();
+
+      await Promise.all([
+        authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid, first),
+        authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid, second),
+      ]);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+    });
+
+    it("leaves a sibling client's consent for the same service intact", async () => {
+      // Consent is shared across a service's clients (the read query omits
+      // clientId), so disconnecting one browser must not withdraw the others'.
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: IOS });
+
+      await authorizedClients.destroy(DESKTOP, uid);
+
+      const rows = await db.listAccountConsentsByUid(uid);
+      expect(rows).toHaveLength(1);
+      expect(rows[0].clientId.toString('hex')).toBe(IOS);
+      // The sibling row still authorizes the exchange for the service.
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'allowed',
+        service: 'vpn',
+      });
+    });
+
+    it("leaves another client's rows alone", async () => {
+      const uid = testClient.uid;
+      await seed({
+        uid,
+        scope: SMARTWINDOW_SCOPE,
+        service: 'smartwindow',
+        clientId: DESKTOP,
+      });
+      await seed({
+        uid,
+        scope: RELAY_SCOPE,
+        service: 'relay',
+        clientId: IOS,
+      });
+
+      await authorizedClients.destroy(DESKTOP, uid);
+
+      const rows = await db.listAccountConsentsByUid(uid);
+      expect(rows).toHaveLength(1);
+      expect(rows[0].service).toBe('relay');
+    });
+
+    it("rejects and revokes nothing when the refresh token is not the user's", async () => {
+      const uid = testClient.uid;
+      await writeConsent();
+      const before = await db.listAccountConsentsByUid(uid);
+
+      await expect(
+        authorizedClients.destroy(
+          E2E_PUBLIC_CLIENT_ID,
+          uid,
+          'f'.repeat(64) // never issued
+        )
+      ).rejects.toThrow();
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(
+        before.length
+      );
+    });
   });
 });
 
@@ -787,6 +942,46 @@ describe('accountAuthorizations v2 dual-write and read (FXA-14169)', () => {
     expect(await v2ReadRows(id)).toHaveLength(0);
     // readV2 is off here, so this is the v1 path answering.
     expect(await db.hasConsentForSignIn(id, PROFILE_SCOPE, '')).toBe(false);
+  });
+
+  it('sign-out revocation clears both v1 and v2 rows', async () => {
+    config.set('oauthServer.accountAuthorizations.dualWriteV2', true);
+    const id = trackV2(newUid());
+
+    await db.recordSignInConsents({
+      uid: id,
+      scopes: [PROFILE_SCOPE],
+      service: '',
+      clientId: DESKTOP,
+      now: Date.now(),
+    });
+    expect(await v1ReadRows(id)).toHaveLength(1);
+    expect(await v2ReadRows(id)).toHaveLength(1);
+
+    // No refresh tokens were ever issued for this synthetic uid, so the
+    // conditional delete applies.
+    expect(await db.deleteConsentsForClientIfUnused(id, DESKTOP)).toBe(1);
+
+    expect(await v1ReadRows(id)).toHaveLength(0);
+    expect(await v2ReadRows(id)).toHaveLength(0);
+  });
+
+  it('sign-out revocation clears v2 rows even when dualWriteV2 is off', async () => {
+    // Rows outlive the flag, so the delete must not be gated on it.
+    config.set('oauthServer.accountAuthorizations.dualWriteV2', true);
+    const id = trackV2(newUid());
+    await db.recordSignInConsents({
+      uid: id,
+      scopes: [PROFILE_SCOPE],
+      service: '',
+      clientId: DESKTOP,
+      now: Date.now(),
+    });
+    config.set('oauthServer.accountAuthorizations.dualWriteV2', false);
+
+    await db.deleteConsentsForClientIfUnused(id, DESKTOP);
+
+    expect(await v2ReadRows(id)).toHaveLength(0);
   });
 });
 

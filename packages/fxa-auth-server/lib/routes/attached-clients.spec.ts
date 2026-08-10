@@ -513,6 +513,13 @@ describe('/account/attached_client/destroy', () => {
     const res = await route(request);
     expect(res).toEqual({});
 
+    // The clientId is what authorizedClients.destroy needs to revoke the
+    // client's consent rows (FXA-14101), so pin that it is forwarded.
+    expect(mockAuthorizedClients.destroy).toHaveBeenCalledWith(
+      clientId,
+      uid,
+      refreshTokenId
+    );
     expect(devices.destroy).not.toHaveBeenCalled();
     expect(db.deleteSessionToken).not.toHaveBeenCalled();
   });
@@ -543,6 +550,7 @@ describe('/account/attached_client/destroy', () => {
     const res = await route(request);
     expect(res).toEqual({});
 
+    expect(mockAuthorizedClients.destroy).toHaveBeenCalledWith(clientId, uid);
     expect(devices.destroy).not.toHaveBeenCalled();
     expect(db.deleteSessionToken).not.toHaveBeenCalled();
   });

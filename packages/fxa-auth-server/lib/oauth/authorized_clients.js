@@ -3,8 +3,28 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { OauthError } = require('@fxa/accounts/errors');
+const { Container } = require('typedi');
+const { StatsD } = require('hot-shots');
 const oauthDB = require('./db');
 const ScopeSet = require('fxa-shared').oauth.scopes;
+const { AuthLogger } = require('../types');
+const {
+  revokeConsentsOnDisconnect,
+} = require('./revoke-consents-on-disconnect');
+
+// This module is a bare object with no injected collaborators, so log and
+// metrics are resolved from the container the same way lib/oauth/db/mysql
+// does it. Both are absent in unit tests, which the helper tolerates.
+function resolveLogger() {
+  if (Container.has(AuthLogger)) {
+    return Container.get(AuthLogger);
+  }
+}
+function resolveMetrics() {
+  if (Container.has(StatsD)) {
+    return Container.get(StatsD);
+  }
+}
 
 // Helper function to render each returned record in the expected form.
 function serialize(clientIdHex, token) {
@@ -121,11 +141,20 @@ module.exports = {
       if (
         !(await oauthDB.deleteClientRefreshToken(refreshTokenId, clientId, uid))
       ) {
+        // The token was not this user's to destroy, so nothing was revoked and
+        // the consent rows must stay.
         throw OauthError.unknownToken();
       }
     } else {
       await oauthDB.deleteClientAuthorization(clientId, uid);
     }
+    // Return the user to a pre-authorization state for this client once it has
+    // no refresh tokens left (FXA-14101). After the deletes above, so the check
+    // inside sees the new state.
+    await revokeConsentsOnDisconnect(
+      { oauthDB, log: resolveLogger(), statsd: resolveMetrics() },
+      { uid, clientId }
+    );
   },
   /**
    * Fetches all authorized clients for a given user ID,

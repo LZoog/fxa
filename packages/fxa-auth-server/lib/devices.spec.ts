@@ -12,6 +12,7 @@ const { AppError: error } = require('@fxa/accounts/errors');
 jest.mock('./oauth/db', () => ({
   getRefreshToken: jest.fn(),
   removeRefreshToken: jest.fn(),
+  deleteConsentsForClientIfUnused: jest.fn(),
 }));
 
 const oauthDB = require('./oauth/db');
@@ -46,6 +47,7 @@ describe('lib/devices:', () => {
       push: ReturnType<typeof mocks.mockPush>,
       devices: DevicesModule,
       glean: ReturnType<typeof mocks.mockGlean>,
+      statsd: { increment: jest.Mock },
       pushbox: ReturnType<typeof mocks.mockPushbox>;
 
     beforeEach(() => {
@@ -66,7 +68,10 @@ describe('lib/devices:', () => {
       glean = mocks.mockGlean();
       oauthDB.getRefreshToken.mockReset();
       oauthDB.removeRefreshToken.mockReset();
-      devices = devicesModule(log, db, push, pushbox, glean);
+      oauthDB.deleteConsentsForClientIfUnused.mockReset();
+      oauthDB.deleteConsentsForClientIfUnused.mockResolvedValue(0);
+      statsd = { increment: jest.fn() };
+      devices = devicesModule(log, db, push, pushbox, glean, statsd);
     });
 
     it('returns the expected interface', () => {
@@ -650,6 +655,91 @@ describe('lib/devices:', () => {
           'deviceDestroy.revokeRefreshTokenById.error',
           expect.anything()
         );
+      });
+
+      describe('account authorization revocation (FXA-14101):', () => {
+        const clientId = '5882386c6d801776';
+
+        beforeEach(() => {
+          device.refreshTokenId = refreshTokenId;
+          oauthDB.getRefreshToken.mockResolvedValue({
+            tokenId: refreshTokenId,
+            clientId: Buffer.from(clientId, 'hex'),
+          });
+          oauthDB.removeRefreshToken.mockResolvedValue({});
+        });
+
+        it("revokes the destroyed token's client with the hex clientId", async () => {
+          await devices.destroy(request, deviceId);
+
+          expect(oauthDB.deleteConsentsForClientIfUnused).toHaveBeenCalledWith(
+            request.auth.credentials.uid,
+            clientId
+          );
+        });
+
+        it('revokes after the refresh token has been removed', async () => {
+          const calls: string[] = [];
+          oauthDB.removeRefreshToken.mockImplementation(async () => {
+            calls.push('removeRefreshToken');
+            return {};
+          });
+          oauthDB.deleteConsentsForClientIfUnused.mockImplementation(
+            async () => {
+              calls.push('deleteConsents');
+              return 1;
+            }
+          );
+
+          await devices.destroy(request, deviceId);
+
+          expect(calls).toEqual(['removeRefreshToken', 'deleteConsents']);
+        });
+
+        it('does not revoke when the device has no refresh token', async () => {
+          device.refreshTokenId = null;
+
+          await devices.destroy(request, deviceId);
+
+          expect(
+            oauthDB.deleteConsentsForClientIfUnused
+          ).not.toHaveBeenCalled();
+        });
+
+        it('does not revoke when the refresh token row was already gone', async () => {
+          oauthDB.getRefreshToken.mockResolvedValue(undefined);
+
+          await devices.destroy(request, deviceId);
+
+          expect(
+            oauthDB.deleteConsentsForClientIfUnused
+          ).not.toHaveBeenCalled();
+        });
+
+        it('does not revoke when removing the refresh token failed', async () => {
+          oauthDB.removeRefreshToken.mockRejectedValue(error.unexpectedError());
+
+          await devices.destroy(request, deviceId);
+
+          expect(
+            oauthDB.deleteConsentsForClientIfUnused
+          ).not.toHaveBeenCalled();
+        });
+
+        it('still disconnects the device when the revocation fails', async () => {
+          oauthDB.deleteConsentsForClientIfUnused.mockRejectedValue(
+            new Error('ECONNREFUSED')
+          );
+
+          const result = await devices.destroy(request, deviceId);
+
+          expect(result.refreshTokenId).toBe(refreshTokenId);
+          expect(log.notifyAttachedServices).toHaveBeenCalledTimes(1);
+          expect(statsd.increment).toHaveBeenCalledWith(
+            'accountAuthorization.revoke_failed',
+            { client_type: 'native' }
+          );
+        });
       });
 
       it('emits the account.deviceDisconnected glean event with the platform from the disconnected device uaOS', async () => {
