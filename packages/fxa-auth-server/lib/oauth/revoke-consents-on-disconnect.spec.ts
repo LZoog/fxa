@@ -130,6 +130,59 @@ describe('revokeConsentsOnDisconnect', () => {
     });
   });
 
+  describe('when the first attempt fails', () => {
+    it('retries once and revokes on the second attempt', async () => {
+      const db = mockDb();
+      db.deleteConsentsForClientIfUnused
+        .mockRejectedValueOnce(new Error('connection reset'))
+        .mockResolvedValueOnce(2);
+      const deps = mockDeps(db);
+
+      await revokeConsentsOnDisconnect(deps, { uid: UID, clientId: DESKTOP });
+
+      expect(db.deleteConsentsForClientIfUnused).toHaveBeenCalledTimes(2);
+      expect(deps.statsd.increment).toHaveBeenCalledWith(
+        'accountAuthorization.revoke_retried',
+        { client_type: 'native' }
+      );
+      expect(deps.statsd.increment).toHaveBeenCalledWith(
+        'accountAuthorization.revoked',
+        { client_type: 'native' }
+      );
+    });
+
+    it('does not count a failure when the retry succeeds', async () => {
+      const db = mockDb();
+      db.deleteConsentsForClientIfUnused
+        .mockRejectedValueOnce(new Error('connection reset'))
+        .mockResolvedValueOnce(1);
+      const deps = mockDeps(db);
+
+      await revokeConsentsOnDisconnect(deps, { uid: UID, clientId: DESKTOP });
+
+      expect(deps.statsd.increment).not.toHaveBeenCalledWith(
+        'accountAuthorization.revoke_failed',
+        expect.anything()
+      );
+      expect(deps.log.warn).not.toHaveBeenCalled();
+    });
+
+    it('counts a no-op when the retry finds nothing to revoke', async () => {
+      const db = mockDb();
+      db.deleteConsentsForClientIfUnused
+        .mockRejectedValueOnce(new Error('connection reset'))
+        .mockResolvedValueOnce(0);
+      const deps = mockDeps(db);
+
+      await revokeConsentsOnDisconnect(deps, { uid: UID, clientId: DESKTOP });
+
+      expect(deps.statsd.increment).toHaveBeenCalledWith(
+        'accountAuthorization.revoke_noop',
+        { client_type: 'native' }
+      );
+    });
+  });
+
   describe('when the db fails', () => {
     it('does not reject, so the disconnect still succeeds', async () => {
       const db = mockDb();
@@ -141,6 +194,18 @@ describe('revokeConsentsOnDisconnect', () => {
       await expect(
         revokeConsentsOnDisconnect(deps, { uid: UID, clientId: DESKTOP })
       ).resolves.toBeUndefined();
+    });
+
+    it('gives up after two attempts', async () => {
+      const db = mockDb();
+      db.deleteConsentsForClientIfUnused.mockRejectedValue(
+        new Error('ECONNREFUSED')
+      );
+      const deps = mockDeps(db);
+
+      await revokeConsentsOnDisconnect(deps, { uid: UID, clientId: DESKTOP });
+
+      expect(db.deleteConsentsForClientIfUnused).toHaveBeenCalledTimes(2);
     });
 
     it('counts the failure', async () => {

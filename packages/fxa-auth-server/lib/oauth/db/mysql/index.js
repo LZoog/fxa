@@ -206,11 +206,20 @@ const QUERY_ACCOUNT_CONSENT_DELETE_BY_UID =
 // in parallel (fxa-settings ConnectedServices), so a read-then-write would have
 // each request observe its siblings' tokens and skip the delete, orphaning the
 // rows. Evaluated atomically, whichever request commits its token delete last
-// is the one that clears them. refreshTokens is in this same database and has
-// INDEX tokens_user_id(userId), so the subquery is a small indexed lookup.
+// is the one that clears them. refreshTokens is in this same database, so the
+// subquery is a local indexed lookup.
+//
+// FORCE INDEX for the same reason as QUERY_DELETE_REFRESH_TOKEN_FOR_PUBLIC_
+// CLIENTS above: on a userId=? AND clientId=? predicate the optimizer can pick
+// tokens_client_id and filter by clientId first, which on this table is very
+// expensive. That matters more here than there, because this is a locking read
+// inside a DELETE — a bad plan would lock a wide slice of the hottest table.
+// A dev-scale EXPLAIN picks tokens_user_id on its own, but plan choice is a
+// cardinality decision and cannot be confirmed off prod-shaped data.
 const QUERY_ACCOUNT_CONSENT_DELETE_FOR_CLIENT_IF_UNUSED =
   'DELETE FROM accountAuthorizations WHERE uid=? AND clientId=? ' +
-  'AND NOT EXISTS (SELECT 1 FROM refreshTokens WHERE userId=? AND clientId=?)';
+  'AND NOT EXISTS (SELECT 1 FROM refreshTokens FORCE INDEX (tokens_user_id) ' +
+  'WHERE userId=? AND clientId=?)';
 const QUERY_ACCOUNT_CONSENT_LIST_BY_UID =
   'SELECT uid, scope, service, clientId, firstAuthorizedTosAt, lastAuthorizedTosAt ' +
   'FROM accountAuthorizations WHERE uid=?';
@@ -245,7 +254,8 @@ const QUERY_ACCOUNT_CONSENT_V2_DELETE_BY_UID =
 // never enters the WHERE clause.
 const QUERY_ACCOUNT_CONSENT_V2_DELETE_FOR_CLIENT_IF_UNUSED =
   'DELETE FROM accountAuthorizations_v2 WHERE uid=? AND clientId=? ' +
-  'AND NOT EXISTS (SELECT 1 FROM refreshTokens WHERE userId=? AND clientId=?)';
+  'AND NOT EXISTS (SELECT 1 FROM refreshTokens FORCE INDEX (tokens_user_id) ' +
+  'WHERE userId=? AND clientId=?)';
 
 // Scope queries
 const QUERY_SCOPE_FIND = 'SELECT * ' + 'FROM scopes ' + 'WHERE scopes.scope=?;';
@@ -253,7 +263,8 @@ const QUERY_SCOPES_INSERT =
   'INSERT INTO scopes (scope, hasScopedKeys) ' + 'VALUES (?, ?);';
 // Bulk scope-string -> id resolution backing the scopes cache. The IN list is
 // built at call time from the uncached scopes.
-const QUERY_SCOPES_RESOLVE_IDS_PREFIX = 'SELECT id, scope FROM scopes WHERE scope IN (';
+const QUERY_SCOPES_RESOLVE_IDS_PREFIX =
+  'SELECT id, scope FROM scopes WHERE scope IN (';
 
 const buf = (v) => (Buffer.isBuffer(v) ? v : Buffer.from(v, 'hex'));
 
@@ -654,7 +665,14 @@ class MysqlStore extends MysqlOAuthShared {
   // keyed by scopeId. Resolve-only: scopes absent from the scopes table are
   // skipped (v1 stays authoritative, so nothing is dropped), and the v2 write
   // is isolated so a v2 failure never affects the v1 write.
-  async _upsertAccountConsents(uid, scopes, service, clientId, now, dualWriteV2) {
+  async _upsertAccountConsents(
+    uid,
+    scopes,
+    service,
+    clientId,
+    now,
+    dualWriteV2
+  ) {
     if (!Array.isArray(scopes) || scopes.length === 0) {
       return;
     }
@@ -843,10 +861,17 @@ class MysqlStore extends MysqlOAuthShared {
   //
   // Both statements no-op while the client still has a refresh token, so the
   // caller does not have to decide whether this was the user's last device.
-  // Same two decisions as _deleteAllAccountConsentsForUser: ungated by the v2
-  // flags, since rows outlive them, and v2 first so a partial failure leaves
-  // authoritative v1 as the source of truth rather than a v2-only orphan that
-  // the v2-first read path would answer "consent exists" for.
+  // Ungated by the v2 flags, like _deleteAllAccountConsentsForUser, since rows
+  // outlive them.
+  //
+  // v2 runs first because _hasConsentForScope checks v2 and short-circuits on a
+  // hit: a v1-first partial failure would leave a v2-only row, the one state
+  // where the readV2 and non-readV2 answers disagree. v2 is then isolated in its
+  // own try/catch — as the v2 arm of _upsertAccountConsents is — because v1 is
+  // what the exchange gate actually reads while readV2 is off, so a v2 fault
+  // must never stop v1 from being attempted. Unlike account deletion, the caller
+  // here swallows failures, so an unattempted v1 delete would mean the user's
+  // withdrawal silently did not happen.
   //
   // Returns the number of v1 rows removed — 0 both when tokens remain and when
   // the client had no rows to begin with. The two are not worth another query
@@ -855,10 +880,19 @@ class MysqlStore extends MysqlOAuthShared {
     const uidBuf = buf(uid);
     const clientIdBuf = buf(clientId);
     const params = [uidBuf, clientIdBuf, uidBuf, clientIdBuf];
-    await this._write(
-      QUERY_ACCOUNT_CONSENT_V2_DELETE_FOR_CLIENT_IF_UNUSED,
-      params
-    );
+    try {
+      await this._write(
+        QUERY_ACCOUNT_CONSENT_V2_DELETE_FOR_CLIENT_IF_UNUSED,
+        params
+      );
+    } catch (err) {
+      // Log only code/errno — the driver decorates errors with connection
+      // options that can include credentials.
+      this.log?.error('accountAuthorizations.v2.revoke_failed', {
+        code: err?.code,
+        errno: err?.errno,
+      });
+    }
     const result = await this._write(
       QUERY_ACCOUNT_CONSENT_DELETE_FOR_CLIENT_IF_UNUSED,
       params

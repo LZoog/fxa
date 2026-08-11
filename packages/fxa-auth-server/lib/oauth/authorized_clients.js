@@ -142,7 +142,11 @@ module.exports = {
         !(await oauthDB.deleteClientRefreshToken(refreshTokenId, clientId, uid))
       ) {
         // The token was not this user's to destroy, so nothing was revoked and
-        // the consent rows must stay.
+        // the consent rows must stay. Note the route above swallows this errno
+        // and still returns {}, so a stale id reads as "disconnected" in
+        // Settings with consent intact. That resolves the unknown-token
+        // ambiguity the opposite way from devices.destroy, which keeps going;
+        // the difference is deliberate, so don't "fix" one side to match.
         throw OauthError.unknownToken();
       }
     } else {

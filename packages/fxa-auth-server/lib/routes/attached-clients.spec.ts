@@ -513,15 +513,27 @@ describe('/account/attached_client/destroy', () => {
     const res = await route(request);
     expect(res).toEqual({});
 
-    // The clientId is what authorizedClients.destroy needs to revoke the
-    // client's consent rows (FXA-14101), so pin that it is forwarded.
+    expect(devices.destroy).not.toHaveBeenCalled();
+    expect(db.deleteSessionToken).not.toHaveBeenCalled();
+  });
+
+  // The clientId is what authorizedClients.destroy needs to revoke the client's
+  // consent rows (FXA-14101), so pin that both branches forward it.
+  it('forwards the clientId and refreshTokenId to authorizedClients.destroy', async () => {
+    const clientId = newId(16);
+    const refreshTokenId = newId();
+    request.payload = {
+      clientId,
+      refreshTokenId,
+    };
+
+    await route(request);
+
     expect(mockAuthorizedClients.destroy).toHaveBeenCalledWith(
       clientId,
       uid,
       refreshTokenId
     );
-    expect(devices.destroy).not.toHaveBeenCalled();
-    expect(db.deleteSessionToken).not.toHaveBeenCalled();
   });
 
   it('wont accept refreshTokenId and sessionTokenId without deviceId', async () => {
@@ -550,9 +562,17 @@ describe('/account/attached_client/destroy', () => {
     const res = await route(request);
     expect(res).toEqual({});
 
-    expect(mockAuthorizedClients.destroy).toHaveBeenCalledWith(clientId, uid);
     expect(devices.destroy).not.toHaveBeenCalled();
     expect(db.deleteSessionToken).not.toHaveBeenCalled();
+  });
+
+  it('forwards just the clientId to authorizedClients.destroy when there is no refresh token', async () => {
+    const clientId = newId(16);
+    request.payload = { clientId };
+
+    await route(request);
+
+    expect(mockAuthorizedClients.destroy).toHaveBeenCalledWith(clientId, uid);
   });
 
   it('wont accept clientId and sessionTokenId without deviceId', async () => {

@@ -809,6 +809,41 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
       );
     });
   });
+
+  // POST /account/device/destroy accepts a refreshToken auth strategy, so a
+  // browser can sign itself out without going through Settings. That is a
+  // withdrawal too, so it must revoke — pinned here because it is a third
+  // entry point into devices.destroy() and easy to overlook.
+  describe('self-initiated sign-out via POST /account/device/destroy', () => {
+    it('revokes the consent rows for the signed-out client', async () => {
+      const uid = testClient.uid;
+      await seed({
+        uid,
+        scope: OLDSYNC_SCOPE,
+        service: 'sync',
+        clientId: E2E_PUBLIC_CLIENT_ID,
+      });
+      expect((await db.listAccountConsentsByUid(uid)).length).toBeGreaterThan(
+        0
+      );
+
+      const refresh = await (db as any).generateRefreshToken({
+        clientId: Buffer.from(E2E_PUBLIC_CLIENT_ID, 'hex'),
+        userId: Buffer.from(uid, 'hex'),
+        email: testClient.email,
+        scope: `${PROFILE_SCOPE} ${OLDSYNC_SCOPE}`,
+      });
+      const refreshToken = refresh.token.toString('hex');
+      const device = await testClient.updateDeviceWithRefreshToken(
+        refreshToken,
+        { name: 'self sign-out device', type: 'mobile' }
+      );
+
+      await testClient.destroyDeviceWithRefreshToken(refreshToken, device.id);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+    });
+  });
 });
 
 describe('accountAuthorizations v2 dual-write and read (FXA-14169)', () => {

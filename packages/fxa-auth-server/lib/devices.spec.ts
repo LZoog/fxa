@@ -706,16 +706,12 @@ describe('lib/devices:', () => {
           ).not.toHaveBeenCalled();
         });
 
-        it('does not revoke when the refresh token row was already gone', async () => {
-          oauthDB.getRefreshToken.mockResolvedValue(undefined);
-
-          await devices.destroy(request, deviceId);
-
-          expect(
-            oauthDB.deleteConsentsForClientIfUnused
-          ).not.toHaveBeenCalled();
-        });
-
+        // No case here for "the refresh token row was already gone".
+        // oauthDB.removeRefreshToken dereferences token.userId, so an undefined
+        // token throws before the revoke is reached — which is the case below,
+        // not a distinct one. Asserting it via a mock that resolves for an
+        // undefined token would only exercise the helper's !clientId guard,
+        // already covered in revoke-consents-on-disconnect.spec.ts.
         it('does not revoke when removing the refresh token failed', async () => {
           oauthDB.removeRefreshToken.mockRejectedValue(error.unexpectedError());
 
