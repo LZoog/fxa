@@ -12,7 +12,10 @@ const { AppError: error } = require('@fxa/accounts/errors');
 jest.mock('./oauth/db', () => ({
   getRefreshToken: jest.fn(),
   removeRefreshToken: jest.fn(),
-  deleteConsentsForClientIfUnused: jest.fn(),
+  listAccountConsentsByUid: jest.fn(),
+  getRefreshTokensByUid: jest.fn(),
+  getAllowedClientsForService: jest.fn(),
+  deleteAccountConsentRows: jest.fn(),
 }));
 
 const oauthDB = require('./oauth/db');
@@ -68,8 +71,14 @@ describe('lib/devices:', () => {
       glean = mocks.mockGlean();
       oauthDB.getRefreshToken.mockReset();
       oauthDB.removeRefreshToken.mockReset();
-      oauthDB.deleteConsentsForClientIfUnused.mockReset();
-      oauthDB.deleteConsentsForClientIfUnused.mockResolvedValue(0);
+      oauthDB.listAccountConsentsByUid.mockReset();
+      oauthDB.listAccountConsentsByUid.mockResolvedValue([]);
+      oauthDB.getRefreshTokensByUid.mockReset();
+      oauthDB.getRefreshTokensByUid.mockResolvedValue([]);
+      oauthDB.getAllowedClientsForService.mockReset();
+      oauthDB.getAllowedClientsForService.mockReturnValue(undefined);
+      oauthDB.deleteAccountConsentRows.mockReset();
+      oauthDB.deleteAccountConsentRows.mockResolvedValue(0);
       statsd = { increment: jest.fn() };
       devices = devicesModule(log, db, push, pushbox, glean, statsd);
     });
@@ -657,7 +666,7 @@ describe('lib/devices:', () => {
         );
       });
 
-      describe('account authorization revocation (FXA-14101):', () => {
+      describe('account authorization revocation:', () => {
         const clientId = '5882386c6d801776';
 
         beforeEach(() => {
@@ -669,31 +678,47 @@ describe('lib/devices:', () => {
           oauthDB.removeRefreshToken.mockResolvedValue({});
         });
 
-        it("revokes the destroyed token's client with the hex clientId", async () => {
+        it("evaluates the destroyed token's client for revocation", async () => {
+          // The row is this client's and nothing remains to sustain it, so it
+          // is handed to the delete.
+          oauthDB.listAccountConsentsByUid.mockResolvedValue([
+            {
+              scope: 'https://identity.mozilla.com/apps/vpn',
+              service: 'vpn',
+              clientId: Buffer.from(clientId, 'hex'),
+              lastAuthorizedTosAt: 1,
+            },
+          ]);
+
           await devices.destroy(request, deviceId);
 
-          expect(oauthDB.deleteConsentsForClientIfUnused).toHaveBeenCalledWith(
+          expect(oauthDB.deleteAccountConsentRows).toHaveBeenCalledWith(
             request.auth.credentials.uid,
-            clientId
+            [
+              {
+                scope: 'https://identity.mozilla.com/apps/vpn',
+                service: 'vpn',
+                clientId,
+                lastAuthorizedTosAt: 1,
+              },
+            ]
           );
         });
 
-        it('revokes after the refresh token has been removed', async () => {
+        it('evaluates only after the refresh token has been removed', async () => {
           const calls: string[] = [];
           oauthDB.removeRefreshToken.mockImplementation(async () => {
             calls.push('removeRefreshToken');
             return {};
           });
-          oauthDB.deleteConsentsForClientIfUnused.mockImplementation(
-            async () => {
-              calls.push('deleteConsents');
-              return 1;
-            }
-          );
+          oauthDB.getRefreshTokensByUid.mockImplementation(async () => {
+            calls.push('readRemainingTokens');
+            return [];
+          });
 
           await devices.destroy(request, deviceId);
 
-          expect(calls).toEqual(['removeRefreshToken', 'deleteConsents']);
+          expect(calls).toEqual(['removeRefreshToken', 'readRemainingTokens']);
         });
 
         it('does not revoke when the device has no refresh token', async () => {
@@ -701,9 +726,7 @@ describe('lib/devices:', () => {
 
           await devices.destroy(request, deviceId);
 
-          expect(
-            oauthDB.deleteConsentsForClientIfUnused
-          ).not.toHaveBeenCalled();
+          expect(oauthDB.listAccountConsentsByUid).not.toHaveBeenCalled();
         });
 
         // No case here for "the refresh token row was already gone".
@@ -717,13 +740,11 @@ describe('lib/devices:', () => {
 
           await devices.destroy(request, deviceId);
 
-          expect(
-            oauthDB.deleteConsentsForClientIfUnused
-          ).not.toHaveBeenCalled();
+          expect(oauthDB.listAccountConsentsByUid).not.toHaveBeenCalled();
         });
 
         it('still disconnects the device when the revocation fails', async () => {
-          oauthDB.deleteConsentsForClientIfUnused.mockRejectedValue(
+          oauthDB.listAccountConsentsByUid.mockRejectedValue(
             new Error('ECONNREFUSED')
           );
 

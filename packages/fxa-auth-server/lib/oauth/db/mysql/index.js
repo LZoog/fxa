@@ -199,27 +199,24 @@ const QUERY_HAS_CONSENT_FOR_CLIENT =
   'SELECT 1 FROM accountAuthorizations WHERE uid=? AND clientId=? LIMIT 1';
 const QUERY_ACCOUNT_CONSENT_DELETE_BY_UID =
   'DELETE FROM accountAuthorizations WHERE uid=?';
-// Sign-out / disconnect revocation (FXA-14101). Drops every consent row a
-// client holds for this user, but only once the client has no refresh tokens
-// left. The NOT EXISTS guard is inside the statement rather than a preceding
-// SELECT on purpose: Settings disconnects every client sharing a display name
-// in parallel (fxa-settings ConnectedServices), so a read-then-write would have
-// each request observe its siblings' tokens and skip the delete, orphaning the
-// rows. Evaluated atomically, whichever request commits its token delete last
-// is the one that clears them. refreshTokens is in this same database, so the
-// subquery is a local indexed lookup.
+// Sign-out / disconnect revocation. Deletes an explicit set of rows by full PK,
+// one statement per table via a row-constructor IN list.
 //
-// FORCE INDEX for the same reason as QUERY_DELETE_REFRESH_TOKEN_FOR_PUBLIC_
-// CLIENTS above: on a userId=? AND clientId=? predicate the optimizer can pick
-// tokens_client_id and filter by clientId first, which on this table is very
-// expensive. That matters more here than there, because this is a locking read
-// inside a DELETE — a bad plan would lock a wide slice of the hottest table.
-// A dev-scale EXPLAIN picks tokens_user_id on its own, but plan choice is a
-// cardinality decision and cannot be confirmed off prod-shaped data.
-const QUERY_ACCOUNT_CONSENT_DELETE_FOR_CLIENT_IF_UNUSED =
-  'DELETE FROM accountAuthorizations WHERE uid=? AND clientId=? ' +
-  'AND NOT EXISTS (SELECT 1 FROM refreshTokens FORCE INDEX (tokens_user_id) ' +
-  'WHERE userId=? AND clientId=?)';
+// Which rows to drop is decided in JS, not SQL: a row survives if a client on
+// its service's allowlist still holds a token whose scope set *contains* the
+// row's scope, and scopes are hierarchical, so that needs ScopeSet rather than a
+// string match on the space-separated refreshTokens.scope column. See
+// lib/oauth/revoke-consents-on-disconnect.ts.
+//
+// lastAuthorizedTosAt is matched as an optimistic guard: a concurrent
+// /oauth/authorization bumps it, so a row re-earned between the caller's read
+// and this delete no longer matches and survives.
+const QUERY_ACCOUNT_CONSENT_DELETE_ROWS_PREFIX =
+  'DELETE FROM accountAuthorizations WHERE uid=? AND ' +
+  '(scope, service, clientId, lastAuthorizedTosAt) IN (';
+const QUERY_ACCOUNT_CONSENT_V2_DELETE_ROWS_PREFIX =
+  'DELETE FROM accountAuthorizations_v2 WHERE uid=? AND ' +
+  '(scopeId, service, clientId, lastAuthorizedTosAt) IN (';
 const QUERY_ACCOUNT_CONSENT_LIST_BY_UID =
   'SELECT uid, scope, service, clientId, firstAuthorizedTosAt, lastAuthorizedTosAt ' +
   'FROM accountAuthorizations WHERE uid=?';
@@ -249,13 +246,6 @@ const QUERY_HAS_CONSENT_FOR_CLIENT_V2 =
   'SELECT 1 FROM accountAuthorizations_v2 WHERE uid=? AND clientId=? LIMIT 1';
 const QUERY_ACCOUNT_CONSENT_V2_DELETE_BY_UID =
   'DELETE FROM accountAuthorizations_v2 WHERE uid=?';
-// v2 counterpart of QUERY_ACCOUNT_CONSENT_DELETE_FOR_CLIENT_IF_UNUSED. No
-// scopeId resolution needed — the whole client is being revoked, so scope
-// never enters the WHERE clause.
-const QUERY_ACCOUNT_CONSENT_V2_DELETE_FOR_CLIENT_IF_UNUSED =
-  'DELETE FROM accountAuthorizations_v2 WHERE uid=? AND clientId=? ' +
-  'AND NOT EXISTS (SELECT 1 FROM refreshTokens FORCE INDEX (tokens_user_id) ' +
-  'WHERE userId=? AND clientId=?)';
 
 // Scope queries
 const QUERY_SCOPE_FIND = 'SELECT * ' + 'FROM scopes ' + 'WHERE scopes.scope=?;';
@@ -855,36 +845,52 @@ class MysqlStore extends MysqlOAuthShared {
     return this._write(QUERY_ACCOUNT_CONSENT_DELETE_BY_UID, [uidBuf]);
   }
 
-  // Revokes a client's consent on sign-out / disconnect (FXA-14101), returning
-  // the user to a pre-authorization state for that client: with no row left,
-  // the next token exchange for the scope denies with NO_CONSENT.
+  // Revokes consent on sign-out / disconnect: with the row gone, the next token
+  // exchange for that scope denies with NO_CONSENT.
   //
-  // Both statements no-op while the client still has a refresh token, so the
-  // caller does not have to decide whether this was the user's last device.
+  // `rows` are the exact rows to drop, chosen by consentRowsToRevoke(). Returns
+  // how many v1 rows were removed, which can be fewer than rows.length when the
+  // lastAuthorizedTosAt guard rejects one that was concurrently re-earned.
+  //
   // Ungated by the v2 flags, like _deleteAllAccountConsentsForUser, since rows
-  // outlive them.
-  //
-  // v2 runs first because _hasConsentForScope checks v2 and short-circuits on a
-  // hit: a v1-first partial failure would leave a v2-only row, the one state
-  // where the readV2 and non-readV2 answers disagree. v2 is then isolated in its
-  // own try/catch — as the v2 arm of _upsertAccountConsents is — because v1 is
-  // what the exchange gate actually reads while readV2 is off, so a v2 fault
-  // must never stop v1 from being attempted. Unlike account deletion, the caller
-  // here swallows failures, so an unattempted v1 delete would mean the user's
-  // withdrawal silently did not happen.
-  //
-  // Returns the number of v1 rows removed — 0 both when tokens remain and when
-  // the client had no rows to begin with. The two are not worth another query
-  // to distinguish; callers only report whether anything was revoked.
-  async _deleteAccountConsentsForClientIfUnused(uid, clientId) {
+  // outlive them. v2 goes first because _hasConsentForScope short-circuits on a
+  // v2 hit, so a v1-first partial failure would leave a v2-only row — the one
+  // state where the readV2 and non-readV2 answers disagree. v2 is then isolated
+  // in its own try/catch, as the v2 arm of _upsertAccountConsents is: v1 is what
+  // the exchange gate reads while readV2 is off, and the caller swallows
+  // failures, so an unattempted v1 delete would silently drop the withdrawal.
+  async _deleteAccountConsentRows(uid, rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return 0;
+    }
     const uidBuf = buf(uid);
-    const clientIdBuf = buf(clientId);
-    const params = [uidBuf, clientIdBuf, uidBuf, clientIdBuf];
+    const tuples = rows.map(() => '(?, ?, ?, ?)').join(', ');
+
     try {
-      await this._write(
-        QUERY_ACCOUNT_CONSENT_V2_DELETE_FOR_CLIENT_IF_UNUSED,
-        params
+      // v2 keys on scopeId, so the scope strings have to resolve first. Rows
+      // whose scope was never seeded cannot have a v2 row to delete; skipping
+      // them is the same resolve-only stance the dual-write takes.
+      const { resolved } = await this._scopeIdCache.resolve(
+        rows.map((r) => r.scope)
       );
+      const v2Rows = rows.filter((r) => resolved.has(r.scope.toLowerCase()));
+      if (v2Rows.length > 0) {
+        const v2Params = [uidBuf];
+        for (const r of v2Rows) {
+          v2Params.push(
+            resolved.get(r.scope.toLowerCase()),
+            r.service,
+            buf(r.clientId),
+            r.lastAuthorizedTosAt
+          );
+        }
+        await this._write(
+          QUERY_ACCOUNT_CONSENT_V2_DELETE_ROWS_PREFIX +
+            v2Rows.map(() => '(?, ?, ?, ?)').join(', ') +
+            ')',
+          v2Params
+        );
+      }
     } catch (err) {
       // Log only code/errno — the driver decorates errors with connection
       // options that can include credentials.
@@ -893,8 +899,13 @@ class MysqlStore extends MysqlOAuthShared {
         errno: err?.errno,
       });
     }
+
+    const params = [uidBuf];
+    for (const r of rows) {
+      params.push(r.scope, r.service, buf(r.clientId), r.lastAuthorizedTosAt);
+    }
     const result = await this._write(
-      QUERY_ACCOUNT_CONSENT_DELETE_FOR_CLIENT_IF_UNUSED,
+      QUERY_ACCOUNT_CONSENT_DELETE_ROWS_PREFIX + tuples + ')',
       params
     );
     return result.affectedRows;

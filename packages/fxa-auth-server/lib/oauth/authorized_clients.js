@@ -137,6 +137,10 @@ function processRefreshTokens(refreshTokens) {
 module.exports = {
   async destroy(clientId, uid, refreshTokenId) {
     await oauthDB.ready();
+    // Consent is only revoked when a refresh token was actually removed: a
+    // client that never had one (Firefox Desktop today) would otherwise look
+    // disconnected the moment we found none.
+    let destroyedRefreshTokens = 0;
     if (refreshTokenId) {
       if (
         !(await oauthDB.deleteClientRefreshToken(refreshTokenId, clientId, uid))
@@ -149,15 +153,18 @@ module.exports = {
         // the difference is deliberate, so don't "fix" one side to match.
         throw OauthError.unknownToken();
       }
+      destroyedRefreshTokens = 1;
     } else {
-      await oauthDB.deleteClientAuthorization(clientId, uid);
+      destroyedRefreshTokens = await oauthDB.deleteClientAuthorization(
+        clientId,
+        uid
+      );
     }
-    // Return the user to a pre-authorization state for this client once it has
-    // no refresh tokens left (FXA-14101). After the deletes above, so the check
-    // inside sees the new state.
+    // Drop any consent row no peer client still sustains. After the deletes
+    // above, so the evaluation sees the new state.
     await revokeConsentsOnDisconnect(
       { oauthDB, log: resolveLogger(), statsd: resolveMetrics() },
-      { uid, clientId }
+      { uid, clientId, destroyedRefreshTokens }
     );
   },
   /**

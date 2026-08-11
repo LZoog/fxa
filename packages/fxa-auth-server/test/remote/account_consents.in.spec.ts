@@ -639,11 +639,10 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
     expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
   });
 
-  // FXA-14101. Disconnecting a client in the Settings "Connected Services" UI
-  // returns the user to a pre-authorization state for that client: the rows go
-  // away, so the next token exchange for the scope denies. Rows only go once
-  // the client has no refresh tokens left, so signing one device out while
-  // another stays connected must not withdraw the authorization.
+  // Disconnecting a client returns the user to a pre-authorization state: rows
+  // whose peer group has no token left behind it go away, so the next token
+  // exchange denies. Signing one device out while another stays connected must
+  // not withdraw the authorization.
   describe('revoking via authorized-clients (connected services)', () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const authorizedClients = require('../../lib/oauth/authorized_clients');
@@ -657,27 +656,18 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
     // isn't on the OauthDB facade type.
     const oauthServerDb = db as any;
 
-    async function issueRefreshToken(clientId = E2E_PUBLIC_CLIENT_ID) {
+    async function issueRefreshToken(
+      clientId = E2E_PUBLIC_CLIENT_ID,
+      scopes: string[] = [PROFILE_SCOPE, OLDSYNC_SCOPE]
+    ) {
       const refreshToken = await oauthServerDb.generateRefreshToken({
         clientId: buf(clientId),
         userId: buf(testClient.uid),
         email: testClient.email,
-        scope: ScopeSet.fromArray([PROFILE_SCOPE, OLDSYNC_SCOPE]),
+        scope: ScopeSet.fromArray(scopes),
       });
       return hashRefreshToken(refreshToken.token).toString('hex');
     }
-
-    it('removes the consent rows when the client has no refresh tokens left', async () => {
-      const uid = testClient.uid;
-      await writeConsent();
-      expect((await db.listAccountConsentsByUid(uid)).length).toBeGreaterThan(
-        0
-      );
-
-      await authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid);
-
-      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
-    });
 
     it('denies the next token exchange for the revoked scope', async () => {
       const uid = testClient.uid;
@@ -691,8 +681,9 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
         result: 'allowed',
         service: 'vpn',
       });
+      const only = await issueRefreshToken(E2E_PUBLIC_CLIENT_ID, [VPN_SCOPE]);
 
-      await authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid);
+      await authorizedClients.destroy(E2E_PUBLIC_CLIENT_ID, uid, only);
 
       expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
         result: 'denied',
@@ -750,23 +741,99 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
       expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
     });
 
-    it("leaves a sibling client's consent for the same service intact", async () => {
-      // Consent is shared across a service's clients (the read query omits
-      // clientId), so disconnecting one browser must not withdraw the others'.
+    it("reaps a peer's unsustained row for the same service", async () => {
+      // Rows are judged by peer group, so a sibling row with no token behind it
+      // goes too. Leaving it would keep the exchange allowed and defeat the
+      // point of the disconnect.
       const uid = testClient.uid;
       await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
       await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: IOS });
+      const desktopToken = await issueRefreshToken(DESKTOP);
 
-      await authorizedClients.destroy(DESKTOP, uid);
+      await authorizedClients.destroy(DESKTOP, uid, desktopToken);
 
-      const rows = await db.listAccountConsentsByUid(uid);
-      expect(rows).toHaveLength(1);
-      expect(rows[0].clientId.toString('hex')).toBe(IOS);
-      // The sibling row still authorizes the exchange for the service.
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'denied',
+        service: 'vpn',
+        reason: 'no-consent',
+      });
+    });
+
+    it('lets a mobile disconnect clear a row mobile only ever consumed', async () => {
+      // The flagship VPN shape: Desktop authorizes and writes the only row,
+      // mobile uses VPN by token exchange and writes none of its own. Mobile's
+      // disconnect has to be what finally clears it.
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+      const mobileToken = await issueRefreshToken(IOS, [
+        PROFILE_SCOPE,
+        VPN_SCOPE,
+      ]);
+      // Consent is shared, so mobile can exchange against Desktop's row.
       expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
         result: 'allowed',
         service: 'vpn',
       });
+
+      await authorizedClients.destroy(IOS, uid, mobileToken);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'denied',
+        service: 'vpn',
+        reason: 'no-consent',
+      });
+    });
+
+    it("keeps Desktop's row when a peer client still holds the scope", async () => {
+      // The peer group is the service's allowlist, so a live VPN-scoped token
+      // on another browser sustains a Desktop-written row even though Desktop
+      // itself has nothing left.
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+
+      const desktopToken = await issueRefreshToken(DESKTOP);
+      await issueRefreshToken(IOS, [PROFILE_SCOPE, VPN_SCOPE]);
+
+      await authorizedClients.destroy(DESKTOP, uid, desktopToken);
+
+      const rows = await db.listAccountConsentsByUid(uid);
+      expect(rows).toHaveLength(1);
+      expect(rows[0].clientId.toString('hex')).toBe(DESKTOP);
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'allowed',
+        service: 'vpn',
+      });
+    });
+
+    it("revokes Desktop's row when the peer token does not carry the scope", async () => {
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+
+      const desktopToken = await issueRefreshToken(DESKTOP);
+      // iOS is a vpn peer, but this token only covers Sync.
+      await issueRefreshToken(IOS, [PROFILE_SCOPE, OLDSYNC_SCOPE]);
+
+      await authorizedClients.destroy(DESKTOP, uid, desktopToken);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'denied',
+        service: 'vpn',
+        reason: 'no-consent',
+      });
+    });
+
+    it('revokes nothing when the client had no refresh token to destroy', async () => {
+      // Firefox Desktop today: consent rows but no refresh tokens, so finding
+      // none must not be read as a disconnect.
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+
+      await authorizedClients.destroy(DESKTOP, uid);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(1);
     });
 
     it("leaves another client's rows alone", async () => {
@@ -783,8 +850,9 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
         service: 'relay',
         clientId: IOS,
       });
+      const desktopToken = await issueRefreshToken(DESKTOP);
 
-      await authorizedClients.destroy(DESKTOP, uid);
+      await authorizedClients.destroy(DESKTOP, uid, desktopToken);
 
       const rows = await db.listAccountConsentsByUid(uid);
       expect(rows).toHaveLength(1);
@@ -993,9 +1061,17 @@ describe('accountAuthorizations v2 dual-write and read (FXA-14169)', () => {
     expect(await v1ReadRows(id)).toHaveLength(1);
     expect(await v2ReadRows(id)).toHaveLength(1);
 
-    // No refresh tokens were ever issued for this synthetic uid, so the
-    // conditional delete applies.
-    expect(await db.deleteConsentsForClientIfUnused(id, DESKTOP)).toBe(1);
+    const [rowToDrop] = await db.listAccountConsentsByUid(id);
+    expect(
+      await db.deleteAccountConsentRows(id, [
+        {
+          scope: rowToDrop.scope,
+          service: rowToDrop.service,
+          clientId: DESKTOP,
+          lastAuthorizedTosAt: Number(rowToDrop.lastAuthorizedTosAt),
+        },
+      ])
+    ).toBe(1);
 
     expect(await v1ReadRows(id)).toHaveLength(0);
     expect(await v2ReadRows(id)).toHaveLength(0);
@@ -1014,7 +1090,15 @@ describe('accountAuthorizations v2 dual-write and read (FXA-14169)', () => {
     });
     config.set('oauthServer.accountAuthorizations.dualWriteV2', false);
 
-    await db.deleteConsentsForClientIfUnused(id, DESKTOP);
+    const [row] = await db.listAccountConsentsByUid(id);
+    await db.deleteAccountConsentRows(id, [
+      {
+        scope: row.scope,
+        service: row.service,
+        clientId: DESKTOP,
+        lastAuthorizedTosAt: Number(row.lastAuthorizedTosAt),
+      },
+    ]);
 
     expect(await v2ReadRows(id)).toHaveLength(0);
   });

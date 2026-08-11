@@ -517,8 +517,8 @@ describe('/account/attached_client/destroy', () => {
     expect(db.deleteSessionToken).not.toHaveBeenCalled();
   });
 
-  // The clientId is what authorizedClients.destroy needs to revoke the client's
-  // consent rows (FXA-14101), so pin that both branches forward it.
+  // authorizedClients.destroy needs the clientId to revoke consent, so pin that
+  // both branches forward it.
   it('forwards the clientId and refreshTokenId to authorizedClients.destroy', async () => {
     const clientId = newId(16);
     const refreshTokenId = newId();

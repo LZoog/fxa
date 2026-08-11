@@ -199,7 +199,7 @@ class OauthDB extends ConnectedServicesDb {
 
     const tokens = await (async () => {
       if (Object.keys(extraMetadata)) {
-       return await getTokens; // CALLS MYSQL
+        return await getTokens; // CALLS MYSQL
       }
       return {};
     })();
@@ -265,10 +265,18 @@ class OauthDB extends ConnectedServicesDb {
     // `getRefreshToken` for lazy cleanup.
   }
 
+  // Resolves to the number of refresh tokens deleted. Consent revocation needs
+  // that count: refresh-token absence only means "disconnected" for a client
+  // that had one, so a client with zero tokens (Firefox Desktop today) must not
+  // have its consent revoked on the strength of finding none.
   async deleteClientAuthorization(clientId, uid) {
     await this.ready();
     await this.redis.removeAccessTokensForUserAndClient(uid, clientId);
-    return await this.mysql._deleteClientAuthorization(clientId, uid);
+    const [, refreshTokens] = await this.mysql._deleteClientAuthorization(
+      clientId,
+      uid
+    );
+    return refreshTokens?.affectedRows ?? 0;
     // Note that we do not clear metadata for deleted refresh tokens from redis,
     // because it's awkward to enumerate the list of deleted refresh token ids.
     // Instead we rely on a future call to `getRefreshTokensByUid` or
@@ -426,13 +434,24 @@ class OauthDB extends ConnectedServicesDb {
     return this.mysql._deleteAllAccountConsentsForUser(uid);
   }
 
-  // Revokes this client's consent rows on sign-out / disconnect, but only once
-  // the client has no refresh tokens left for the user (FXA-14101). Resolves to
-  // the number of rows removed. See lib/oauth/revoke-consents-on-disconnect.ts
-  // for the call sites and their best-effort contract.
-  async deleteConsentsForClientIfUnused(uid, clientId) {
+  // Deletes an explicit set of consent rows on sign-out / disconnect, resolving
+  // to the number of v1 rows removed. lib/oauth/revoke-consents-on-disconnect.ts
+  // chooses the set and owns the best-effort contract.
+  async deleteAccountConsentRows(uid, rows) {
     await this.ready();
-    return this.mysql._deleteAccountConsentsForClientIfUnused(uid, clientId);
+    return this.mysql._deleteAccountConsentRows(uid, rows);
+  }
+
+  // Clients permitted to claim `serviceName`, or undefined when the service has
+  // no allowlist configured. Distinct from isClientAllowedForService, which
+  // answers true for every client in the unconfigured case: revocation needs to
+  // tell "any client counts" apart from "no peer group is defined", since the
+  // latter must fall back to the row's own client rather than to everyone.
+  getAllowedClientsForService(serviceName) {
+    if (!serviceName) {
+      return undefined;
+    }
+    return EXCHANGE_ALLOWED_CLIENTS_FOR_SERVICE.get(serviceName);
   }
 
   async listAccountConsentsByUid(uid) {

@@ -188,15 +188,18 @@ module.exports = (log, db, push, pushbox, glean, statsd) => {
           deletedDevice.refreshTokenId
         );
         await oauthDB.removeRefreshToken(token);
-        // Return the user to a pre-authorization state for this client once it
-        // has no refresh tokens left (FXA-14101). Uses the token we already
-        // fetched, since it is the only place the clientId is available on this
-        // path, and runs after the delete so the check sees the new state. An
-        // absent clientId means the token row was already gone, so there is
-        // nothing to attribute a revocation to; the helper skips it.
+        // Drop any consent row no peer client still sustains. Uses the token we
+        // already fetched — the only place clientId is available on this path —
+        // and runs after the delete so the evaluation sees the new state. No
+        // clientId means the token row was already gone, so there is nothing to
+        // attribute a revocation to. Reaching here means one token was removed.
         await revokeConsentsOnDisconnect(
           { oauthDB, log, statsd },
-          { uid, clientId: token?.clientId?.toString('hex') }
+          {
+            uid,
+            clientId: token?.clientId?.toString('hex'),
+            destroyedRefreshTokens: 1,
+          }
         );
       } catch (err) {
         // The refresh token might already have been deleted, because distributed state.
