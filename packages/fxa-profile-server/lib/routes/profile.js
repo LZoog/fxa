@@ -28,16 +28,24 @@ function nextAvatar(result) {
     result.avatar &&
     (result.avatarDefault || result.avatar.startsWith(monogramUrl))
   ) {
-    const displayName = result.displayName;
-    let avatarUrl = result.avatar;
-    if (displayName && ALPHANUMERIC.test(displayName)) {
-      avatarUrl = `${monogramUrl}/v1/avatar/${displayName[0]}`;
-    } else if (ALPHANUMERIC.test(result.email)) {
-      avatarUrl = `${monogramUrl}/v1/avatar/${result.email[0]}`;
-    } else {
-      avatarUrl = avatarShared.DEFAULT_AVATAR.avatar;
+    // Test the type before the pattern — `ALPHANUMERIC.test(undefined)` matches
+    // the coerced string `'undefined'`.
+    const initial = [result.displayName, result.email].find(
+      (value) => typeof value === 'string' && ALPHANUMERIC.test(value)
+    );
+    if (initial) {
+      return `${monogramUrl}/v1/avatar/${initial[0]}`;
     }
-    return avatarUrl;
+    // A token scoped to `profile:avatar` alone gets a 403 from
+    // `/v1/_core_profile` and `/v1/display_name`, so the batch drops both
+    // fields. Falling back to the generic default here would make the avatar
+    // look changed, and `changeAvatar` deletes every row for the uid when it
+    // sees that URL — so reading the profile would wipe the stored avatar.
+    // Only reach for the generic default when a field was readable but unusable.
+    const readable =
+      typeof result.displayName === 'string' ||
+      typeof result.email === 'string';
+    return readable ? avatarShared.DEFAULT_AVATAR.avatar : result.avatar;
   }
   return result.avatar;
 }

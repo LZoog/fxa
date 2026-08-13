@@ -51,6 +51,11 @@ const GRAVATAR =
 
 const PUBLIC_URL = config.get('publicUrl');
 
+const DEFAULT_AVATAR_URL = (config.get('img.url') as string).replace(
+  '{id}',
+  config.get('img.defaultAvatarId') as string
+);
+
 describe('#integration - api', () => {
   let Server: any;
   let mock: any;
@@ -127,6 +132,8 @@ describe('#integration - api', () => {
   describe('/profile', () => {
     var tok = token();
     var user = uid();
+    // A uid with no avatar row, so /v1/avatar reports the default.
+    const AVATAR_SCOPE_ONLY_UID = 'f9416ce3703e4916a4cd6b1e665a3f1a';
 
     beforeAll(async () => {
       await db.addAvatar(
@@ -336,6 +343,48 @@ describe('#integration - api', () => {
       expect(res.statusCode).toBe(200);
       expect(res.result.avatar).toBe(`${PUBLIC_URL}/v1/avatar/u`);
       assertSecurityHeaders(res);
+    });
+
+    it('should return the default avatar when the token cannot read email or display name', async () => {
+      // `profile:avatar` alone gets a 403 from `/v1/_core_profile` and
+      // `/v1/display_name`, so the batch supplies neither field.
+      mock.token({
+        user: AVATAR_SCOPE_ONLY_UID,
+        scope: ['profile:avatar'],
+      });
+      const res = await Server.api.get({
+        url: '/profile',
+        headers: {
+          authorization: 'Bearer ' + tok,
+        },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.result.avatar).toBe(DEFAULT_AVATAR_URL);
+      expect(res.result.avatarDefault).toBe(true);
+      assertSecurityHeaders(res);
+    });
+
+    it('should keep a selected monogram avatar when the token cannot read email or display name', async () => {
+      const MONOGRAM_UID = 'c3a9d1f27b0e4c8fa5d6e9b310472f85';
+      const MONOGRAM_URL = `${PUBLIC_URL}/v1/avatar/m`;
+      await db.addAvatar(avatarId(), MONOGRAM_UID, MONOGRAM_URL, 'fxa');
+      mock.token({
+        user: MONOGRAM_UID,
+        scope: ['profile:avatar'],
+      });
+
+      const res = await Server.api.get({
+        url: '/profile',
+        headers: {
+          authorization: 'Bearer ' + tok,
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.result.avatar).toBe(MONOGRAM_URL);
+      // Reading the profile must not delete the row it just read.
+      const selected = await db.getSelectedAvatar(MONOGRAM_UID);
+      expect(selected.url).toBe(MONOGRAM_URL);
     });
 
     it('should return an avatar if selected', async () => {
