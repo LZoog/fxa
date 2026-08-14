@@ -1,0 +1,12 @@
+{
+  "commit": "4eb22b42de8c1e7004d2dd8e94773eaa5086f749",
+  "summary": "Merge pull request #21036 from mozilla/profile-400-fix",
+  "description": "fix(profile-server): disable cookie parsing to avoid spurious 400s",
+  "timestamp": 1786727170000,
+  "storybooks": [
+    "email-renderer",
+    "fxa-react",
+    "fxa-settings"
+  ],
+  "deployDir": "deploy/"
+}
