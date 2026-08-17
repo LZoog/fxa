@@ -13,8 +13,8 @@ jest.mock('./oauth/db', () => ({
   getRefreshToken: jest.fn(),
   removeRefreshToken: jest.fn(),
   listAccountConsentsByUid: jest.fn(),
-  getRefreshTokensByUid: jest.fn(),
-  getAllowedClientsForService: jest.fn(),
+  getRefreshTokenScopesByUid: jest.fn(),
+  getPeerClientsForService: jest.fn(),
   deleteAccountConsentRows: jest.fn(),
 }));
 
@@ -73,10 +73,10 @@ describe('lib/devices:', () => {
       oauthDB.removeRefreshToken.mockReset();
       oauthDB.listAccountConsentsByUid.mockReset();
       oauthDB.listAccountConsentsByUid.mockResolvedValue([]);
-      oauthDB.getRefreshTokensByUid.mockReset();
-      oauthDB.getRefreshTokensByUid.mockResolvedValue([]);
-      oauthDB.getAllowedClientsForService.mockReset();
-      oauthDB.getAllowedClientsForService.mockReturnValue(undefined);
+      oauthDB.getRefreshTokenScopesByUid.mockReset();
+      oauthDB.getRefreshTokenScopesByUid.mockResolvedValue([]);
+      oauthDB.getPeerClientsForService.mockReset();
+      oauthDB.getPeerClientsForService.mockReturnValue(undefined);
       oauthDB.deleteAccountConsentRows.mockReset();
       oauthDB.deleteAccountConsentRows.mockResolvedValue(0);
       statsd = { increment: jest.fn() };
@@ -675,7 +675,9 @@ describe('lib/devices:', () => {
             tokenId: refreshTokenId,
             clientId: Buffer.from(clientId, 'hex'),
           });
-          oauthDB.removeRefreshToken.mockResolvedValue({});
+          // The driver reports how many rows the delete touched, which is the
+          // evidence revocation gates on.
+          oauthDB.removeRefreshToken.mockResolvedValue({ affectedRows: 1 });
         });
 
         it("evaluates the destroyed token's client for revocation", async () => {
@@ -709,9 +711,9 @@ describe('lib/devices:', () => {
           const calls: string[] = [];
           oauthDB.removeRefreshToken.mockImplementation(async () => {
             calls.push('removeRefreshToken');
-            return {};
+            return { affectedRows: 1 };
           });
-          oauthDB.getRefreshTokensByUid.mockImplementation(async () => {
+          oauthDB.getRefreshTokenScopesByUid.mockImplementation(async () => {
             calls.push('readRemainingTokens');
             return [];
           });
@@ -729,12 +731,6 @@ describe('lib/devices:', () => {
           expect(oauthDB.listAccountConsentsByUid).not.toHaveBeenCalled();
         });
 
-        // No case here for "the refresh token row was already gone".
-        // oauthDB.removeRefreshToken dereferences token.userId, so an undefined
-        // token throws before the revoke is reached — which is the case below,
-        // not a distinct one. Asserting it via a mock that resolves for an
-        // undefined token would only exercise the helper's !clientId guard,
-        // already covered in revoke-consents-on-disconnect.spec.ts.
         it('does not revoke when removing the refresh token failed', async () => {
           oauthDB.removeRefreshToken.mockRejectedValue(error.unexpectedError());
 

@@ -1533,10 +1533,27 @@ const convictConf = convict({
         env: 'OAUTH_EXCHANGE_BYPASS_CONSENT_FOR_SERVICES',
       },
       allowedClientsForService: {
-        doc: 'Per-service allowlist of OAuth client_ids permitted to write an accountAuthorizations row. A service absent from this map has no restriction; a service present with an empty list rejects all writes. Prevents a non-Mozilla RP from forging consent for a privileged service (e.g. claiming VPN consent on the user behalf).',
+        doc: 'Per-service allowlist of OAuth client_ids that share the service consent, i.e. the set permitted to write an accountAuthorizations row. A service absent from this map has no restriction; a service present with an empty list rejects all writes. Prevents a non-Mozilla RP from forging consent for a privileged service (e.g. claiming VPN consent on the user behalf). Revocation reads the same list as the peer group whose refresh tokens sustain a row on disconnect, deliberately: a client able to write a row must also be able to revoke one, or its rows would strand un-revocable.',
         format: Object,
         default: {
           vpn: [
+            '5882386c6d801776',
+            '1b1a3e44c54fbb58',
+            '3332a18d142636cb',
+            'a2270f727f45f648',
+            '3c49430b43dfba77',
+            'e6eb0d1e856335fc',
+          ],
+          relay: [
+            '5882386c6d801776',
+            '1b1a3e44c54fbb58',
+            '3332a18d142636cb',
+            'a2270f727f45f648',
+            '3c49430b43dfba77',
+            '9ebfe2c2f9ea3c58',
+          ],
+          smartwindow: ['5882386c6d801776'],
+          sync: [
             '5882386c6d801776',
             '1b1a3e44c54fbb58',
             '3332a18d142636cb',

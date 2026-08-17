@@ -3,28 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { OauthError } = require('@fxa/accounts/errors');
-const { Container } = require('typedi');
-const { StatsD } = require('hot-shots');
 const oauthDB = require('./db');
 const ScopeSet = require('fxa-shared').oauth.scopes;
-const { AuthLogger } = require('../types');
+const { resolveAuthLogger, resolveStatsD } = require('../container-deps');
 const {
   revokeConsentsOnDisconnect,
 } = require('./revoke-consents-on-disconnect');
-
-// This module is a bare object with no injected collaborators, so log and
-// metrics are resolved from the container the same way lib/oauth/db/mysql
-// does it. Both are absent in unit tests, which the helper tolerates.
-function resolveLogger() {
-  if (Container.has(AuthLogger)) {
-    return Container.get(AuthLogger);
-  }
-}
-function resolveMetrics() {
-  if (Container.has(StatsD)) {
-    return Container.get(StatsD);
-  }
-}
 
 // Helper function to render each returned record in the expected form.
 function serialize(clientIdHex, token) {
@@ -145,12 +129,9 @@ module.exports = {
       if (
         !(await oauthDB.deleteClientRefreshToken(refreshTokenId, clientId, uid))
       ) {
-        // The token was not this user's to destroy, so nothing was revoked and
-        // the consent rows must stay. Note the route above swallows this errno
-        // and still returns {}, so a stale id reads as "disconnected" in
-        // Settings with consent intact. That resolves the unknown-token
-        // ambiguity the opposite way from devices.destroy, which keeps going;
-        // the difference is deliberate, so don't "fix" one side to match.
+        // Not this user's token, so nothing was revoked and the rows stay. The
+        // route swallows this errno and still returns {}, so a stale id reads as
+        // disconnected in Settings with consent intact.
         throw OauthError.unknownToken();
       }
       destroyedRefreshTokens = 1;
@@ -163,7 +144,7 @@ module.exports = {
     // Drop any consent row no peer client still sustains. After the deletes
     // above, so the evaluation sees the new state.
     await revokeConsentsOnDisconnect(
-      { oauthDB, log: resolveLogger(), statsd: resolveMetrics() },
+      { oauthDB, log: resolveAuthLogger(), statsd: resolveStatsD() },
       { uid, clientId, destroyedRefreshTokens }
     );
   },

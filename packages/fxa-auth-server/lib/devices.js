@@ -187,18 +187,16 @@ module.exports = (log, db, push, pushbox, glean, statsd) => {
         const token = await oauthDB.getRefreshToken(
           deletedDevice.refreshTokenId
         );
-        await oauthDB.removeRefreshToken(token);
+        const removed = await oauthDB.removeRefreshToken(token);
         // Drop any consent row no peer client still sustains. Uses the token we
         // already fetched — the only place clientId is available on this path —
-        // and runs after the delete so the evaluation sees the new state. No
-        // clientId means the token row was already gone, so there is nothing to
-        // attribute a revocation to. Reaching here means one token was removed.
+        // and runs after the delete so the evaluation sees the new state.
         await revokeConsentsOnDisconnect(
           { oauthDB, log, statsd },
           {
             uid,
             clientId: token?.clientId?.toString('hex'),
-            destroyedRefreshTokens: 1,
+            destroyedRefreshTokens: removed?.affectedRows ?? 0,
           }
         );
       } catch (err) {

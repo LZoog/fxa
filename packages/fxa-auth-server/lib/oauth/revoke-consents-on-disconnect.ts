@@ -2,73 +2,39 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Consent revocation on sign-out / disconnect.
-//
-// accountAuthorizations is written at /oauth/authorization and read by the
-// token-exchange gate, where a missing row means no consent and the exchange is
-// denied. Deleting a row therefore returns the user to a pre-authorization
-// state; before this, only account deletion did.
-//
-// Called from the two functions that destroy refresh tokens — devices.destroy()
-// and authorizedClients.destroy() — covering three routes:
-//   POST /account/attached_client/destroy  Connected Services
-//   POST /authorized-clients/destroy       RP-initiated
-//   POST /account/device/destroy           self-initiated (refreshToken strategy)
-// The last means a browser signing itself out also withdraws its consent, which
-// is intended: any disconnect is a withdrawal, whoever initiates it. Deliberately
-// not covered: the plain-session branch of the attached-client route (no OAuth
-// client), and removeTokensAndCodes(), which password reset shares with account
-// deletion — consent survives credential rotation.
+// Consent revocation on sign-out / disconnect. The token-exchange gate denies
+// when no accountAuthorizations row exists, so deleting one returns the user to a
+// pre-authorization state.
 //
 // Two rules decide what goes:
 //
-// 1. Peers, not owners. The exchange gate reads (uid, scope, service) and omits
-//    clientId, so consent is shared across a service's clients. A row is judged
-//    by the whole peer group — the service's allowlist in
-//    oauthServer.exchange.allowedClientsForService — and dropped only when no
-//    peer still holds a token covering it. Mobile consumes VPN by exchange and
-//    never writes its own row, so without this the Desktop-written row would be
-//    unreachable: Desktop cannot be reaped (see 2) and no other client would
-//    consider it. A service with no allowlist falls back to the row's own
-//    client, never to "everyone", so a web RP's `profile` row cannot be kept
-//    alive by an unrelated Firefox token.
+// 1. Peers, not owners. The gate reads (uid, scope, service) and omits clientId,
+//    so consent is shared across a service's clients. A row is judged by the
+//    whole peer group — oauthServer.exchange.allowedClientsForService, the same
+//    list that gates writes, so write and revoke authority cannot drift — and
+//    dropped only when no peer still holds a token covering it. Mobile consumes
+//    VPN by exchange without writing its own row, so judging by owner would
+//    leave the Desktop-written row unreachable. A service with no allowlist
+//    falls back to the row's own client, never to everyone, so an unrelated
+//    Firefox token cannot sustain a web RP's row.
 //
-// 2. Absence of a refresh token is only evidence for a client that had one.
-//    Firefox Desktop does not use refresh tokens yet, so finding none says
-//    nothing about whether it is still signed in — hence destroyedRefreshTokens.
-//    A consequence of rule 1 is that Desktop's rows can still be reaped by a
-//    peer's disconnect, since Desktop contributes no token to sustain them.
-//    Accepted: exchange requires a refresh token as subject_token, so a client
-//    without one cannot exchange anyway, and the next sign-in rewrites the row.
-//    The cost is metrics, not access.
+// 2. A missing refresh token is only evidence for a client that had one. Firefox
+//    Desktop does not use them yet, hence destroyedRefreshTokens. Rule 1 can
+//    still reap Desktop's rows via a peer's disconnect, since Desktop
+//    contributes nothing to sustain them. The exchange gate is unaffected — it
+//    needs a refresh token as subject_token, so such a client cannot exchange
+//    anyway — but the row has other readers that key on the exact clientId,
+//    notably the VPN-in-Desktop DAU bandaid, which will tag exclude_dau until
+//    the next sign-in rewrites the row.
 //
-// Scope containment uses ScopeSet, not string equality: scopes are hierarchical,
-// so a remaining `profile` token covers a `profile:uid` row (smartwindow writes
-// those). Exact matching would revoke rows still backed by consent.
-//
-// Best-effort throughout. Bookkeeping must never fail a disconnect: the user's
-// tokens are already gone and they cannot retry, so errors are swallowed and
-// counted, mirroring the write path's accountAuthorization.write_failed guard.
+// Errors are swallowed and counted: the user's tokens are already gone and they
+// cannot retry, so bookkeeping must never fail a disconnect.
 
 import { OAUTH_NATIVE_CLIENT_IDS } from '@fxa/accounts/oauth';
 import { StatsD } from 'hot-shots';
 import { Logger } from 'mozlog';
 
-/** A consent row as returned by listAccountConsentsByUid. */
-export interface ConsentRow {
-  scope: string;
-  service: string;
-  /** Hex, normalized by the caller — the DB hands these back as Buffers. */
-  clientId: string;
-  lastAuthorizedTosAt: number;
-}
-
-export interface RemainingRefreshToken {
-  /** Hex, normalized by the caller. */
-  clientId: string;
-  /** ScopeSet, so hierarchical scopes resolve correctly. */
-  scope: { contains(scope: string): boolean };
-}
+import { consentRowsToRevoke, type ConsentRow } from '@fxa/accounts/oauth';
 
 export interface RevokeConsentsOnDisconnectOauthDB {
   listAccountConsentsByUid(uid: string): Promise<
@@ -79,14 +45,14 @@ export interface RevokeConsentsOnDisconnectOauthDB {
       lastAuthorizedTosAt: number | string;
     }>
   >;
-  getRefreshTokensByUid(uid: string): Promise<
+  getRefreshTokenScopesByUid(uid: string): Promise<
     Array<{
       clientId: Buffer | string;
       scope: { contains(scope: string): boolean };
     }>
   >;
-  /** Clients allowed to claim the service, or undefined when unconfigured. */
-  getAllowedClientsForService(service: string): Set<string> | undefined;
+  /** Clients sharing the service's consent, or undefined when unconfigured. */
+  getPeerClientsForService(service: string): Set<string> | undefined;
   /** Resolves to the number of rows actually removed. */
   deleteAccountConsentRows(uid: string, rows: ConsentRow[]): Promise<number>;
 }
@@ -102,9 +68,8 @@ export interface RevokeConsentsOnDisconnectDeps {
 export interface RevokeConsentsOnDisconnectParams {
   uid: string;
   /**
-   * Hex client_id being disconnected. Absent for a destroy that has no OAuth
-   * client behind it — a session-token-only device, or a device whose refresh
-   * token was already gone.
+   * Hex client_id being disconnected. Absent for a destroy with no OAuth client
+   * behind it — a session-token-only device, or one whose token was already gone.
    */
   clientId?: string;
   /**
@@ -115,60 +80,18 @@ export interface RevokeConsentsOnDisconnectParams {
 }
 
 const hex = (v: Buffer | string): string =>
-  (typeof v === 'string' ? v : v.toString('hex')).toLowerCase();
+  typeof v === 'string' ? v : v.toString('hex');
 
-/**
- * Rows that no peer of the disconnected client still sustains.
- *
- * Pure, so the policy is testable without a DB. The disconnected client judges
- * every row whose peer group it belongs to, not just rows it wrote itself —
- * which is what lets a mobile disconnect clear a Desktop-written row that mobile
- * had only ever consumed by exchange. Membership cuts both ways: a client
- * outside a row's peer group has no say over it, and since a service with no
- * allowlist has a peer group of just the row's own client, web RP rows remain
- * reapable only by their own disconnect.
- */
-export function consentRowsToRevoke(params: {
-  rows: ConsentRow[];
-  clientId: string;
-  remainingTokens: RemainingRefreshToken[];
-  allowedClientsForService: (service: string) => Set<string> | undefined;
-}): ConsentRow[] {
-  const { rows, clientId, remainingTokens, allowedClientsForService } = params;
-  const target = clientId.toLowerCase();
-
-  return rows.filter((row) => {
-    const peers =
-      allowedClientsForService(row.service) ?? new Set([row.clientId]);
-    if (!peers.has(target)) {
-      return false;
-    }
-    return !remainingTokens.some(
-      (token) => peers.has(token.clientId) && token.scope.contains(row.scope)
-    );
-  });
-}
-
-// One immediate retry, then give up.
-//
-// Justified by the absence of a second chance rather than the odds of any single
-// failure: nothing else revisits these rows, so a delete that does not happen
-// leaves consent standing until the user disconnects the same client again.
-// Elsewhere a failed write is recoverable on the next request; here it is
-// terminal. Unconditional, since the sequence is idempotent (two reads and a
-// PK-matched DELETE) and the transient faults worth surviving are broader than
-// any one error code — a reaped pool connection, a failover blip, a lock
-// timeout. Retrying re-reads, so the second attempt decides on fresh state.
-//
-// Not retried further: the user is blocked on this request, and a fault
-// outlasting two attempts will not clear in another few ms.
+// One immediate retry. Nothing else revisits these rows, so unlike most writes a
+// failure here is terminal rather than recoverable on the next request. Not gated
+// on error code, since the sequence is idempotent and retrying re-reads, so the
+// second attempt decides on fresh state.
 const ATTEMPTS = 2;
 
-// Bounded tag: browser services and web RPs behave differently on disconnect
-// and are worth telling apart, but tagging the raw client_id would give the
-// metric unbounded cardinality (one value per registered RP).
-function clientType(clientId: string): string {
-  return OAUTH_NATIVE_CLIENT_IDS.has(clientId.toLowerCase())
+// Tagging the raw client_id would give the metric one value per registered RP,
+// so bucket to the distinction that matters.
+function clientType(clientId: string): 'native' | 'other' {
+  return OAUTH_NATIVE_CLIENT_IDS.has(String(clientId).toLowerCase())
     ? 'native'
     : 'other';
 }
@@ -194,14 +117,17 @@ export async function revokeConsentsOnDisconnect(
   const client_type = clientType(clientId);
   for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
     try {
-      // Reads happen after the caller's token delete has committed. That
-      // ordering is what makes parallel disconnects safe: each request reads
-      // only after its own delete, so the last to run sees the true final token
-      // set and no two can both conclude "sustained".
-      const [consentRows, tokens] = await Promise.all([
-        deps.oauthDB.listAccountConsentsByUid(uid),
-        deps.oauthDB.getRefreshTokensByUid(uid),
-      ]);
+      // Both reads happen after the caller's token delete committed, which is
+      // what makes parallel disconnects safe: each request reads only after its
+      // own delete, so the last to run sees the true final token set and no two
+      // can both conclude "sustained".
+      //
+      // Consents first, then tokens — not in parallel. An authorization that
+      // commits between the two then shows up as a token we have no row for,
+      // which is inert, rather than a row whose sustaining token we missed,
+      // which would revoke consent the user just granted.
+      const consentRows = await deps.oauthDB.listAccountConsentsByUid(uid);
+      const tokens = await deps.oauthDB.getRefreshTokenScopesByUid(uid);
 
       const toRevoke = consentRowsToRevoke({
         rows: consentRows.map((r) => ({
@@ -215,8 +141,8 @@ export async function revokeConsentsOnDisconnect(
           clientId: hex(t.clientId),
           scope: t.scope,
         })),
-        allowedClientsForService: (service) =>
-          deps.oauthDB.getAllowedClientsForService(service),
+        peerClientsForService: (service) =>
+          deps.oauthDB.getPeerClientsForService(service),
       });
 
       const rows = toRevoke.length

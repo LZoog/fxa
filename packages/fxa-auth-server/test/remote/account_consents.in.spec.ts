@@ -836,7 +836,10 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
       expect(await db.listAccountConsentsByUid(uid)).toHaveLength(1);
     });
 
-    it("leaves another client's rows alone", async () => {
+    it('leaves rows for a service it is not a peer of alone', async () => {
+      // An unconfigured service has a peer group of just the row's own client,
+      // so a Desktop disconnect has no say over it. Desktop's own smartwindow
+      // row goes, being that service's only peer and holding nothing.
       const uid = testClient.uid;
       await seed({
         uid,
@@ -846,9 +849,9 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
       });
       await seed({
         uid,
-        scope: RELAY_SCOPE,
-        service: 'relay',
-        clientId: IOS,
+        scope: PROFILE_SCOPE,
+        service: '',
+        clientId: E2E_PUBLIC_CLIENT_ID,
       });
       const desktopToken = await issueRefreshToken(DESKTOP);
 
@@ -856,7 +859,21 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
 
       const rows = await db.listAccountConsentsByUid(uid);
       expect(rows).toHaveLength(1);
-      expect(rows[0].service).toBe('relay');
+      expect(rows[0].clientId.toString('hex')).toBe(E2E_PUBLIC_CLIENT_ID);
+    });
+
+    it('revokes via the whole-client branch when tokens are destroyed', async () => {
+      // destroy() without a refreshTokenId takes the deleteClientAuthorization
+      // path, which derives the destroyed count from affectedRows rather than
+      // assuming one.
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+      await issueRefreshToken(DESKTOP);
+      await issueRefreshToken(DESKTOP);
+
+      await authorizedClients.destroy(DESKTOP, uid);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
     });
 
     it("rejects and revokes nothing when the refresh token is not the user's", async () => {

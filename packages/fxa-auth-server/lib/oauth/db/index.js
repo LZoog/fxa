@@ -46,8 +46,10 @@ const EXCHANGE_DENY_SILENT_FOR_SERVICES = new Set(
 const EXCHANGE_BYPASS_CONSENT_FOR_SERVICES = new Set(
   config.get('oauthServer.exchange.bypassConsentForServices')
 );
-// service -> Set<clientId> of OAuth clients permitted to write a consent row
-// for that service. Services not present here are unrestricted.
+// service -> Set<clientId> of OAuth clients sharing that service's consent.
+// Both the write gate and revocation's peer group read this one list, so the
+// two cannot drift: a client allowed to write a row is exactly one whose
+// disconnect may revoke it. Services not present here are unrestricted.
 const EXCHANGE_ALLOWED_CLIENTS_FOR_SERVICE = new Map(
   Object.entries(
     config.get('oauthServer.exchange.allowedClientsForService') || {}
@@ -434,6 +436,14 @@ class OauthDB extends ConnectedServicesDb {
     return this.mysql._deleteAllAccountConsentsForUser(uid);
   }
 
+  // (clientId, scope) for every refresh token the user has. Deliberately not
+  // getRefreshTokensByUid: that hydrates Redis metadata and can issue a prune
+  // write, neither of which affects a revocation decision.
+  async getRefreshTokenScopesByUid(uid) {
+    await this.ready();
+    return this.mysql._getRefreshTokenScopesByUid(uid);
+  }
+
   // Deletes an explicit set of consent rows on sign-out / disconnect, resolving
   // to the number of v1 rows removed. lib/oauth/revoke-consents-on-disconnect.ts
   // chooses the set and owns the best-effort contract.
@@ -442,16 +452,16 @@ class OauthDB extends ConnectedServicesDb {
     return this.mysql._deleteAccountConsentRows(uid, rows);
   }
 
-  // Clients permitted to claim `serviceName`, or undefined when the service has
-  // no allowlist configured. Distinct from isClientAllowedForService, which
-  // answers true for every client in the unconfigured case: revocation needs to
-  // tell "any client counts" apart from "no peer group is defined", since the
-  // latter must fall back to the row's own client rather than to everyone.
-  getAllowedClientsForService(serviceName) {
+  // Clients sharing `serviceName`'s consent, or undefined when the service is
+  // unconfigured — which revocation reads as "just the row's own client", not
+  // "everyone", since unrestricted-to-write must not mean anyone may revoke.
+  // Returns a copy so a caller cannot mutate the process-wide config.
+  getPeerClientsForService(serviceName) {
     if (!serviceName) {
       return undefined;
     }
-    return EXCHANGE_ALLOWED_CLIENTS_FOR_SERVICE.get(serviceName);
+    const peers = EXCHANGE_ALLOWED_CLIENTS_FOR_SERVICE.get(serviceName);
+    return peers ? new Set(peers) : undefined;
   }
 
   async listAccountConsentsByUid(uid) {
@@ -463,7 +473,8 @@ class OauthDB extends ConnectedServicesDb {
   // row. Services not configured in allowedClientsForService are
   // unrestricted. Configured services require the clientId to be on the
   // list. Used by the /authorization writer to gate the upsert so a
-  // non-Mozilla RP cannot forge consent for a privileged service.
+  // non-Mozilla RP cannot forge consent for a privileged service. Note the
+  // same list is the revocation peer group — see getPeerClientsForService.
   isClientAllowedForService(serviceName, clientId) {
     if (!serviceName) {
       return true;
