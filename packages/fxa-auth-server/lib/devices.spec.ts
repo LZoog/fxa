@@ -8,6 +8,10 @@ import { AuthLogger } from './types';
 const crypto = require('crypto');
 const mocks = require('../test/mocks');
 const { AppError: error } = require('@fxa/accounts/errors');
+const ScopeSet = require('fxa-shared/oauth/scopes').default;
+const { OAuthNativeClients } = require('@fxa/accounts/oauth');
+
+const FENIX = OAuthNativeClients.Fenix;
 
 jest.mock('./oauth/db', () => ({
   getRefreshToken: jest.fn(),
@@ -635,6 +639,7 @@ describe('lib/devices:', () => {
       });
 
       it('should ignore missing tokens when deleting the refreshToken', async () => {
+        oauthDB.getRefreshToken.mockResolvedValue({ tokenId: refreshTokenId });
         oauthDB.removeRefreshToken.mockRejectedValue(error.invalidToken());
         device.refreshTokenId = refreshTokenId;
 
@@ -649,6 +654,7 @@ describe('lib/devices:', () => {
       });
 
       it('should log other errors when deleting the refreshToken, without failing', async () => {
+        oauthDB.getRefreshToken.mockResolvedValue({ tokenId: refreshTokenId });
         oauthDB.removeRefreshToken.mockRejectedValue(error.unexpectedError());
         device.refreshTokenId = refreshTokenId;
 
@@ -723,12 +729,12 @@ describe('lib/devices:', () => {
           expect(calls).toEqual(['removeRefreshToken', 'readRemainingTokens']);
         });
 
-        it('does not revoke when the device has no refresh token', async () => {
+        it('does not consult the token path when the device has no refresh token', async () => {
           device.refreshTokenId = null;
 
           await devices.destroy(request, deviceId);
 
-          expect(oauthDB.listAccountConsentsByUid).not.toHaveBeenCalled();
+          expect(oauthDB.getRefreshToken).not.toHaveBeenCalled();
         });
 
         it('does not revoke when removing the refresh token failed', async () => {
@@ -752,6 +758,83 @@ describe('lib/devices:', () => {
             'accountAuthorization.revoke_failed',
             { client_type: 'native' }
           );
+        });
+
+        describe('for a session backed device:', () => {
+          // Firefox Desktop's case: it registers its device over the session
+          // token and keeps no refresh token, so the device record is the only
+          // thing holding its consent up.
+          const consentRow = {
+            scope: 'https://identity.mozilla.com/apps/vpn',
+            service: 'vpn',
+            clientId: Buffer.from(clientId, 'hex'),
+            lastAuthorizedTosAt: 1,
+          };
+
+          beforeEach(() => {
+            device.refreshTokenId = null;
+            oauthDB.listAccountConsentsByUid.mockResolvedValue([consentRow]);
+            // deleteDevice cascades to the device's own session token, so this
+            // is what is genuinely left after the disconnect.
+            db.sessions = jest.fn(async () => []);
+          });
+
+          it('revokes when no session is left', async () => {
+            await devices.destroy(request, deviceId);
+
+            expect(oauthDB.deleteAccountConsentRows).toHaveBeenCalledWith(
+              credentials.uid,
+              [
+                {
+                  scope: consentRow.scope,
+                  service: 'vpn',
+                  clientId,
+                  lastAuthorizedTosAt: 1,
+                },
+              ]
+            );
+          });
+
+          it('keeps the rows while another session remains', async () => {
+            db.sessions = jest.fn(async () => [{ id: sessionTokenId }]);
+
+            await devices.destroy(request, deviceId);
+
+            expect(oauthDB.deleteAccountConsentRows).not.toHaveBeenCalled();
+            expect(statsd.increment).toHaveBeenCalledWith(
+              'accountAuthorization.revoke_noop',
+              { client_type: 'session' }
+            );
+          });
+
+          it('keeps a row whose client still holds a refresh token', async () => {
+            // Signing out Desktop says nothing about a connected Fenix.
+            oauthDB.listAccountConsentsByUid.mockResolvedValue([
+              { ...consentRow, clientId: Buffer.from(FENIX, 'hex') },
+            ]);
+            oauthDB.getRefreshTokenScopesByUid.mockResolvedValue([
+              {
+                clientId: Buffer.from(FENIX, 'hex'),
+                scope: ScopeSet.fromArray([consentRow.scope]),
+              },
+            ]);
+
+            await devices.destroy(request, deviceId);
+
+            expect(oauthDB.deleteAccountConsentRows).not.toHaveBeenCalled();
+          });
+
+          it('revokes when the device refresh token is a dangling pointer', async () => {
+            // Desktop registers with the token it just got, then destroys it. The
+            // column stays set, so this must not be read as token backed.
+            device.refreshTokenId = refreshTokenId;
+            oauthDB.getRefreshToken.mockResolvedValue(undefined);
+
+            await devices.destroy(request, deviceId);
+
+            expect(oauthDB.removeRefreshToken).not.toHaveBeenCalled();
+            expect(oauthDB.deleteAccountConsentRows).toHaveBeenCalledTimes(1);
+          });
         });
       });
 

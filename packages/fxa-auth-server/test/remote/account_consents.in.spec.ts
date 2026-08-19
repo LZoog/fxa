@@ -10,6 +10,13 @@ import {
 import clientFactory from '../client';
 import db from '../../lib/oauth/db';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const tokens = require('../../lib/tokens')(
+  { trace: () => {} },
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('../../config').default
+);
+
 const Client = clientFactory();
 
 const RELAY_SCOPE = 'https://identity.mozilla.com/apps/relay';
@@ -22,6 +29,7 @@ const UNKNOWN_SCOPE = 'https://identity.mozilla.com/apps/never-seen';
 const DESKTOP = '5882386c6d801776';
 const IOS = '1b1a3e44c54fbb58';
 const E2E_PUBLIC_CLIENT_ID = '3c49430b43dfba77';
+const WEB_RP = 'dcdb5ae7add825d2'; // 123done, deliberately not a native client
 const PKCE_CODE_CHALLENGE = 'YPhkZqm08uTfwjNSiYcx80-NPT9Zn94kHboQW97KyV0';
 
 const newUid = () => crypto.randomBytes(16).toString('hex');
@@ -741,62 +749,39 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
       expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
     });
 
-    it("reaps a peer's unsustained row for the same service", async () => {
-      // Rows are judged by peer group, so a sibling row with no token behind it
-      // goes too. Leaving it would keep the exchange allowed and defeat the
-      // point of the disconnect.
+    it("leaves a sibling client's row alone", async () => {
+      // A row records the client that accepted the ToS, so disconnecting Desktop
+      // says nothing about the iOS row. iOS keeps exchanging against its own.
       const uid = testClient.uid;
       await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
       await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: IOS });
       const desktopToken = await issueRefreshToken(DESKTOP);
+      await issueRefreshToken(IOS, [PROFILE_SCOPE, VPN_SCOPE]);
 
-      await authorizedClients.destroy(DESKTOP, uid, desktopToken);
+      await authorizedClients.destroy(DESKTOP, uid, desktopToken, 0);
 
-      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
-      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
-        result: 'denied',
-        service: 'vpn',
-        reason: 'no-consent',
-      });
+      const rows = await db.listAccountConsentsByUid(uid);
+      expect(rows).toHaveLength(1);
+      expect(rows[0].clientId.toString('hex')).toBe(IOS);
     });
 
-    it('lets a mobile disconnect clear a row mobile only ever consumed', async () => {
-      // The flagship VPN shape: Desktop authorizes and writes the only row,
-      // mobile uses VPN by token exchange and writes none of its own. Mobile's
-      // disconnect has to be what finally clears it.
+    it('does not let a mobile disconnect clear a row it only consumed', async () => {
+      // Desktop authorized and wrote the only row; mobile used VPN by exchange
+      // and wrote none. Mobile signing out must not withdraw Desktop's consent
+      // while Desktop is still signed in.
       const uid = testClient.uid;
       await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
       const mobileToken = await issueRefreshToken(IOS, [
         PROFILE_SCOPE,
         VPN_SCOPE,
       ]);
-      // Consent is shared, so mobile can exchange against Desktop's row.
+      // Consent is shared on read, so mobile can exchange against Desktop's row.
       expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
         result: 'allowed',
         service: 'vpn',
       });
 
-      await authorizedClients.destroy(IOS, uid, mobileToken);
-
-      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
-      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
-        result: 'denied',
-        service: 'vpn',
-        reason: 'no-consent',
-      });
-    });
-
-    it("keeps Desktop's row when a peer client still holds the scope", async () => {
-      // The peer group is the service's allowlist, so a live VPN-scoped token
-      // on another browser sustains a Desktop-written row even though Desktop
-      // itself has nothing left.
-      const uid = testClient.uid;
-      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
-
-      const desktopToken = await issueRefreshToken(DESKTOP);
-      await issueRefreshToken(IOS, [PROFILE_SCOPE, VPN_SCOPE]);
-
-      await authorizedClients.destroy(DESKTOP, uid, desktopToken);
+      await authorizedClients.destroy(IOS, uid, mobileToken, 1);
 
       const rows = await db.listAccountConsentsByUid(uid);
       expect(rows).toHaveLength(1);
@@ -807,15 +792,16 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
       });
     });
 
-    it("revokes Desktop's row when the peer token does not carry the scope", async () => {
+    it("revokes Desktop's row once Desktop has no session, even with a live peer token", async () => {
+      // Denial is not a dead end: iOS's next exchange is refused, FxA prompts,
+      // and the user re-consents under the iOS client.
       const uid = testClient.uid;
       await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
 
       const desktopToken = await issueRefreshToken(DESKTOP);
-      // iOS is a vpn peer, but this token only covers Sync.
-      await issueRefreshToken(IOS, [PROFILE_SCOPE, OLDSYNC_SCOPE]);
+      await issueRefreshToken(IOS, [PROFILE_SCOPE, VPN_SCOPE]);
 
-      await authorizedClients.destroy(DESKTOP, uid, desktopToken);
+      await authorizedClients.destroy(DESKTOP, uid, desktopToken, 0);
 
       expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
       expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
@@ -823,6 +809,48 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
         service: 'vpn',
         reason: 'no-consent',
       });
+    });
+
+    it("revokes Desktop's row when its own remaining token lacks the scope", async () => {
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+
+      const desktopToken = await issueRefreshToken(DESKTOP);
+      // A second Desktop token, but it only covers Sync.
+      await issueRefreshToken(DESKTOP, [PROFILE_SCOPE, OLDSYNC_SCOPE]);
+
+      await authorizedClients.destroy(DESKTOP, uid, desktopToken, 0);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'denied',
+        service: 'vpn',
+        reason: 'no-consent',
+      });
+    });
+
+    // A client with only access tokens shows up in Connected Services with a
+    // clientId and no refreshTokenId, so disconnecting it destroys no token. Its
+    // row used to strand: nothing else could ever reach it. A web RP gets no
+    // session protection, since a live browser session says nothing about it.
+    it('revokes a web RP row when the destroy removed no token', async () => {
+      const uid = testClient.uid;
+      await seed({ uid, scope: PROFILE_SCOPE, service: '', clientId: WEB_RP });
+
+      await authorizedClients.destroy(WEB_RP, uid, undefined, 1);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+    });
+
+    it('keeps a native client row when the destroy removed no token', async () => {
+      // The vacuous case the old gate existed for: Firefox Desktop has rows and
+      // no refresh tokens, so finding none must not read as a disconnect.
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+
+      await authorizedClients.destroy(DESKTOP, uid, undefined, 1);
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(1);
     });
 
     it('revokes nothing when the client had no refresh token to destroy', async () => {
@@ -927,6 +955,183 @@ describe('#integration - lifecycle: account deletion vs connected-services revok
       await testClient.destroyDeviceWithRefreshToken(refreshToken, device.id);
 
       expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+    });
+  });
+
+  // Settings' own "Sign out" button hits POST /session/destroy, not the
+  // connected-services route, so it needs its own hook.
+  describe('signing out of Settings via POST /session/destroy', () => {
+    it('revokes once it was the last session', async () => {
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+      await seed({
+        uid,
+        scope: SMARTWINDOW_SCOPE,
+        service: 'smartwindow',
+        clientId: DESKTOP,
+      });
+
+      await testClient.destroySession();
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+    });
+
+    it('keeps the rows while another session remains', async () => {
+      const uid = testClient.uid;
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+      const second = await Client.login(
+        server.publicUrl,
+        testClient.email,
+        'test password',
+        { version: '' }
+      );
+
+      await second.destroySession();
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(1);
+    });
+  });
+
+  // The VPN-in-Desktop case. Desktop registers its device over the session token
+  // and discards its sync refresh token right after sign-in, so Settings sends
+  // deviceId + sessionTokenId and there is no token anywhere to gate on.
+  describe('signing out a session token only device', () => {
+    async function seedDesktopVpn(uid: string) {
+      await seed({ uid, scope: VPN_SCOPE, service: 'vpn', clientId: DESKTOP });
+      await seed({
+        uid,
+        scope: PROFILE_SCOPE,
+        service: 'vpn',
+        clientId: DESKTOP,
+      });
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(2);
+    }
+
+    it('removes the rows and denies the next exchange', async () => {
+      const uid = testClient.uid;
+      await seedDesktopVpn(uid);
+      const device = await testClient.updateDevice({
+        name: 'desktop',
+        type: 'desktop',
+      });
+
+      // Settings also sends sessionTokenId, but the route only cross-checks it
+      // against the device record after the destroy, so it cannot change this.
+      await testClient.destroyAttachedClient({ deviceId: device.id });
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'denied',
+        service: 'vpn',
+        reason: 'no-consent',
+      });
+    });
+
+    // Reproduces the live flow exactly: Desktop registers its device with the
+    // refresh token it just got, then destroys that token. The devices row keeps
+    // a dangling refreshTokenId, which is why Settings reports refreshTokenId
+    // null and sends only deviceId.
+    it('removes the rows when the device refreshTokenId is a dangling pointer', async () => {
+      const uid = testClient.uid;
+      await seedDesktopVpn(uid);
+
+      const refresh = await (db as any).generateRefreshToken({
+        clientId: Buffer.from(DESKTOP, 'hex'),
+        userId: Buffer.from(uid, 'hex'),
+        email: testClient.email,
+        scope: `${PROFILE_SCOPE} ${VPN_SCOPE}`,
+      });
+      const refreshToken = refresh.token.toString('hex');
+      const device = await testClient.updateDeviceWithRefreshToken(
+        refreshToken,
+        { name: 'desktop', type: 'desktop' }
+      );
+      // Desktop discards its sync refresh token right after sign-in.
+      await (db as any).removeRefreshToken(refresh);
+      expect(await db.getRefreshTokenScopesByUid(uid)).toHaveLength(0);
+
+      // The dangling pointer must not be read as token backed, but the row is
+      // still sustained while the account has a session left.
+      await testClient.destroyAttachedClient({ deviceId: device.id });
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(2);
+
+      // Settings signs the remaining session out in the same batch.
+      await testClient.destroyAttachedClient({
+        sessionTokenId: (
+          await tokens.SessionToken.fromHex(testClient.sessionToken)
+        ).id,
+      });
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+    });
+
+    // The multi-service case: VPN and smartwindow sign-ins in Desktop create a
+    // session and no device record, so they reach the route's sessionTokenId
+    // branch only. Signing out clears every service Desktop consented to.
+    it('clears vpn, smartwindow and sync together from a session sign-out', async () => {
+      const uid = testClient.uid;
+      for (const [scope, service] of [
+        [VPN_SCOPE, 'vpn'],
+        [SMARTWINDOW_SCOPE, 'smartwindow'],
+        [OLDSYNC_SCOPE, 'sync'],
+        [PROFILE_SCOPE, 'vpn'],
+      ] as const) {
+        await seed({ uid, scope, service, clientId: DESKTOP });
+      }
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(4);
+
+      // No device was ever registered, so this is the only reachable branch.
+      await testClient.destroyAttachedClient({
+        sessionTokenId: (
+          await tokens.SessionToken.fromHex(testClient.sessionToken)
+        ).id,
+      });
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(0);
+      expect(await db.hasConsentForExchange(uid, VPN_SCOPE)).toEqual({
+        result: 'denied',
+        service: 'vpn',
+        reason: 'no-consent',
+      });
+    });
+
+    it('keeps the rows while another session is still signed in', async () => {
+      const uid = testClient.uid;
+      await seedDesktopVpn(uid);
+      const second = await Client.login(
+        server.publicUrl,
+        testClient.email,
+        'test password',
+        { version: '' }
+      );
+
+      await second.destroyAttachedClient({
+        sessionTokenId: (await tokens.SessionToken.fromHex(second.sessionToken))
+          .id,
+      });
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(2);
+    });
+
+    it('keeps the rows while a second session device is still signed in', async () => {
+      // Both Desktops share one row per scope, since the PK is per client, so
+      // signing one out must not withdraw the other's authorization.
+      const uid = testClient.uid;
+      await seedDesktopVpn(uid);
+      await testClient.updateDevice({ name: 'first', type: 'desktop' });
+      const second = await Client.login(
+        server.publicUrl,
+        testClient.email,
+        'test password',
+        { version: '' }
+      );
+      const device = await second.updateDevice({
+        name: 'second',
+        type: 'desktop',
+      });
+
+      await testClient.destroyAttachedClient({ deviceId: device.id });
+
+      expect(await db.listAccountConsentsByUid(uid)).toHaveLength(2);
     });
   });
 });

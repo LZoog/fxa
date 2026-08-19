@@ -119,11 +119,13 @@ function processRefreshTokens(refreshTokens) {
 }
 
 module.exports = {
-  async destroy(clientId, uid, refreshTokenId) {
+  /**
+   * `remainingSessions` is how many session tokens the account has left. Only
+   * callers with an fxa-db handle can count them; omitting it makes revocation
+   * treat a native client as still signed in, which is the safe reading.
+   */
+  async destroy(clientId, uid, refreshTokenId, remainingSessions) {
     await oauthDB.ready();
-    // Consent is only revoked when a refresh token was actually removed: a
-    // client that never had one (Firefox Desktop today) would otherwise look
-    // disconnected the moment we found none.
     let destroyedRefreshTokens = 0;
     if (refreshTokenId) {
       if (
@@ -141,11 +143,11 @@ module.exports = {
         uid
       );
     }
-    // Drop any consent row no peer client still sustains. After the deletes
+    // Drop any consent row whose own client has nothing left. After the deletes
     // above, so the evaluation sees the new state.
     await revokeConsentsOnDisconnect(
       { oauthDB, log: resolveAuthLogger(), statsd: resolveStatsD() },
-      { uid, clientId, destroyedRefreshTokens }
+      { uid, clientId, destroyedRefreshTokens, remainingSessions }
     );
   },
   /**

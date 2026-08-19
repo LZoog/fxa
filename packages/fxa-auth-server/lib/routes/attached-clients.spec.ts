@@ -517,8 +517,8 @@ describe('/account/attached_client/destroy', () => {
     expect(db.deleteSessionToken).not.toHaveBeenCalled();
   });
 
-  // authorizedClients.destroy needs the clientId to revoke consent, so pin that
-  // both branches forward it.
+  // authorizedClients.destroy needs the clientId and the account's remaining
+  // session count to revoke consent, so pin that both branches forward them.
   it('forwards the clientId and refreshTokenId to authorizedClients.destroy', async () => {
     const clientId = newId(16);
     const refreshTokenId = newId();
@@ -532,7 +532,8 @@ describe('/account/attached_client/destroy', () => {
     expect(mockAuthorizedClients.destroy).toHaveBeenCalledWith(
       clientId,
       uid,
-      refreshTokenId
+      refreshTokenId,
+      expect.any(Number)
     );
   });
 
@@ -572,7 +573,12 @@ describe('/account/attached_client/destroy', () => {
 
     await route(request);
 
-    expect(mockAuthorizedClients.destroy).toHaveBeenCalledWith(clientId, uid);
+    expect(mockAuthorizedClients.destroy).toHaveBeenCalledWith(
+      clientId,
+      uid,
+      undefined,
+      expect.any(Number)
+    );
   });
 
   it('wont accept clientId and sessionTokenId without deviceId', async () => {

@@ -14,15 +14,6 @@ const WEB_RP = '98e6508e88680e1b'; // arbitrary non-native web RP (no enum)
 const VPN_SCOPE = 'https://identity.mozilla.com/apps/vpn';
 const OLDSYNC_SCOPE = 'https://identity.mozilla.com/apps/oldsync';
 
-// Mirrors the deployed shape of the peer config: every browser service lists the
-// browser clients, and vpn/relay also list the service's own app.
-const PEERS: Record<string, Set<string>> = {
-  vpn: new Set([DESKTOP, FENIX, 'e6eb0d1e856335fc']),
-  sync: new Set([DESKTOP, FENIX]),
-};
-const peerClientsForService = (service: string): Set<string> | undefined =>
-  PEERS[service];
-
 function row(over: Partial<ConsentRow> = {}): ConsentRow {
   return {
     scope: VPN_SCOPE,
@@ -37,145 +28,182 @@ function token(clientId: string, scopes: string[]) {
   return { clientId, scope: ScopeSet.fromArray(scopes) };
 }
 
+/** A disconnect that actually removed the client's refresh token. */
+const disconnect = (clientId: string) => ({
+  clientId,
+  destroyedRefreshTokens: 1,
+});
+
 describe('consentRowsToRevoke', () => {
-  it('revokes a row nothing sustains', () => {
-    expect(
-      consentRowsToRevoke({
-        rows: [row()],
-        clientId: DESKTOP,
-        remainingTokens: [],
-        peerClientsForService,
-      })
-    ).toEqual([row()]);
-  });
-
-  it('keeps a row a peer client still covers', () => {
-    // The user disconnected Desktop but still has a VPN-scoped Fenix token, and
-    // Fenix is on the vpn allowlist, so the consent stands.
-    expect(
-      consentRowsToRevoke({
-        rows: [row()],
-        clientId: DESKTOP,
-        remainingTokens: [token(FENIX, ['profile', VPN_SCOPE])],
-        peerClientsForService,
-      })
-    ).toEqual([]);
-  });
-
-  it('revokes when the only remaining token belongs to a non-peer client', () => {
-    expect(
-      consentRowsToRevoke({
-        rows: [row()],
-        clientId: DESKTOP,
-        remainingTokens: [token(WEB_RP, [VPN_SCOPE])],
-        peerClientsForService,
-      })
-    ).toHaveLength(1);
-  });
-
-  it('revokes when a peer remains but does not carry the scope', () => {
-    expect(
-      consentRowsToRevoke({
-        rows: [row()],
-        clientId: DESKTOP,
-        remainingTokens: [token(FENIX, ['profile', OLDSYNC_SCOPE])],
-        peerClientsForService,
-      })
-    ).toHaveLength(1);
-  });
-
-  it('applies the same peer rule to sync', () => {
-    expect(
-      consentRowsToRevoke({
-        rows: [row({ scope: OLDSYNC_SCOPE, service: 'sync' })],
-        clientId: DESKTOP,
-        remainingTokens: [token(FENIX, [OLDSYNC_SCOPE])],
-        peerClientsForService,
-      })
-    ).toEqual([]);
-  });
-
-  it('revokes a peer written row the disconnect leaves unsustained', () => {
-    // Mobile consumes VPN by token exchange and never writes its own row, so
-    // its disconnect has to be able to clear the Desktop-written one.
-    const desktopRow = row();
-
-    expect(
-      consentRowsToRevoke({
-        rows: [desktopRow],
-        clientId: FENIX,
-        remainingTokens: [],
-        peerClientsForService,
-      })
-    ).toEqual([desktopRow]);
-  });
-
-  it('ignores rows for a service the client is not a peer of', () => {
-    // Disconnecting a web RP must not reach into a browser service's ledger.
-    expect(
-      consentRowsToRevoke({
-        rows: [row()],
-        clientId: WEB_RP,
-        remainingTokens: [],
-        peerClientsForService,
-      })
-    ).toEqual([]);
-  });
-
-  it('partitions a mixed batch, returning only the unsustained rows', () => {
-    const sustained = row();
-    const unsustained = row({ scope: OLDSYNC_SCOPE, service: 'sync' });
-    const notOurs = row({ scope: 'profile', service: '', clientId: WEB_RP });
-
-    expect(
-      consentRowsToRevoke({
-        rows: [sustained, unsustained, notOurs],
-        clientId: DESKTOP,
-        remainingTokens: [token(FENIX, [VPN_SCOPE])],
-        peerClientsForService,
-      })
-    ).toEqual([unsustained]);
-  });
-
-  describe('unparseable scopes', () => {
-    it('keeps a row whose scope ScopeSet cannot parse', () => {
-      // The column is NOT NULL DEFAULT '' and ScopeSet.contains('') throws.
+  describe('a client that still holds a covering token', () => {
+    it('keeps its row', () => {
       expect(
         consentRowsToRevoke({
-          rows: [row({ scope: '' })],
-          clientId: DESKTOP,
-          remainingTokens: [token(FENIX, [VPN_SCOPE])],
-          peerClientsForService,
+          rows: [row({ clientId: FENIX })],
+          remainingTokens: [token(FENIX, ['profile', VPN_SCOPE])],
+          remainingSessions: 0,
         })
       ).toEqual([]);
     });
 
-    it('still revokes the other rows in the batch', () => {
-      // Needs a remaining token: with none the predicate never runs, so nothing
-      // throws and the bad row is revoked like any other.
-      const unsustained = row({ scope: OLDSYNC_SCOPE, service: 'sync' });
+    it('revokes when its remaining token does not carry the scope', () => {
+      expect(
+        consentRowsToRevoke({
+          rows: [row({ clientId: FENIX })],
+          remainingTokens: [token(FENIX, ['profile', OLDSYNC_SCOPE])],
+          remainingSessions: 0,
+        })
+      ).toHaveLength(1);
+    });
+
+    it('ignores another client’s token entirely', () => {
+      // Consent belongs to the client that accepted the ToS. A Fenix token is
+      // not evidence about Desktop's row; if Desktop is gone the row goes and
+      // Fenix re-consents on its next exchange.
+      expect(
+        consentRowsToRevoke({
+          rows: [row({ clientId: DESKTOP })],
+          remainingTokens: [token(FENIX, [VPN_SCOPE])],
+          remainingSessions: 0,
+        })
+      ).toHaveLength(1);
+    });
+
+    it('keeps the row while one of its several tokens still covers it', () => {
+      expect(
+        consentRowsToRevoke({
+          rows: [row({ clientId: FENIX })],
+          remainingTokens: [
+            token(FENIX, ['profile']),
+            token(FENIX, [VPN_SCOPE]),
+          ],
+          remainingSessions: 0,
+        })
+      ).toEqual([]);
+    });
+  });
+
+  describe('a native client with no token', () => {
+    it('keeps its row while a session remains', () => {
+      // Firefox Desktop's consent is backed by a session, not a token.
+      expect(
+        consentRowsToRevoke({
+          rows: [row()],
+          remainingTokens: [],
+          remainingSessions: 1,
+        })
+      ).toEqual([]);
+    });
+
+    it('revokes its row once no session remains', () => {
+      expect(
+        consentRowsToRevoke({
+          rows: [row()],
+          remainingTokens: [],
+          remainingSessions: 0,
+        })
+      ).toEqual([row()]);
+    });
+
+    it('revokes every service it consented to at once', () => {
+      const rows = [
+        row(),
+        row({ scope: 'profile' }),
+        row({ scope: OLDSYNC_SCOPE, service: 'sync' }),
+      ];
 
       expect(
         consentRowsToRevoke({
-          rows: [row({ scope: '' }), unsustained],
-          clientId: DESKTOP,
-          remainingTokens: [token(FENIX, [VPN_SCOPE])],
-          peerClientsForService,
+          rows,
+          remainingTokens: [],
+          remainingSessions: 0,
         })
-      ).toEqual([unsustained]);
+      ).toEqual(rows);
+    });
+
+    it('keeps its row when the session count is unknown', () => {
+      // Callers without an fxa-db handle cannot count sessions; assuming one
+      // remains is the safe reading.
+      expect(
+        consentRowsToRevoke({
+          rows: [row()],
+          remainingTokens: [],
+        })
+      ).toEqual([]);
+    });
+
+    it('loses the session protection when its own token was just destroyed', () => {
+      // Otherwise disconnecting a mobile client would never withdraw anything
+      // while the user's browser stayed signed in.
+      expect(
+        consentRowsToRevoke({
+          rows: [row({ clientId: FENIX })],
+          remainingTokens: [],
+          remainingSessions: 1,
+          disconnectedClient: disconnect(FENIX),
+        })
+      ).toHaveLength(1);
+    });
+
+    it('keeps a different native client’s row on that same disconnect', () => {
+      // Signing out Fenix says nothing about a Desktop that is still signed in.
+      const desktopRow = row();
+
+      expect(
+        consentRowsToRevoke({
+          rows: [desktopRow, row({ clientId: FENIX })],
+          remainingTokens: [],
+          remainingSessions: 1,
+          disconnectedClient: disconnect(FENIX),
+        })
+      ).toEqual([row({ clientId: FENIX })]);
+    });
+
+    it('keeps its row when its own destroy removed no token', () => {
+      // The vacuous case: finding no token is not evidence for a client that
+      // never had one.
+      expect(
+        consentRowsToRevoke({
+          rows: [row()],
+          remainingTokens: [],
+          remainingSessions: 1,
+          disconnectedClient: { clientId: DESKTOP, destroyedRefreshTokens: 0 },
+        })
+      ).toEqual([]);
+    });
+  });
+
+  describe('a non-native client', () => {
+    it('gets no session protection, so a token-less row is revoked', () => {
+      // A web RP is not session backed, so a live session says nothing about it
+      // and its row cannot be exchanged without a token anyway.
+      expect(
+        consentRowsToRevoke({
+          rows: [row({ scope: 'profile', service: '', clientId: WEB_RP })],
+          remainingTokens: [],
+          remainingSessions: 5,
+        })
+      ).toHaveLength(1);
+    });
+
+    it('keeps its row while it holds a covering token', () => {
+      expect(
+        consentRowsToRevoke({
+          rows: [row({ scope: 'profile', service: '', clientId: WEB_RP })],
+          remainingTokens: [token(WEB_RP, ['profile'])],
+          remainingSessions: 0,
+        })
+      ).toEqual([]);
     });
   });
 
   describe('scope hierarchy', () => {
     it('keeps a narrow row covered by a broader remaining scope', () => {
-      // smartwindow writes a profile:uid row; a peer token granted plain
-      // `profile` covers it under ScopeSet implication.
       expect(
         consentRowsToRevoke({
-          rows: [row({ scope: 'profile:uid', service: 'sync' })],
-          clientId: DESKTOP,
+          rows: [row({ scope: 'profile:uid', clientId: FENIX })],
           remainingTokens: [token(FENIX, ['profile'])],
-          peerClientsForService,
+          remainingSessions: 0,
         })
       ).toEqual([]);
     });
@@ -183,67 +211,71 @@ describe('consentRowsToRevoke', () => {
     it('revokes a broad row when only a narrower scope remains', () => {
       expect(
         consentRowsToRevoke({
-          rows: [row({ scope: 'profile', service: 'sync' })],
-          clientId: DESKTOP,
+          rows: [row({ scope: 'profile', clientId: FENIX })],
           remainingTokens: [token(FENIX, ['profile:email'])],
-          peerClientsForService,
+          remainingSessions: 0,
         })
       ).toHaveLength(1);
     });
   });
 
-  it('falls back to the row own client when the allowlist is configured empty', () => {
-    // An empty list is a write-rejection lever; reading it as "no peer may
-    // revoke" would strand the service's existing rows forever.
-    const empty = (service: string) =>
-      service === 'vpn' ? new Set<string>() : undefined;
-
-    expect(
-      consentRowsToRevoke({
-        rows: [row()],
-        clientId: DESKTOP,
-        remainingTokens: [],
-        peerClientsForService: empty,
-      })
-    ).toEqual([row()]);
-  });
-
-  describe('services with no allowlist', () => {
-    it('falls back to the row own client, so another client cannot sustain it', () => {
-      // A web RP's row must not be kept alive by an unrelated Firefox token
-      // carrying the same scope, or RP disconnects would stop revoking.
+  describe('unparseable scopes', () => {
+    it('keeps a row whose scope ScopeSet cannot parse', () => {
+      // The column is NOT NULL DEFAULT '' and ScopeSet.contains('') throws.
       expect(
         consentRowsToRevoke({
-          rows: [row({ scope: 'profile', service: '', clientId: WEB_RP })],
-          clientId: WEB_RP,
-          remainingTokens: [token(DESKTOP, ['profile'])],
-          peerClientsForService,
-        })
-      ).toHaveLength(1);
-    });
-
-    it('keeps the row when the client itself still has a covering token', () => {
-      expect(
-        consentRowsToRevoke({
-          rows: [row({ scope: 'profile', service: '', clientId: WEB_RP })],
-          clientId: WEB_RP,
-          remainingTokens: [token(WEB_RP, ['profile'])],
-          peerClientsForService,
+          rows: [row({ scope: '', clientId: FENIX })],
+          remainingTokens: [token(FENIX, [VPN_SCOPE])],
+          remainingSessions: 0,
         })
       ).toEqual([]);
     });
+
+    it('still revokes the other rows in the batch', () => {
+      const unsustained = row({ scope: OLDSYNC_SCOPE, clientId: FENIX });
+
+      expect(
+        consentRowsToRevoke({
+          rows: [row({ scope: '', clientId: FENIX }), unsustained],
+          remainingTokens: [token(FENIX, [VPN_SCOPE])],
+          remainingSessions: 0,
+        })
+      ).toEqual([unsustained]);
+    });
+  });
+
+  it('partitions a mixed batch, returning only the unsustained rows', () => {
+    const sustained = row({ clientId: FENIX });
+    const desktopRow = row();
+    const rpRow = row({ scope: 'profile', service: '', clientId: WEB_RP });
+
+    expect(
+      consentRowsToRevoke({
+        rows: [sustained, desktopRow, rpRow],
+        remainingTokens: [token(FENIX, [VPN_SCOPE])],
+        remainingSessions: 1,
+      })
+    ).toEqual([rpRow]);
   });
 
   it('compares client ids case-insensitively', () => {
-    // authorizedClients.destroy takes clientId straight from a request payload,
-    // and rows come back as hex from the DB, so neither side is guaranteed
-    // lowercase. A mismatch here would silently skip a revocation.
+    // Row ids come back as hex from the DB and payload ids are caller supplied,
+    // so neither side is guaranteed lowercase. A mismatch would silently skip.
     expect(
       consentRowsToRevoke({
-        rows: [row({ clientId: DESKTOP.toUpperCase() })],
-        clientId: DESKTOP.toUpperCase(),
+        rows: [row({ clientId: FENIX.toUpperCase() })],
         remainingTokens: [token(FENIX.toUpperCase(), [VPN_SCOPE])],
-        peerClientsForService,
+        remainingSessions: 0,
+      })
+    ).toEqual([]);
+  });
+
+  it('returns nothing when there are no rows', () => {
+    expect(
+      consentRowsToRevoke({
+        rows: [],
+        remainingTokens: [],
+        remainingSessions: 0,
       })
     ).toEqual([]);
   });

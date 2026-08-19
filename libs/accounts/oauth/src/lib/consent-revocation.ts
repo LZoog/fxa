@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { OAUTH_NATIVE_CLIENT_IDS } from './oauth';
+
 /** A consent row, as stored in accountAuthorizations. */
 export interface ConsentRow {
   scope: string;
@@ -19,23 +21,36 @@ export interface RemainingRefreshToken {
 export interface ConsentRowsToRevokeParams {
   /** Every consent row the user has. */
   rows: ConsentRow[];
-  /** Hex client_id being disconnected. */
-  clientId: string;
   /** The user's refresh tokens after the disconnect's deletes committed. */
   remainingTokens: RemainingRefreshToken[];
-  /** Clients that share a service's consent, or undefined when unconfigured. */
-  peerClientsForService: (service: string) => Set<string> | undefined;
+  /**
+   * Session tokens left after the disconnect committed, or undefined when the
+   * caller cannot count them.
+   */
+  remainingSessions?: number;
+  /** The client whose refresh tokens this disconnect destroyed, if any. */
+  disconnectedClient?: {
+    /** Hex client_id. */
+    clientId: string;
+    destroyedRefreshTokens: number;
+  };
 }
 
 /**
- * Consent rows that no peer of the disconnected client still sustains.
+ * Consent rows whose own client no longer holds a credential.
  *
- * The disconnected client judges every row whose peer group it belongs to, not
- * only rows it wrote itself — which is what lets a mobile disconnect clear a
- * Desktop-written row that mobile had only ever consumed by token exchange.
- * Membership cuts both ways: a client outside a row's peer group has no say over
- * it, and an unconfigured service has a peer group of just the row's own client,
- * so those rows stay reapable only by their own disconnect.
+ * A row records that one client accepted the ToS, so only that client's state
+ * decides its fate — a peer disconnecting says nothing about it. Sharing happens
+ * on read instead: the exchange gate omits clientId, so while any row for the
+ * (scope, service) survives, every client benefits. Once the last one goes the
+ * next exchange is denied, and the user simply re-consents on whichever client
+ * asked, which writes a row there.
+ *
+ * A client is still connected while it holds a refresh token covering the scope.
+ * Firefox Desktop holds none — it discards its token right after sign-in — so a
+ * native client also counts as connected while any session remains. That
+ * protection has to lift for a client we just disconnected, or destroying its
+ * refresh token would never withdraw anything while the browser stayed signed in.
  *
  * Client ids are compared lowercased, since callers source them from both hex
  * DB columns and request payloads.
@@ -43,32 +58,48 @@ export interface ConsentRowsToRevokeParams {
 export function consentRowsToRevoke(
   params: ConsentRowsToRevokeParams
 ): ConsentRow[] {
-  const { rows, clientId, remainingTokens, peerClientsForService } = params;
-  const target = clientId.toLowerCase();
+  const { rows, remainingTokens, remainingSessions, disconnectedClient } =
+    params;
+
   const tokens = remainingTokens.map((t) => ({
     clientId: t.clientId.toLowerCase(),
     scope: t.scope,
   }));
 
+  // An uncounted session reads as "one remains", the conservative side: a native
+  // client's consent then falls only to its own token being destroyed.
+  const sessionRemains =
+    remainingSessions === undefined || remainingSessions > 0;
+
+  // Only a destroy that actually removed a token is evidence of a disconnect.
+  const disconnected = disconnectedClient?.destroyedRefreshTokens
+    ? disconnectedClient.clientId.toLowerCase()
+    : undefined;
+
   return rows.filter((row) => {
     const owner = row.clientId.toLowerCase();
-    // An empty allowlist is an operational lever for rejecting writes, not a
-    // statement that nobody may revoke; reading it as a peer group of nobody
-    // would strand the service's existing rows.
-    const configured = peerClientsForService(row.service);
-    const peers = configured?.size ? configured : new Set([owner]);
-    if (!peers.has(target)) {
-      return false;
-    }
+
     try {
-      return !tokens.some(
-        (token) => peers.has(token.clientId) && token.scope.contains(row.scope)
-      );
+      if (
+        tokens.some((t) => t.clientId === owner && t.scope.contains(row.scope))
+      ) {
+        return false;
+      }
     } catch {
       // ScopeSet.contains throws on an unparseable scope, and the column is NOT
       // NULL DEFAULT ''. Keep the row rather than let one bad value abort the
       // batch and leave this account permanently un-revocable.
       return false;
     }
+
+    if (
+      OAUTH_NATIVE_CLIENT_IDS.has(owner) &&
+      sessionRemains &&
+      owner !== disconnected
+    ) {
+      return false;
+    }
+
+    return true;
   });
 }

@@ -20,9 +20,6 @@ const WEB_RP = '98e6508e88680e1b'; // arbitrary non-native web RP (no enum)
 
 const VPN_SCOPE = 'https://identity.mozilla.com/apps/vpn';
 
-const peerClientsForService = (service: string): Set<string> | undefined =>
-  service === 'vpn' ? new Set([DESKTOP, FENIX]) : undefined;
-
 function mockDb(
   over: Partial<jest.Mocked<RevokeConsentsOnDisconnectOauthDB>> = {}
 ): jest.Mocked<RevokeConsentsOnDisconnectOauthDB> {
@@ -36,7 +33,6 @@ function mockDb(
       },
     ]),
     getRefreshTokenScopesByUid: jest.fn().mockResolvedValue([]),
-    getPeerClientsForService: jest.fn(peerClientsForService),
     deleteAccountConsentRows: jest.fn().mockResolvedValue(1),
     ...over,
   } as jest.Mocked<RevokeConsentsOnDisconnectOauthDB>;
@@ -51,7 +47,13 @@ function mockDeps(db: jest.Mocked<RevokeConsentsOnDisconnectOauthDB>) {
 }
 
 describe('revokeConsentsOnDisconnect', () => {
-  const destroyed = { uid: UID, clientId: DESKTOP, destroyedRefreshTokens: 1 };
+  // A refresh-token disconnect of the row's own client, with no session left.
+  const destroyed = {
+    uid: UID,
+    clientId: DESKTOP,
+    destroyedRefreshTokens: 1,
+    remainingSessions: 0,
+  };
 
   it('deletes the rows nothing sustains, normalizing the buffer clientId', async () => {
     const db = mockDb();
@@ -73,11 +75,33 @@ describe('revokeConsentsOnDisconnect', () => {
     );
   });
 
-  it('does not delete when a peer token sustains the row', async () => {
+  it('deletes even when another client holds a covering token', async () => {
+    // Consent is the row owner's, so a Fenix token does not sustain Desktop's
+    // row. Fenix simply re-consents on its next exchange.
     const db = mockDb({
       getRefreshTokenScopesByUid: jest.fn().mockResolvedValue([
         {
           clientId: Buffer.from(FENIX, 'hex'),
+          scope: ScopeSet.fromArray([VPN_SCOPE]),
+        },
+      ]),
+    });
+    const deps = mockDeps(db);
+
+    await revokeConsentsOnDisconnect(deps, destroyed);
+
+    expect(db.deleteAccountConsentRows).toHaveBeenCalled();
+    expect(deps.statsd.increment).toHaveBeenCalledWith(
+      'accountAuthorization.revoked',
+      { client_type: 'native' }
+    );
+  });
+
+  it('does not delete while the row owner still holds a covering token', async () => {
+    const db = mockDb({
+      getRefreshTokenScopesByUid: jest.fn().mockResolvedValue([
+        {
+          clientId: Buffer.from(DESKTOP, 'hex'),
           scope: ScopeSet.fromArray([VPN_SCOPE]),
         },
       ]),
@@ -93,36 +117,36 @@ describe('revokeConsentsOnDisconnect', () => {
     );
   });
 
-  it('skips entirely when no refresh token was destroyed', async () => {
-    // Firefox Desktop today: it has consent rows but no refresh tokens, so
-    // finding none is not evidence of a disconnect.
+  it('still evaluates when the destroy removed no refresh token', async () => {
+    // No longer a gate: the policy decides, so a session-backed client is
+    // protected by its session rather than by skipping the read.
     const db = mockDb();
     const deps = mockDeps(db);
 
     await revokeConsentsOnDisconnect(deps, {
       ...destroyed,
       destroyedRefreshTokens: 0,
+      remainingSessions: 1,
     });
 
-    expect(db.listAccountConsentsByUid).not.toHaveBeenCalled();
+    expect(db.listAccountConsentsByUid).toHaveBeenCalled();
     expect(db.deleteAccountConsentRows).not.toHaveBeenCalled();
     expect(deps.statsd.increment).toHaveBeenCalledWith(
-      'accountAuthorization.revoke_skipped',
-      { client_type: 'native', reason: 'no_refresh_token' }
+      'accountAuthorization.revoke_noop',
+      { client_type: 'native' }
     );
   });
 
-  it('does not touch the db when clientId is absent', async () => {
+  it('tags a disconnect with no clientId as a session sign-out', async () => {
     const db = mockDb();
     const deps = mockDeps(db);
 
-    await revokeConsentsOnDisconnect(deps, {
-      uid: UID,
-      destroyedRefreshTokens: 1,
-    });
+    await revokeConsentsOnDisconnect(deps, { uid: UID, remainingSessions: 0 });
 
-    expect(db.listAccountConsentsByUid).not.toHaveBeenCalled();
-    expect(deps.statsd.increment).not.toHaveBeenCalled();
+    expect(deps.statsd.increment).toHaveBeenCalledWith(
+      'accountAuthorization.revoked',
+      { client_type: 'session' }
+    );
   });
 
   it('does not touch the db when uid is absent', async () => {
@@ -172,12 +196,73 @@ describe('revokeConsentsOnDisconnect', () => {
       uid: UID,
       clientId: WEB_RP,
       destroyedRefreshTokens: 1,
+      remainingSessions: 0,
     });
 
     expect(deps.statsd.increment).toHaveBeenCalledWith(
       'accountAuthorization.revoked',
       { client_type: 'other' }
     );
+  });
+
+  describe('signing out a session', () => {
+    const signedOut = { uid: UID, remainingSessions: 0 };
+
+    it('revokes the rows of a session-backed client', async () => {
+      const db = mockDb();
+      const deps = mockDeps(db);
+
+      await revokeConsentsOnDisconnect(deps, signedOut);
+
+      expect(db.deleteAccountConsentRows).toHaveBeenCalledWith(UID, [
+        {
+          scope: VPN_SCOPE,
+          service: 'vpn',
+          clientId: DESKTOP,
+          lastAuthorizedTosAt: 1_700_000_000_000,
+        },
+      ]);
+      expect(deps.statsd.increment).toHaveBeenCalledWith(
+        'accountAuthorization.revoked',
+        { client_type: 'session' }
+      );
+    });
+
+    it('keeps the rows when the session count is unknown', async () => {
+      // Callers with no fxa-db handle omit it; that must not revoke.
+      const db = mockDb();
+      const deps = mockDeps(db);
+
+      await revokeConsentsOnDisconnect(deps, { uid: UID });
+
+      expect(db.deleteAccountConsentRows).not.toHaveBeenCalled();
+    });
+
+    it('counts a no-op when another session sustains the rows', async () => {
+      const db = mockDb();
+      const deps = mockDeps(db);
+
+      await revokeConsentsOnDisconnect(deps, {
+        ...signedOut,
+        remainingSessions: 1,
+      });
+
+      expect(db.deleteAccountConsentRows).not.toHaveBeenCalled();
+      expect(deps.statsd.increment).toHaveBeenCalledWith(
+        'accountAuthorization.revoke_noop',
+        { client_type: 'session' }
+      );
+    });
+
+    it('does not touch the db when uid is absent', async () => {
+      const db = mockDb();
+      const deps = mockDeps(db);
+
+      await revokeConsentsOnDisconnect(deps, { ...signedOut, uid: '' });
+
+      expect(db.listAccountConsentsByUid).not.toHaveBeenCalled();
+      expect(deps.statsd.increment).not.toHaveBeenCalled();
+    });
   });
 
   describe('when the first attempt fails', () => {
