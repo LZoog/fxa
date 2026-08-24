@@ -80,6 +80,7 @@ const ConnectThisDevice = ({
         <button
           type="button"
           onClick={onConnect}
+          data-glean-id="dtm_mobile_connect_submit"
           className="cta-primary cta-xl mt-6 w-full"
         >
           Connect
@@ -89,6 +90,7 @@ const ConnectThisDevice = ({
         <button
           type="button"
           onClick={onCancel}
+          data-glean-id="dtm_mobile_connect_cancel"
           className="link-dark-grey"
         >
           Cancel

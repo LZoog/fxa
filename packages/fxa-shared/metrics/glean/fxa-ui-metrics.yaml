@@ -4412,3 +4412,57 @@ promo_qr_mobile:
     expires: never
     data_sensitivity:
       - interaction
+
+dtm_desktop:
+  timeout_view:
+    type: event
+    description: |
+      User viewed the pairing interrupted screen on the desktop (authority)
+      device. One route serves both the timed-out and the canceled state, so the
+      state is in 'reason' rather than being inferable from the URL.
+    send_in_pings:
+      - events
+    notification_emails:
+      - vzare@mozilla.com
+      - fxa-staff@mozilla.com
+    bugs:
+      - https://mozilla-hub.atlassian.net/browse/FXA-14315
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1830504
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1844121
+    expires: never
+    data_sensitivity:
+      - interaction
+    extra_keys:
+      reason:
+        description: |
+          Why pairing stopped: 'timeout' when the pairing channel expired, or
+          'canceled' when either device abandoned the attempt.
+        type: string
+
+dtm_mobile:
+  timeout_view:
+    type: event
+    description: |
+      User viewed the pairing interrupted screen on the mobile (supplicant)
+      device. One route serves both the timed-out and the canceled state, so the
+      state is in 'reason' rather than being inferable from the URL.
+    send_in_pings:
+      - events
+    notification_emails:
+      - vzare@mozilla.com
+      - fxa-staff@mozilla.com
+    bugs:
+      - https://mozilla-hub.atlassian.net/browse/FXA-14315
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1830504
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1844121
+    expires: never
+    data_sensitivity:
+      - interaction
+    extra_keys:
+      reason:
+        description: |
+          Why pairing stopped: 'timeout' when the pairing channel expired, or
+          'canceled' when either device abandoned the attempt.
+        type: string

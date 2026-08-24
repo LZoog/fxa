@@ -18,6 +18,8 @@ import * as accountBanner from 'fxa-shared/metrics/glean/web/accountBanner';
 import * as deleteAccount from 'fxa-shared/metrics/glean/web/deleteAccount';
 import * as thirdPartyAuth from 'fxa-shared/metrics/glean/web/thirdPartyAuth';
 import * as postVerifySetPassword from 'fxa-shared/metrics/glean/web/postVerifySetPassword';
+import * as dtmDesktop from 'fxa-shared/metrics/glean/web/dtmDesktop';
+import * as dtmMobile from 'fxa-shared/metrics/glean/web/dtmMobile';
 import { userIdSha256, userId } from 'fxa-shared/metrics/glean/web/account';
 import {
   oauthClientId,
@@ -1661,6 +1663,45 @@ describe('lib/glean', () => {
           'delete_account_password_submit'
         );
         sinon.assert.calledOnce(spy);
+      });
+    });
+
+    // Both pairing interrupted screens share a route with their other state, so
+    // `reason` is the only thing distinguishing them. The dispatcher arm is what
+    // decides whether it reaches Glean, which is why it is pinned per reason.
+    describe('pair2', () => {
+      it('submits a ping with the dtm_desktop_timeout_view event name and a timeout reason', async () => {
+        GleanMetrics.dtmDesktop.timeoutView({ event: { reason: 'timeout' } });
+        const spy = sandbox.spy(dtmDesktop.timeoutView, 'record');
+        await GleanMetrics.isDone();
+        sinon.assert.calledOnce(setEventNameStub);
+        sinon.assert.calledWith(setEventNameStub, 'dtm_desktop_timeout_view');
+        sinon.assert.calledWith(setEventReasonStub, 'timeout');
+        sinon.assert.calledOnce(spy);
+      });
+
+      it('submits a ping with the dtm_desktop_timeout_view event name and a canceled reason', async () => {
+        GleanMetrics.dtmDesktop.timeoutView({ event: { reason: 'canceled' } });
+        await GleanMetrics.isDone();
+        sinon.assert.calledWith(setEventNameStub, 'dtm_desktop_timeout_view');
+        sinon.assert.calledWith(setEventReasonStub, 'canceled');
+      });
+
+      it('submits a ping with the dtm_mobile_timeout_view event name and a timeout reason', async () => {
+        GleanMetrics.dtmMobile.timeoutView({ event: { reason: 'timeout' } });
+        const spy = sandbox.spy(dtmMobile.timeoutView, 'record');
+        await GleanMetrics.isDone();
+        sinon.assert.calledOnce(setEventNameStub);
+        sinon.assert.calledWith(setEventNameStub, 'dtm_mobile_timeout_view');
+        sinon.assert.calledWith(setEventReasonStub, 'timeout');
+        sinon.assert.calledOnce(spy);
+      });
+
+      it('submits a ping with the dtm_mobile_timeout_view event name and a canceled reason', async () => {
+        GleanMetrics.dtmMobile.timeoutView({ event: { reason: 'canceled' } });
+        await GleanMetrics.isDone();
+        sinon.assert.calledWith(setEventNameStub, 'dtm_mobile_timeout_view');
+        sinon.assert.calledWith(setEventReasonStub, 'canceled');
       });
     });
   });

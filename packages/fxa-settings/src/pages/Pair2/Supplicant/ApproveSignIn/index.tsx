@@ -64,6 +64,7 @@ const ApproveSignIn = ({ remoteMetadata, onCancel }: ApproveSignInProps) => {
         <button
           type="button"
           onClick={onCancel}
+          data-glean-id="dtm_mobile_approve_cancel"
           className="link-dark-grey"
         >
           Cancel

@@ -359,4 +359,12 @@ export const eventsMap = {
   promoQrMobile: {
     view: 'promo_qr_mobile_view',
   },
+
+  dtmDesktop: {
+    timeoutView: 'dtm_desktop_timeout_view',
+  },
+
+  dtmMobile: {
+    timeoutView: 'dtm_mobile_timeout_view',
+  },
 } as const;

@@ -20,6 +20,8 @@ import * as event from 'fxa-shared/metrics/glean/web/event';
 import * as email from 'fxa-shared/metrics/glean/web/email';
 import * as error from 'fxa-shared/metrics/glean/web/error';
 import * as promoQrMobile from 'fxa-shared/metrics/glean/web/promoQrMobile';
+import * as dtmDesktop from 'fxa-shared/metrics/glean/web/dtmDesktop';
+import * as dtmMobile from 'fxa-shared/metrics/glean/web/dtmMobile';
 import * as reg from 'fxa-shared/metrics/glean/web/reg';
 import * as login from 'fxa-shared/metrics/glean/web/login';
 import * as cachedLogin from 'fxa-shared/metrics/glean/web/cachedLogin';
@@ -955,6 +957,16 @@ const recordEventMetric = (
       break;
     case 'promo_qr_mobile_view':
       promoQrMobile.view.record();
+      break;
+    case 'dtm_desktop_timeout_view':
+      dtmDesktop.timeoutView.record({
+        reason: gleanPingMetrics?.event?.['reason'] || '',
+      });
+      break;
+    case 'dtm_mobile_timeout_view':
+      dtmMobile.timeoutView.record({
+        reason: gleanPingMetrics?.event?.['reason'] || '',
+      });
       break;
   }
 };
