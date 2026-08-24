@@ -19,6 +19,7 @@ const DISABLED_CLIENT_ID = 'd15ab1edd15ab1ed';
 const SERVICES_WITH_EMAIL_VERIFICATION_CLIENT = '32aaeb6f1c21316a';
 
 const mockLog = createMock<AuthLogger>();
+const mockGlean = { pairing: { success: jest.fn() } };
 
 const baseConfig = {
   oauthServer: {
@@ -34,17 +35,20 @@ const baseConfig = {
 };
 
 const route = require('./authorization')({
+  glean: mockGlean,
   log: mockLog,
   oauthDB: {},
 })[1];
 
 const configuredRoute = require('./authorization')({
+  glean: mockGlean,
   log: mockLog,
   oauthDB: {},
   config: baseConfig,
 })[1];
 
 const sessionTokenRoute = require('./authorization')({
+  glean: mockGlean,
   log: mockLog,
   oauthDB: {},
   config: {
@@ -420,6 +424,7 @@ describe('/authorization POST consent write', () => {
         generateTokens: jest.fn(async () => ({})),
       }));
       routes = require('./authorization')({
+        glean: mockGlean,
         log: opts.log ?? mockLog,
         oauthDB: opts.oauthDB,
         config: baseConfig,
@@ -894,6 +899,7 @@ describe('/oauth/authorization service-driven scope resolution', () => {
 
   function makeRoute(oauthDB: Record<string, any>) {
     return require('./authorization')({
+      glean: mockGlean,
       log: mockLog,
       oauthDB,
       config: baseConfig,
@@ -1141,6 +1147,58 @@ describe('isLocalHost', () => {
   });
 });
 
+describe('isPairingAuthorization', () => {
+  const { isPairingAuthorization } = require('./authorization');
+
+  const request = (deviceType?: string) => ({ app: { ua: { deviceType } } });
+
+  // Firefox sends no pairing marker, so this inference is the only thing
+  // separating a pairing from an ordinary mobile sign-in. Both directions of the
+  // mistake corrupt the metric, so both are pinned.
+  it.each([
+    ['Fenix', OAuthNativeClients.Fenix],
+    ['Firefox iOS', OAuthNativeClients.FirefoxIOS],
+    ['Fennec', OAuthNativeClients.Fennec],
+    ['Reference Browser', OAuthNativeClients.ReferenceBrowser],
+  ])('detects a desktop browser minting a code for %s', (_name, clientId) => {
+    expect(isPairingAuthorization(request(undefined), clientId)).toBe(true);
+    expect(isPairingAuthorization(request(''), clientId)).toBe(true);
+  });
+
+  it('accepts an uppercase client id', () => {
+    expect(
+      isPairingAuthorization(
+        request(undefined),
+        OAuthNativeClients.Fenix.toUpperCase()
+      )
+    ).toBe(true);
+  });
+
+  // The app signing in directly, which reaches this endpoint with the very same
+  // client_id — the user agent is all that tells them apart.
+  it.each(['mobile', 'tablet'])(
+    'ignores a %s request for its own client',
+    (deviceType) => {
+      expect(
+        isPairingAuthorization(request(deviceType), OAuthNativeClients.Fenix)
+      ).toBe(false);
+    }
+  );
+
+  it.each([
+    ['Firefox Desktop', OAuthNativeClients.FirefoxDesktop],
+    ['Thunderbird', OAuthNativeClients.Thunderbird],
+  ])('ignores a code minted for %s', (_name, clientId) => {
+    expect(isPairingAuthorization(request(undefined), clientId)).toBe(false);
+  });
+
+  it('ignores a web relying party', () => {
+    expect(isPairingAuthorization(request(undefined), 'dcdb5ae7add825d2')).toBe(
+      false
+    );
+  });
+});
+
 describe('/authorization POST redirect_uri validation', () => {
   const UID_HEX = 'a'.repeat(32);
   const REGISTERED_URI = 'https://example.com/redirect';
@@ -1164,6 +1222,7 @@ describe('/authorization POST redirect_uri validation', () => {
         generateTokens: jest.fn(async () => ({})),
       }));
       const routes = require('./authorization')({
+        glean: mockGlean,
         log: mockLog,
         oauthDB: {
           getClient: jest.fn(async () => ({
