@@ -56,6 +56,20 @@ describe('url-hash-data', () => {
       expect(data.get('v')).toEqual('2');
     });
 
+    // The capture outlives the pairing flow in this tab, so it must never mask
+    // a fragment the URL actually has.
+    it('yields to a live fragment that arrives later', () => {
+      globalThis.window.history.replaceState(
+        null,
+        '',
+        '/settings#connected-services'
+      );
+      const data = new UrlHashData(window);
+
+      expect(data.get('channel_id')).toBeUndefined();
+      expect(data.getKeys().next().value).toEqual('connected-services');
+    });
+
     it('takes writes back to the capture rather than the URL', () => {
       const data = new UrlHashData(window);
 
