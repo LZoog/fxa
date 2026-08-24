@@ -1703,6 +1703,58 @@ describe('lib/glean', () => {
         sinon.assert.calledWith(setEventNameStub, 'dtm_mobile_timeout_view');
         sinon.assert.calledWith(setEventReasonStub, 'canceled');
       });
+
+      it('submits a ping with the dtm_mobile_deeplink_attempt event name and a platform reason', async () => {
+        GleanMetrics.dtmMobile.deeplinkAttempt({ event: { reason: 'ios' } });
+        const spy = sandbox.spy(dtmMobile.deeplinkAttempt, 'record');
+        await GleanMetrics.isDone();
+        sinon.assert.calledOnce(setEventNameStub);
+        sinon.assert.calledWith(
+          setEventNameStub,
+          'dtm_mobile_deeplink_attempt'
+        );
+        sinon.assert.calledWith(setEventReasonStub, 'ios');
+        sinon.assert.calledOnce(spy);
+      });
+
+      it('submits a ping with the dtm_mobile_deeplink_store_redirect event name and a reason', async () => {
+        GleanMetrics.dtmMobile.deeplinkStoreRedirect({
+          event: { reason: 'focus_grace' },
+        });
+        const spy = sandbox.spy(dtmMobile.deeplinkStoreRedirect, 'record');
+        await GleanMetrics.isDone();
+        sinon.assert.calledOnce(setEventNameStub);
+        sinon.assert.calledWith(
+          setEventNameStub,
+          'dtm_mobile_deeplink_store_redirect'
+        );
+        sinon.assert.calledWith(setEventReasonStub, 'focus_grace');
+        sinon.assert.calledOnce(spy);
+      });
+
+      it('submits a ping with the dtm_mobile_deeplink_firefox_detected event name', async () => {
+        GleanMetrics.dtmMobile.deeplinkFirefoxDetected();
+        const spy = sandbox.spy(dtmMobile.deeplinkFirefoxDetected, 'record');
+        await GleanMetrics.isDone();
+        sinon.assert.calledOnce(setEventNameStub);
+        sinon.assert.calledWith(
+          setEventNameStub,
+          'dtm_mobile_deeplink_firefox_detected'
+        );
+        sinon.assert.calledOnce(spy);
+      });
+
+      it('submits a ping with the dtm_mobile_deeplink_webview_fallback event name', async () => {
+        GleanMetrics.dtmMobile.deeplinkWebviewFallback();
+        const spy = sandbox.spy(dtmMobile.deeplinkWebviewFallback, 'record');
+        await GleanMetrics.isDone();
+        sinon.assert.calledOnce(setEventNameStub);
+        sinon.assert.calledWith(
+          setEventNameStub,
+          'dtm_mobile_deeplink_webview_fallback'
+        );
+        sinon.assert.calledOnce(spy);
+      });
     });
   });
 

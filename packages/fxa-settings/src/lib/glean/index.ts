@@ -968,6 +968,22 @@ const recordEventMetric = (
         reason: gleanPingMetrics?.event?.['reason'] || '',
       });
       break;
+    case 'dtm_mobile_deeplink_attempt':
+      dtmMobile.deeplinkAttempt.record({
+        reason: gleanPingMetrics?.event?.['reason'] || '',
+      });
+      break;
+    case 'dtm_mobile_deeplink_firefox_detected':
+      dtmMobile.deeplinkFirefoxDetected.record();
+      break;
+    case 'dtm_mobile_deeplink_store_redirect':
+      dtmMobile.deeplinkStoreRedirect.record({
+        reason: gleanPingMetrics?.event?.['reason'] || '',
+      });
+      break;
+    case 'dtm_mobile_deeplink_webview_fallback':
+      dtmMobile.deeplinkWebviewFallback.record();
+      break;
   }
 };
 

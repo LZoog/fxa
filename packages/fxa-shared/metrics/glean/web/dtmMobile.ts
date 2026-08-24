@@ -7,6 +7,83 @@
 import EventMetricType from '@mozilla/glean/private/metrics/event';
 
 /**
+ * Pairing tried to hand off from a browser to the Firefox app after a QR scan.
+ * Recorded where the hand-off starts, which differs per platform: Android
+ * navigates on mount, iOS requires the user to tap first.
+ *
+ * Generated from `dtm_mobile.deeplink_attempt`.
+ */
+export const deeplinkAttempt = new EventMetricType<{
+  reason?: string;
+}>(
+  {
+    category: 'dtm_mobile',
+    name: 'deeplink_attempt',
+    sendInPings: ['events'],
+    lifetime: 'ping',
+    disabled: false,
+  },
+  ['reason']
+);
+
+/**
+ * Pairing was already running inside Firefox, so no app hand-off was needed and
+ * the page navigated straight to the pairing target.
+ *
+ * Generated from `dtm_mobile.deeplink_firefox_detected`.
+ */
+export const deeplinkFirefoxDetected = new EventMetricType(
+  {
+    category: 'dtm_mobile',
+    name: 'deeplink_firefox_detected',
+    sendInPings: ['events'],
+    lifetime: 'ping',
+    disabled: false,
+  },
+  []
+);
+
+/**
+ * Pairing sent the user to the app store because Firefox appeared not to be
+ * installed. This is inferred from the page never being backgrounded, not
+ * detected: on iOS a cancelled "Open in Firefox?" prompt is indistinguishable
+ * from the not-installed alert, so this over-counts missing installs by however
+ * often users cancel that prompt.
+ *
+ * Generated from `dtm_mobile.deeplink_store_redirect`.
+ */
+export const deeplinkStoreRedirect = new EventMetricType<{
+  reason?: string;
+}>(
+  {
+    category: 'dtm_mobile',
+    name: 'deeplink_store_redirect',
+    sendInPings: ['events'],
+    lifetime: 'ping',
+    disabled: false,
+  },
+  ['reason']
+);
+
+/**
+ * The Android intent was silently swallowed, which happens in an embedded
+ * WebView that does not implement shouldOverrideUrlLoading, so the page revealed
+ * a manual retry button instead of continuing to wait.
+ *
+ * Generated from `dtm_mobile.deeplink_webview_fallback`.
+ */
+export const deeplinkWebviewFallback = new EventMetricType(
+  {
+    category: 'dtm_mobile',
+    name: 'deeplink_webview_fallback',
+    sendInPings: ['events'],
+    lifetime: 'ping',
+    disabled: false,
+  },
+  []
+);
+
+/**
  * User viewed the pairing interrupted screen on the mobile (supplicant) device.
  * One route serves both the timed-out and the canceled state, so the state is
  * in 'reason' rather than being inferable from the URL.
