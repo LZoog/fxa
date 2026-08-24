@@ -29,6 +29,7 @@ import {
   deviceType,
   entrypoint,
   flowId,
+  pairingChannelHash,
 } from 'fxa-shared/metrics/glean/web/session';
 import * as utm from 'fxa-shared/metrics/glean/web/utm';
 import * as entrypointQuery from 'fxa-shared/metrics/glean/web/entrypoint';
@@ -36,6 +37,10 @@ import { Config } from '../config';
 import { WebIntegration, useAccount, WebIntegrationData } from '../../models';
 import { MetricsFlow } from '../metrics-flow';
 import { currentAccount } from '../cache';
+import {
+  capturePairingChannelParams,
+  resetPairingChannelParamsForTest,
+} from '../pairing-channel-params';
 
 jest.mock('../../lib/cache', () => ({
   currentAccount: jest.fn(),
@@ -86,6 +91,7 @@ describe('lib/glean', () => {
     setUtmTermStub: SinonStub,
     setEntrypointExperimentStub: SinonStub,
     setEntrypointVariationStub: SinonStub,
+    setPairingChannelHashStub: SinonStub,
     pageLoadStub: SinonStub,
     handleClickEvent: SinonStub;
 
@@ -130,6 +136,7 @@ describe('lib/glean', () => {
       'set'
     );
     setEntrypointVariationStub = sandbox.stub(entrypointQuery.variation, 'set');
+    setPairingChannelHashStub = sandbox.stub(pairingChannelHash, 'set');
     submitPingStub = sandbox.stub(pings.accountsEvents, 'submit');
     pageLoadStub = sandbox.stub(GleanMetricsAPI.default, 'pageLoad');
     handleClickEvent = sandbox.stub(
@@ -263,6 +270,7 @@ describe('lib/glean', () => {
       sinon.assert.calledWith(setUtmTermStub, '');
       sinon.assert.calledWith(setEntrypointExperimentStub, '');
       sinon.assert.calledWith(setEntrypointVariationStub, '');
+      sinon.assert.calledWith(setPairingChannelHashStub, '');
     });
 
     it('sets the metrics values', async () => {
@@ -1663,6 +1671,46 @@ describe('lib/glean', () => {
           'delete_account_password_submit'
         );
         sinon.assert.calledOnce(spy);
+      });
+    });
+
+    // The join key across the two devices. The digest is pinned to a literal
+    // rather than a shape, because the whole point is that both devices derive
+    // the same value from the same channel id.
+    describe('pairing channel hash', () => {
+      afterEach(() => {
+        resetPairingChannelParamsForTest();
+        window.history.replaceState(null, '', '/');
+      });
+
+      it('sets a hash when a channel id is present', async () => {
+        window.history.replaceState(null, '', '/pair?channel_id=chan-abc');
+        capturePairingChannelParams();
+
+        GleanMetrics.initialize(
+          { ...mockConfig, enabled: true },
+          mockMetricsContext
+        );
+        GleanMetrics.registration.view();
+        await GleanMetrics.isDone();
+
+        sinon.assert.calledWith(
+          setPairingChannelHashStub,
+          'f5448b29ac04cb6cdd6f41ebd66bbbea79a6fd1150eb13e7c28d7f25eff8bb01'
+        );
+      });
+
+      it('sets an empty string outside a pairing flow', async () => {
+        capturePairingChannelParams();
+
+        GleanMetrics.initialize(
+          { ...mockConfig, enabled: true },
+          mockMetricsContext
+        );
+        GleanMetrics.registration.view();
+        await GleanMetrics.isDone();
+
+        sinon.assert.calledWith(setPairingChannelHashStub, '');
       });
     });
 

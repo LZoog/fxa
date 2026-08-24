@@ -5,6 +5,7 @@
 import {
   capturePairingChannelParams,
   getPairingChannelHashParams,
+  getPairingChannelId,
   getPairingChannelParams,
   hasPairingChannelParams,
   resetPairingChannelParamsForTest,
@@ -141,6 +142,50 @@ describe('getPairingChannelParams', () => {
   });
 });
 
+describe('getPairingChannelId', () => {
+  it('returns null outside a pairing flow', () => {
+    capturePairingChannelParams();
+
+    expect(getPairingChannelId()).toBeNull();
+  });
+
+  it('reads the supplicant copy out of the fragment', () => {
+    setHash(MOCK_PAIRING_HASH);
+
+    capturePairingChannelParams();
+
+    expect(getPairingChannelId()).toBe(MOCK_CHANNEL_ID);
+  });
+
+  it('reads the authority copy out of the query string', () => {
+    window.history.replaceState(
+      null,
+      '',
+      `/connect_another_device?channel_id=${MOCK_CHANNEL_ID}&v=2`
+    );
+
+    capturePairingChannelParams();
+
+    expect(getPairingChannelId()).toBe(MOCK_CHANNEL_ID);
+  });
+
+  // Reading the URL live would repeat FXA-14093: the SPA can drop query params
+  // after load, and events later in the flow would then stop carrying the join
+  // key that earlier ones had.
+  it('keeps the id after the URL has lost it', () => {
+    window.history.replaceState(
+      null,
+      '',
+      `/connect_another_device?channel_id=${MOCK_CHANNEL_ID}`
+    );
+    capturePairingChannelParams();
+
+    window.history.replaceState(null, '', '/pair/authority/sync_success');
+
+    expect(getPairingChannelId()).toBe(MOCK_CHANNEL_ID);
+  });
+});
+
 describe('updatePairingChannelHashParams', () => {
   it('replaces the captured params without touching the URL', () => {
     setHash(MOCK_PAIRING_HASH);
@@ -196,14 +241,17 @@ describe('unavailable sessionStorage', () => {
 });
 
 /**
- * Clear the module's in-memory copy while leaving sessionStorage as it is, which
- * is the state a page reload starts from. `resetPairingChannelParamsForTest`
- * clears both, so it cannot stand in for this.
+ * Clear the module's in-memory copies while leaving sessionStorage as it is,
+ * which is the state a page reload starts from.
+ * `resetPairingChannelParamsForTest` clears both, so it cannot stand in for this.
  */
 function resetModuleStateOnly() {
-  const stored = window.sessionStorage.getItem('fxa.pairing.channel.hash');
+  const keys = ['fxa.pairing.channel.hash', 'fxa.pairing.channel.id'];
+  const stored = keys.map((key) => [key, window.sessionStorage.getItem(key)]);
   resetPairingChannelParamsForTest();
-  if (stored !== null) {
-    window.sessionStorage.setItem('fxa.pairing.channel.hash', stored);
+  for (const [key, value] of stored) {
+    if (value !== null) {
+      window.sessionStorage.setItem(key as string, value as string);
+    }
   }
 }

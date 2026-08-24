@@ -54,12 +54,14 @@ import {
   deviceType,
   entrypoint,
   flowId,
+  pairingChannelHash,
 } from 'fxa-shared/metrics/glean/web/session';
 import * as utm from 'fxa-shared/metrics/glean/web/utm';
 import * as entrypointQuery from 'fxa-shared/metrics/glean/web/entrypoint';
 import { Integration } from '../../models';
 import { MetricsFlow } from '../metrics-flow';
 import { currentAccount } from '../../lib/cache';
+import { getPairingChannelId } from '../pairing-channel-params';
 
 type DeviceTypes = 'mobile' | 'tablet' | 'desktop';
 export type GleanMetricsContext = {
@@ -108,8 +110,8 @@ let metricsContext: GleanMetricsContext;
 let ua: UAParser | null;
 
 const encoder = new TextEncoder();
-const hashUid = async (uid: string) => {
-  const data = encoder.encode(uid);
+const sha256Hex = async (value: string) => {
+  const data = encoder.encode(value);
   const hash = await crypto.subtle.digest('SHA-256', data);
   const uint8View = new Uint8Array(hash);
   const hex = uint8View.reduce(
@@ -149,7 +151,7 @@ const initMetrics = async () => {
   try {
     if (account?.uid) {
       userId.set(account.uid);
-      userIdSha256.set(await hashUid(account.uid));
+      userIdSha256.set(await sha256Hex(account.uid));
     }
   } catch (e) {
     // noop
@@ -161,6 +163,14 @@ const initMetrics = async () => {
   deviceType.set(getDeviceType() || '');
   entrypoint.set(metricsContext.integration.data.entrypoint || '');
   flowId.set(metricsContext.metricsFlow?.flowId || '');
+
+  // The join key across the two devices in a pairing. Re-derived on every event
+  // rather than set once, so an event fired before the channel existed does not
+  // leave the rest of the flow unjoinable.
+  const pairingChannelId = getPairingChannelId();
+  pairingChannelHash.set(
+    pairingChannelId ? await sha256Hex(pairingChannelId) : ''
+  );
 
   utm.campaign.set(metricsContext.integration.data.utmCampaign || '');
   utm.content.set(metricsContext.integration.data.utmContent || '');
